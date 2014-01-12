@@ -113,9 +113,14 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 	 * @param tree
 	 */
 	@Override
-	public void addTree(final TreeNode<TSGNode> tree) {
+	public void addTree(final TreeNode<TSGNode> tree, final boolean forceAdd) {
 		final TreeNode<TSGNode> immutableTree = tree.toImmutable();
-		treesToBeAdded.add(immutableTree);
+		if (forceAdd) {
+			treeCorpus.add(immutableTree);
+			updateTSGRuleFrequencies(immutableTree);
+		} else {
+			treesToBeAdded.add(immutableTree);
+		}
 		updateCFGRuleFrequencies(immutableTree);
 	}
 

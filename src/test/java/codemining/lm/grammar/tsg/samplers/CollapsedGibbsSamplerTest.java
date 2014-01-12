@@ -12,8 +12,6 @@ import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.samplers.AbstractCollapsedGibbsSampler;
-import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler;
 import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler.CFGRule;
 
 import com.google.common.math.DoubleMath;
@@ -56,7 +54,7 @@ public class CollapsedGibbsSamplerTest {
 				mock(AbstractJavaTreeExtractor.class));
 		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(10, 10,
 				mockGrammar, mockGrammar);
-		sampler.addTree(generateSampleTree());
+		sampler.addTree(generateSampleTree(), true);
 
 		final double geometricProb = Math.pow(.9, 5) * .1;
 		final double prior = .25 * geometricProb;
@@ -82,7 +80,7 @@ public class CollapsedGibbsSamplerTest {
 				mock(AbstractJavaTreeExtractor.class));
 		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(5, 10,
 				mockGrammar, mockGrammar);
-		sampler.addTree(generateSampleTree());
+		sampler.addTree(generateSampleTree(), true);
 
 		final NodeConsequent nc = new NodeConsequent();
 		nc.nodes.add(new ArrayList<Integer>());
@@ -109,7 +107,7 @@ public class CollapsedGibbsSamplerTest {
 				mock(AbstractJavaTreeExtractor.class));
 		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(10, 10,
 				mockGrammar, mockGrammar);
-		sampler.addTree(generateSampleTree());
+		sampler.addTree(generateSampleTree(), true);
 
 		final double geometricProb = Math.pow(.9, 5) * .1;
 		assertEquals(sampler.getLog2PriorForTree(generateSampleTree()),
@@ -129,7 +127,7 @@ public class CollapsedGibbsSamplerTest {
 
 		final AbstractCollapsedGibbsSampler sampler = new CollapsedGibbsSampler(
 				10, 10, mockGrammar, mockGrammar);
-		sampler.addTree(generateSampleTree());
+		sampler.addTree(generateSampleTree(), true);
 
 		testSampler(root, toBeSampled, sampler);
 	}
@@ -180,7 +178,7 @@ public class CollapsedGibbsSamplerTest {
 
 		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(10, 10,
 				mockGrammar, mockGrammar);
-		sampler.addTree(generateSampleTree());
+		sampler.addTree(generateSampleTree(), true);
 		sampler.lockSamplerData();
 		testSampler(root, toBeSampled, sampler);
 	}

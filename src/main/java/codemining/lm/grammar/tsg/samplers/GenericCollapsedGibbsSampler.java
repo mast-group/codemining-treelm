@@ -111,10 +111,9 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	 * .lm.grammar.tree.TreeNode)
 	 */
 	@Override
-	public void addTree(final TreeNode<TSGNode> tree) {
+	public void addTree(final TreeNode<TSGNode> tree, final boolean forceAdd) {
 		treeCorpus.add(tree);
 		updateProductions(tree);
-
 	}
 
 	/*

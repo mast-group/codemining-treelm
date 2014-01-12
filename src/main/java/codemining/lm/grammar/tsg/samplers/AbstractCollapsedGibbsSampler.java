@@ -115,7 +115,18 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * 
 	 * @param tree
 	 */
-	public abstract void addTree(final TreeNode<TSGNode> tree);
+	public void addTree(final TreeNode<TSGNode> tree) {
+		addTree(tree, false);
+	}
+
+	/**
+	 * Add a single tree to the sampler. The sampler may decide to use the tree
+	 * later, unless forceAdd is set to True.
+	 * 
+	 * @param tree
+	 * @param forceAdd
+	 */
+	public abstract void addTree(final TreeNode<TSGNode> tree, boolean forceAdd);
 
 	/**
 	 * Calculate the log-probability of the whole corpus, given the TSG.
