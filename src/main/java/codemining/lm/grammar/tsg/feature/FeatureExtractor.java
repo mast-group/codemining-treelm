@@ -234,6 +234,21 @@ public class FeatureExtractor {
 	}
 
 	/**
+	 * Print the dictionary of all the patterns.
+	 */
+	public void printTSGDictionary() {
+		for (final java.util.Map.Entry<TreeNode<Integer>, Integer> entry : tsgPatterns
+				.entrySet()) {
+			System.out.println("Pattern "
+					+ entry.getValue()
+					+ ":\n"
+					+ entry.getKey().toString(
+							tsGrammar.getJavaTreeExtractor().getTreePrinter())
+					+ "\n");
+		}
+	}
+
+	/**
 	 * Convert a sample to a human-legible sample, using the grammar.
 	 * 
 	 * @param sample

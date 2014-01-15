@@ -128,6 +128,9 @@ public class FeatureExtractorTUI {
 		final Collection<Sample> testSamples = fEx
 				.createSamplesForPatterns(testSet);
 		toBagOfWordDataset(testSamples, bow);
+
+		System.out.println("=================Dictionary====================");
+		fEx.printTSGDictionary();
 	}
 
 	/**
