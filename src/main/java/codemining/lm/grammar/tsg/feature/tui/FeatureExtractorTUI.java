@@ -16,14 +16,13 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.RandomUtils;
 
 import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.EclipseASTTreeExtractor;
+import codemining.lm.grammar.java.ast.TempletizedEclipseTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.feature.FeatureExtractor;
 import codemining.lm.grammar.tsg.feature.FeatureExtractor.Sample;
-import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.TempletizedCollapsedGibbsSampler;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 
 import com.google.common.collect.Lists;
@@ -84,11 +83,9 @@ public class FeatureExtractorTUI {
 
 		// Train...
 		final AbstractJavaTreeExtractor format = new BinaryEclipseASTTreeExtractor(
-				new EclipseASTTreeExtractor());
-
-		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(20, 10,
-				new JavaFormattedTSGrammar(format), new JavaFormattedTSGrammar(
-						format));
+				new TempletizedEclipseTreeExtractor());
+		final TempletizedCollapsedGibbsSampler sampler = new TempletizedCollapsedGibbsSampler(
+				20, 10, format);
 
 		final double percentRootsInit = .9;
 		int nFiles = 0;

@@ -45,7 +45,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	}
 
 	/**
-	 * A struct for passing in two nodes at the same time.
+	 * A struct for passing a tree along with references to some nodes.
 	 * 
 	 * @param <T>
 	 */

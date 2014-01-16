@@ -43,7 +43,7 @@ public class SampleTSG {
 			SerializationException {
 		if (args.length != 3) {
 			System.err
-					.println("Usage <TrainingDir> normal|metavariables <#iterations>");
+					.println("Usage <TrainingDir> normal|binary|metavariables <#iterations>");
 			return;
 		}
 		final int nIterations = Integer.parseInt(args[2]);
@@ -61,6 +61,13 @@ public class SampleTSG {
 			final AbstractJavaTreeExtractor format;
 			if (args[1].equals("normal")) {
 				format = new EclipseASTTreeExtractor();
+
+				sampler = new CollapsedGibbsSampler(20, 10,
+						new JavaFormattedTSGrammar(format),
+						new JavaFormattedTSGrammar(format));
+			} else if (args[1].equals("binary")) {
+				format = new BinaryEclipseASTTreeExtractor(
+						new EclipseASTTreeExtractor());
 
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new JavaFormattedTSGrammar(format),
