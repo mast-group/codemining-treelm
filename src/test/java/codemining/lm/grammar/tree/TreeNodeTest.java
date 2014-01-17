@@ -7,8 +7,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import codemining.lm.grammar.tree.TreeNode.NodeParents;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
@@ -45,6 +52,56 @@ public class TreeNodeTest {
 		assertTrue(node.isLeaf());
 		assertEquals(node.nProperties(), 10);
 		assertEquals(TreeNode.getTreeSize(node), 1);
+	}
+
+	@Test
+	public void testParents() {
+		// Construct a tree
+		final TreeNode<Integer> node1 = TreeNode.create(1, 2); // 1
+		final TreeNode<Integer> node2 = TreeNode.create(2, 2); // -2
+		final TreeNode<Integer> node3 = TreeNode.create(3, 2); // --3
+		final TreeNode<Integer> node4 = TreeNode.create(4, 2); // --4
+		final TreeNode<Integer> node5 = TreeNode.create(5, 2); // ---5
+		final TreeNode<Integer> node6 = TreeNode.create(6, 2); // -6
+		final TreeNode<Integer> node7 = TreeNode.create(7, 2); // --7
+
+		node1.addChildNode(node2, 0);
+		node1.addChildNode(node6, 1);
+		node2.addChildNode(node3, 0);
+		node2.addChildNode(node4, 0);
+		node4.addChildNode(node5, 1);
+		node6.addChildNode(node7, 1);
+
+		// Test the route from 5 to 1
+		final NodeParents<Integer> route1 = node5.getNodeParents(node1);
+		assertEquals(route1.targetNode, node5);
+		final List<TreeNode<Integer>> pathFrom5to1 = Lists.newArrayList(node4,
+				node2, node1);
+		assertEquals(route1.throughNodes, pathFrom5to1);
+
+		final List<Integer> propertyPathFrom5to1 = Lists.newArrayList(1, 0, 0);
+		final List<Integer> childPathFrom5to1 = Lists.newArrayList(0, 1, 0);
+		assertEquals(route1.nextProperty, propertyPathFrom5to1);
+		assertEquals(route1.nextChildNum, childPathFrom5to1);
+
+		// Test the route from 7 to 1
+		final NodeParents<Integer> route2 = node7.getNodeParents(node1);
+		assertEquals(route2.targetNode, node7);
+		final List<TreeNode<Integer>> pathFrom7to1 = Lists.newArrayList(node6,
+				node1);
+		assertEquals(route2.throughNodes, pathFrom7to1);
+
+		final List<Integer> propertyPathFrom7to1 = Lists.newArrayList(1, 1);
+		final List<Integer> childPathFrom7to1 = Lists.newArrayList(0, 0);
+		assertEquals(route2.nextProperty, propertyPathFrom7to1);
+		assertEquals(route2.nextChildNum, childPathFrom7to1);
+
+		// Test (dummy) route from 1 to 1
+		final NodeParents<Integer> route3 = node1.getNodeParents(node1);
+		assertEquals(route3.targetNode, node1);
+		assertEquals(route3.throughNodes, Collections.emptyList());
+		assertEquals(route3.nextProperty, Collections.emptyList());
+		assertEquals(route3.nextChildNum, Collections.emptyList());
 	}
 
 	@Test

@@ -3,6 +3,7 @@
  */
 package codemining.lm.grammar.tree;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkElementIndex;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -42,6 +43,57 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 			fromNode = from;
 			toNode = to;
 		}
+	}
+
+	/**
+	 * A struct computing and containing the parent nodes of a given target node
+	 * in a tree. The lists contain the nodes and the "directions" to reach the
+	 * target node. The first node in the list is the parent of the target of
+	 * the node, while the last is the root.
+	 * 
+	 * The implementation includes a slow, recursive solution. But it is the
+	 * easiest for understanding.
+	 */
+	public static class NodeParents<T extends Serializable> {
+		public final TreeNode<T> targetNode;
+
+		public final List<TreeNode<T>> throughNodes = Lists.newArrayList();
+
+		public final List<Integer> nextProperty = Lists.newArrayList();
+
+		public final List<Integer> nextChildNum = Lists.newArrayList();
+
+		public NodeParents(final TreeNode<T> root, final TreeNode<T> targetNode) {
+			this.targetNode = targetNode;
+			final boolean pathFound = reachTarget(root);
+			checkArgument(pathFound);
+		}
+
+		private boolean reachTarget(final TreeNode<T> currentNode) {
+			if (currentNode == targetNode) {
+				return true;
+			}
+
+			final List<List<TreeNode<T>>> children = currentNode.childrenProperties;
+
+			for (int propertyId = 0; propertyId < children.size(); propertyId++) {
+				final List<TreeNode<T>> propertyChildren = children
+						.get(propertyId);
+				for (int i = 0; i < propertyChildren.size(); i++) {
+					final TreeNode<T> currentChild = propertyChildren.get(i);
+					final boolean isInPath = reachTarget(currentChild);
+					if (isInPath) {
+						throughNodes.add(currentNode);
+						nextProperty.add(propertyId);
+						nextChildNum.add(i);
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
 	}
 
 	/**
@@ -337,8 +389,32 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		return Collections.unmodifiableList(childrenProperties);
 	}
 
+	/**
+	 * Return the node data.
+	 * 
+	 * @return
+	 */
 	public T getData() {
 		return nodeData;
+	}
+
+	/**
+	 * Return the parents of this node from a root node.
+	 * 
+	 * @param fromRoot
+	 * @return
+	 */
+	public NodeParents<T> getNodeParents(final TreeNode<T> fromRoot) {
+		return new NodeParents<T>(fromRoot, this);
+	}
+
+	/**
+	 * Return the tree size of this tree.
+	 * 
+	 * @return
+	 */
+	public int getTreeSize() {
+		return getTreeSize(this);
 	}
 
 	@Override
