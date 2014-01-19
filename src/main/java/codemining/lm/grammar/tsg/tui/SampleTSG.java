@@ -43,7 +43,7 @@ public class SampleTSG {
 			SerializationException {
 		if (args.length != 3) {
 			System.err
-					.println("Usage <TrainingDir> normal|binary|metavariables <#iterations>");
+					.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables <#iterations>");
 			return;
 		}
 		final int nIterations = Integer.parseInt(args[2]);
@@ -72,9 +72,14 @@ public class SampleTSG {
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
-			} else if (args[1].equals("metavariables")) {
+			} else if (args[1].equals("binary-metavariables")) {
 				format = new BinaryEclipseASTTreeExtractor(
 						new TempletizedEclipseTreeExtractor());
+				sampler = new CollapsedGibbsSampler(20, 10,
+						new TempletizedTSGrammar(format),
+						new TempletizedTSGrammar(format));
+			} else if (args[1].equals("metavariables")) {
+				format = new TempletizedEclipseTreeExtractor();
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new TempletizedTSGrammar(format),
 						new TempletizedTSGrammar(format));
