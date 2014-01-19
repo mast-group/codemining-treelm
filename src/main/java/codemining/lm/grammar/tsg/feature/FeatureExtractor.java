@@ -15,7 +15,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.RandomUtils;
 
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tree.TreeNode.NodePair;
+import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.util.SettingsLoader;
@@ -110,12 +110,11 @@ public class FeatureExtractor {
 	/**
 	 * A predicate for comparing integer tree nodes.
 	 */
-	public static final Predicate<NodePair<Integer>> BASE_EQUALITY_COMPARATOR = new Predicate<NodePair<Integer>>() {
+	public static final Predicate<NodeDataPair<Integer>> BASE_EQUALITY_COMPARATOR = new Predicate<NodeDataPair<Integer>>() {
 
 		@Override
-		public boolean apply(final NodePair<Integer> nodePair) {
-			return nodePair.fromNode.getData()
-					.equals(nodePair.toNode.getData());
+		public boolean apply(final NodeDataPair<Integer> nodePair) {
+			return nodePair.fromNode.equals(nodePair.toNode);
 		}
 
 	};

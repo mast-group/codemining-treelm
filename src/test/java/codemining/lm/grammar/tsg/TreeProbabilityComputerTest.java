@@ -10,7 +10,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tree.TreeNode.NodePair;
+import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
@@ -27,11 +27,11 @@ public class TreeProbabilityComputerTest {
 	/**
 	 * The default matching predicate.
 	 */
-	public static final Predicate<NodePair<String>> DEFAULT_MATCHER = new Predicate<NodePair<String>>() {
+	public static final Predicate<NodeDataPair<String>> DEFAULT_MATCHER = new Predicate<NodeDataPair<String>>() {
 
 		@Override
-		public boolean apply(final NodePair<String> pair) {
-			return pair.fromNode.getData().equals(pair.toNode.getData());
+		public boolean apply(final NodeDataPair<String> pair) {
+			return pair.fromNode.equals(pair.toNode);
 		}
 
 	};

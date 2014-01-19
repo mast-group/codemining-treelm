@@ -31,6 +31,22 @@ import com.google.common.collect.Sets;
 @DefaultSerializer(JavaSerializer.class)
 public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
+	 * Struct class for node data pairs
+	 * 
+	 * @param <T>
+	 */
+	public static final class NodeDataPair<T extends Serializable> {
+		public final T fromNode;
+
+		public final T toNode;
+
+		public NodeDataPair(final T from, final T to) {
+			fromNode = from;
+			toNode = to;
+		}
+	}
+
+	/**
 	 * A struct class containing from and to pair of nodes to copy.
 	 * 
 	 */
@@ -448,10 +464,10 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 */
 	public boolean partialMatch(final TreeNode<T> other,
 			final boolean requireAllChildren) {
-		return partialMatch(other, new Predicate<NodePair<T>>() {
+		return partialMatch(other, new Predicate<NodeDataPair<T>>() {
 			@Override
-			public boolean apply(final NodePair<T> arg) {
-				return arg.fromNode.nodeData.equals(arg.toNode.nodeData);
+			public boolean apply(final NodeDataPair<T> arg) {
+				return arg.fromNode.equals(arg.toNode);
 			}
 		}, requireAllChildren);
 	}
@@ -469,9 +485,10 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @return
 	 */
 	public boolean partialMatch(final TreeNode<T> other,
-			final Predicate<NodePair<T>> equalityComparator,
+			final Predicate<NodeDataPair<T>> equalityComparator,
 			final boolean requireAllChildren) {
-		if (!equalityComparator.apply(new NodePair<T>(this, other))) {
+		if (!equalityComparator.apply(new NodeDataPair<T>(this.getData(), other
+				.getData()))) {
 			return false;
 		}
 

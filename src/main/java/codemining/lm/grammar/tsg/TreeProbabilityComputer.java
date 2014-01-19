@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tree.TreeNode.NodePair;
+import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 import codemining.util.StatsUtil;
 
 import com.google.common.base.Predicate;
@@ -33,16 +33,16 @@ import com.google.common.math.DoubleMath;
 public class TreeProbabilityComputer<T extends Serializable> {
 
 	private final Map<T, ? extends Multiset<TreeNode<T>>> grammar;
-	private final Predicate<NodePair<T>> equalityComparator;
+	private final Predicate<NodeDataPair<T>> equalityComparator;
 	private final boolean requireAllChildren;
 	/**
 	 * The default TSGNode matching predicate.
 	 */
-	public static final Predicate<NodePair<TSGNode>> TSGNODE_MATCHER = new Predicate<NodePair<TSGNode>>() {
+	public static final Predicate<NodeDataPair<TSGNode>> TSGNODE_MATCHER = new Predicate<NodeDataPair<TSGNode>>() {
 
 		@Override
-		public boolean apply(final NodePair<TSGNode> pair) {
-			return pair.fromNode.getData().nodeKey == pair.toNode.getData().nodeKey;
+		public boolean apply(final NodeDataPair<TSGNode> pair) {
+			return pair.fromNode.nodeKey == pair.toNode.nodeKey;
 		}
 
 	};
@@ -50,7 +50,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 	public TreeProbabilityComputer(
 			final Map<T, ? extends Multiset<TreeNode<T>>> grammar,
 			final boolean requireAllChildren,
-			final Predicate<NodePair<T>> equalityComparator) {
+			final Predicate<NodeDataPair<T>> equalityComparator) {
 		this.grammar = grammar;
 		this.requireAllChildren = requireAllChildren;
 		this.equalityComparator = equalityComparator;
@@ -157,8 +157,15 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			// the
 			// nodes they terminate in (if any)
 			// sum the log probabilities for the rule and the lower nodes
-			final Multiset<TreeNode<T>> possibleProductions = grammar
-					.get(current.getData());
+			Multiset<TreeNode<T>> possibleProductions = null;
+			for (final java.util.Map.Entry<T, ? extends Multiset<TreeNode<T>>> grammarProduction : grammar
+					.entrySet()) {
+				if (equalityComparator.apply(new NodeDataPair<T>(
+						grammarProduction.getKey(), current.getData()))) {
+					possibleProductions = grammarProduction.getValue();
+					break;
+				}
+			}
 
 			if (possibleProductions == null) {
 				// We don't know that, so now compute it naively
@@ -208,8 +215,8 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			if (ruleNode.isLeaf()) {
 				endpoints.add(treeNode);
 			} else {
-				checkArgument(equalityComparator.apply(new NodePair<T>(
-						ruleNode, treeNode)));
+				checkArgument(equalityComparator.apply(new NodeDataPair<T>(
+						ruleNode.getData(), treeNode.getData())));
 
 				final List<List<TreeNode<T>>> ruleProperties = ruleNode
 						.getChildrenByProperty();
