@@ -107,7 +107,7 @@ public class FeatureExtractorTUI {
 				+ " nodes");
 		sampler.lockSamplerData();
 
-		sampler.performSampling(350);
+		sampler.performSampling(100);
 
 		LOGGER.info("Sampling complete...");
 

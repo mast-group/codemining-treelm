@@ -19,15 +19,15 @@ public class GenerateRandom {
 	 * @param args
 	 * @throws SerializationException
 	 */
-	public static void main(String[] args) throws SerializationException {
-		if (args.length != 1) {
-			System.err.println("Usage <nSamples>");
+	public static void main(final String[] args) throws SerializationException {
+		if (args.length != 2) {
+			System.err.println("Usage <tsg> <nSamples>");
 			return;
 		}
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
-				.getSerializer().deserializeFrom("sampler.ser");
+				.getSerializer().deserializeFrom(args[0]);
 
-		for (int i = 0; i < Integer.parseInt(args[0]); i++) {
+		for (int i = 0; i < Integer.parseInt(args[1]); i++) {
 			System.out.println(grammar.generateRandom().toString());
 			System.out.println("-----------------------------------");
 		}

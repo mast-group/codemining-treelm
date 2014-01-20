@@ -103,7 +103,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 	}
 
 	/**
-	 * Get the plan at which the probabilites need to be computed.
+	 * Get the plan at which the probabilities need to be computed.
 	 * 
 	 * @param tree
 	 * @return

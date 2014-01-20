@@ -113,7 +113,7 @@ public class SampleTSG {
 		sampler.performSampling(nIterations);
 
 		try {
-			Serializer.getSerializer().serialize(sampler.getSampleGrammar(),
+			Serializer.getSerializer().serialize(sampler.getBurnInGrammar(),
 					"tsg.ser");
 		} catch (final Throwable e) {
 			LOGGER.severe("Failed to serialize grammar: "
@@ -129,7 +129,7 @@ public class SampleTSG {
 		}
 
 		// sampler.pruneNonSurprisingRules(1);
-		sampler.pruneRareTrees((int) (AbstractCollapsedGibbsSampler.BURN_IN_PCT * nIterations));
+		sampler.pruneRareTrees((int) (AbstractCollapsedGibbsSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(sampler.getBurnInGrammar().toString());
 	}
 }
