@@ -52,10 +52,6 @@ public class TSGEntropy {
 
 		final ITreeExtractor<Integer> treeFormat = grammar.getTreeExtractor();
 
-		final TreeProbabilityComputer<TSGNode> probabilityComputer = new TreeProbabilityComputer<TSGNode>(
-				grammar.getInternalGrammar(), true,
-				TreeProbabilityComputer.TSGNODE_MATCHER);
-
 		System.out.println("filename,entropy,cross-entropy");
 		for (final File f : allFiles) {
 			try {
@@ -68,6 +64,9 @@ public class TSGEntropy {
 						.tokenListFromCode(FileUtils.readFileToString(f)
 								.toCharArray());
 
+				final TreeProbabilityComputer<TSGNode> probabilityComputer = new TreeProbabilityComputer<TSGNode>(
+						grammar.getInternalGrammar(), true,
+						TreeProbabilityComputer.TSGNODE_MATCHER);
 				final double probability = probabilityComputer
 						.getLog2ProbabilityOf(tsgTree);
 

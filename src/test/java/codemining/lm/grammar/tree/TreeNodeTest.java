@@ -120,7 +120,7 @@ public class TreeNodeTest {
 
 		assertTrue(root2.partialMatch(root, false));
 		assertFalse(root.partialMatch(root2, false));
-		assertTrue(root2.partialMatch(root, true));
+		assertFalse(root2.partialMatch(root, true));
 		assertFalse(root.partialMatch(root2, true));
 
 		final TreeNode<Integer> c2v2 = TreeNode.create(1, 2);
@@ -135,14 +135,14 @@ public class TreeNodeTest {
 		c2v2.addChildNode(c2_1v2, 0);
 		assertTrue(root2.partialMatch(root, false));
 		assertFalse(root.partialMatch(root2, false));
-		assertTrue(root2.partialMatch(root, true));
+		assertFalse(root2.partialMatch(root, true));
 		assertFalse(root.partialMatch(root2, true));
 
 		c2_1v2.addChildNode(TreeNode.create(4, 0), 0);
 		assertTrue(root2.partialMatch(root, false));
-		assertTrue(root2.partialMatch(root, true));
+		assertTrue(root2.partialMatch(root, false));
 		assertFalse(root.partialMatch(root2, true));
-		assertTrue(root2.partialMatch(root, true));
+		assertFalse(root2.partialMatch(root, true));
 
 		c2v2.addChildNode(TreeNode.create(8, 0), 1);
 		assertTrue(root.partialMatch(root2, false));

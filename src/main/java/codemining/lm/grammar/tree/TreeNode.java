@@ -481,7 +481,8 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @param other
 	 * @param equalityComparator
 	 * @param requireAllChildren
-	 *            require to match all children (if a node has one)
+	 *            require to match all children (if a node has one, then it
+	 *            should match all of them)
 	 * @return
 	 */
 	public boolean partialMatch(final TreeNode<T> other,
@@ -496,17 +497,27 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 			return false;
 		}
 
+		boolean hasChildren = false;
+		boolean sizesSame = true;
 		for (int i = 0; i < childrenProperties.size(); i++) {
 			final List<TreeNode<T>> children = childrenProperties.get(i);
 			final List<TreeNode<T>> otherChildren = other.childrenProperties
 					.get(i);
+
+			if (children.size() != otherChildren.size()) {
+				sizesSame = false;
+			}
+
+			if (children.size() > 0) {
+				hasChildren = true;
+			}
+
 			if (children.size() > otherChildren.size() && !requireAllChildren) {
 				return false;
-			} else if (requireAllChildren
-					&& children.size() != otherChildren.size()
-					&& children.size() > 0) {
+			} else if (requireAllChildren && hasChildren && !sizesSame) {
 				return false;
 			}
+
 			for (int j = 0; j < children.size(); j++) {
 				if (!children.get(j).partialMatch(otherChildren.get(j),
 						equalityComparator, requireAllChildren)) {
