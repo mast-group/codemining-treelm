@@ -228,8 +228,10 @@ public class TreeProbabilityComputer<T extends Serializable> {
 							.get(propertyId);
 					final List<TreeNode<T>> treePropertyChildren = treeProperties
 							.get(propertyId);
-					checkArgument(rulePropertyChildren.size() == treePropertyChildren
-							.size());
+					checkArgument((rulePropertyChildren.size() == treePropertyChildren
+							.size() && requireAllChildren)
+							|| (!requireAllChildren && rulePropertyChildren
+									.size() <= treePropertyChildren.size()));
 
 					for (int i = 0; i < rulePropertyChildren.size(); i++) {
 						ruleVisit.push(rulePropertyChildren.get(i));
