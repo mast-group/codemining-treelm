@@ -120,6 +120,8 @@ public class TreeNodeTest {
 
 		assertTrue(root2.partialMatch(root, false));
 		assertFalse(root.partialMatch(root2, false));
+		assertTrue(root2.isPartialSubtreeOf(root));
+		assertFalse(root.isPartialSubtreeOf(root2));
 		assertFalse(root2.partialMatch(root, true));
 		assertFalse(root.partialMatch(root2, true));
 
@@ -128,6 +130,8 @@ public class TreeNodeTest {
 
 		assertTrue(root2.partialMatch(root, false));
 		assertFalse(root.partialMatch(root2, false));
+		assertTrue(root2.isPartialSubtreeOf(root));
+		assertFalse(root.isPartialSubtreeOf(root2));
 		assertTrue(root2.partialMatch(root, true));
 		assertFalse(root.partialMatch(root2, true));
 
@@ -135,18 +139,26 @@ public class TreeNodeTest {
 		c2v2.addChildNode(c2_1v2, 0);
 		assertTrue(root2.partialMatch(root, false));
 		assertFalse(root.partialMatch(root2, false));
+		assertTrue(root2.isPartialSubtreeOf(root));
+		assertFalse(root.isPartialSubtreeOf(root2));
 		assertFalse(root2.partialMatch(root, true));
 		assertFalse(root.partialMatch(root2, true));
 
 		c2_1v2.addChildNode(TreeNode.create(4, 0), 0);
 		assertTrue(root2.partialMatch(root, false));
 		assertTrue(root2.partialMatch(root, false));
+		assertTrue(root2.isPartialSubtreeOf(root));
+		// Essentially this is the only case where subtree match differs from
+		// partial match with requireAllChildren=false!
+		assertFalse(root.isPartialSubtreeOf(root2));
 		assertFalse(root.partialMatch(root2, true));
 		assertFalse(root2.partialMatch(root, true));
 
 		c2v2.addChildNode(TreeNode.create(8, 0), 1);
 		assertTrue(root.partialMatch(root2, false));
 		assertTrue(root2.partialMatch(root, false));
+		assertTrue(root2.isPartialSubtreeOf(root));
+		assertTrue(root.isPartialSubtreeOf(root2));
 		assertTrue(root.partialMatch(root2, true));
 		assertTrue(root2.partialMatch(root, true));
 	}

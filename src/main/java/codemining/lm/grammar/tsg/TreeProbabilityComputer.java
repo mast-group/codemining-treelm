@@ -74,9 +74,16 @@ public class TreeProbabilityComputer<T extends Serializable> {
 				.entrySet()) {
 			// We need to see if it's a partial match, get all it's end
 			// points
-			if (!productionEntry.getElement().partialMatch(current,
-					equalityComparator, requireAllChildren)) {
-				continue;
+			if (requireAllChildren) {
+				if (!productionEntry.getElement().partialMatch(current,
+						equalityComparator, requireAllChildren)) {
+					continue;
+				}
+			} else {
+				if (!productionEntry.getElement().isPartialSubtreeOf(current,
+						equalityComparator)) {
+					continue;
+				}
 			}
 
 			final Set<TreeNode<T>> endPoints = getRuleEndPointsInTree(
