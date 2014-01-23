@@ -113,7 +113,6 @@ public class TreeProbabilityComputerTest {
 
 		assertEquals(computer.getLog2ProbabilityOf(generateTree()),
 				DoubleMath.log2(3. / 4.), 10E-10);
-
 	}
 
 	@Test

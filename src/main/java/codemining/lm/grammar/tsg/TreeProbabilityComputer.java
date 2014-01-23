@@ -80,7 +80,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 					continue;
 				}
 			} else {
-				if (!productionEntry.getElement().isPartialSubtreeOf(current,
+				if (!productionEntry.getElement().isPartialSupertreeOf(current,
 						equalityComparator)) {
 					continue;
 				}
@@ -189,6 +189,9 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			} else {
 				computeNodeProbabilities(nodeProductionProbabilities, current,
 						possibleProductions);
+				// Since the rule matching may be partial, this may be wrong.
+				// What should we do? TODO TODO
+
 			}
 
 		}
@@ -235,12 +238,13 @@ public class TreeProbabilityComputer<T extends Serializable> {
 							.get(propertyId);
 					final List<TreeNode<T>> treePropertyChildren = treeProperties
 							.get(propertyId);
+
 					checkArgument((rulePropertyChildren.size() == treePropertyChildren
 							.size() && requireAllChildren)
 							|| (!requireAllChildren && rulePropertyChildren
-									.size() <= treePropertyChildren.size()));
+									.size() >= treePropertyChildren.size()));
 
-					for (int i = 0; i < rulePropertyChildren.size(); i++) {
+					for (int i = 0; i < treePropertyChildren.size(); i++) {
 						ruleVisit.push(rulePropertyChildren.get(i));
 						treeVisit.push(treePropertyChildren.get(i));
 					}

@@ -505,6 +505,69 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		return true;
 	}
 
+	public boolean isPartialSupertreeOf(final TreeNode<T> other) {
+		return isPartialSupertreeOf(other, new Predicate<NodeDataPair<T>>() {
+			@Override
+			public boolean apply(final NodeDataPair<T> arg) {
+				return arg.fromNode.equals(arg.toNode);
+			}
+		});
+	}
+
+	/**
+	 * Returns true if this node is a partial supertree of the other node. This
+	 * means that this tree can be partially found in the other tree, but this
+	 * tree may have more children.
+	 * 
+	 * @param other
+	 * @param equalityComparator
+	 * @return
+	 */
+	public boolean isPartialSupertreeOf(final TreeNode<T> other,
+			final Predicate<NodeDataPair<T>> equalityComparator) {
+		final ArrayDeque<NodePair<T>> stack = new ArrayDeque<NodePair<T>>();
+
+		stack.push(new NodePair<T>(this, other));
+		while (!stack.isEmpty()) {
+			final NodePair<T> currentNodes = stack.pop();
+			final TreeNode<T> thisNode = currentNodes.fromNode;
+			final TreeNode<T> otherNode = currentNodes.toNode;
+
+			if (!equalityComparator.apply(new NodeDataPair<T>(
+					thisNode.nodeData, otherNode.getData()))) {
+				return false;
+			} else if (thisNode.nProperties() != otherNode.nProperties()) {
+				return false;
+			}
+
+			if (thisNode.isLeaf()) {
+				continue;
+			} else if (otherNode.isLeaf() && !thisNode.isLeaf()) {
+				return false;
+			}
+
+			final List<List<TreeNode<T>>> thisChildren = thisNode.childrenProperties;
+			final List<List<TreeNode<T>>> otherChildren = otherNode.childrenProperties;
+
+			for (int propertyId = 0; propertyId < thisChildren.size(); propertyId++) {
+				final List<TreeNode<T>> thisProperty = thisChildren
+						.get(propertyId);
+				final List<TreeNode<T>> otherProperty = otherChildren
+						.get(propertyId);
+
+				if (thisProperty.size() < otherProperty.size()) {
+					return false;
+				}
+				for (int i = 0; i < otherProperty.size(); i++) {
+					stack.push(new NodePair<T>(thisProperty.get(i),
+							otherProperty.get(i)));
+				}
+			}
+		}
+
+		return true;
+	}
+
 	public int nProperties() {
 		return childrenProperties.size();
 	}
