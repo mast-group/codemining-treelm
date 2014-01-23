@@ -16,7 +16,7 @@ import codemining.lm.grammar.tree.ASTNodeSymbol;
  * 
  */
 public class ParentTypeAnnotatedEclipseASTExtractor extends
-		EclipseASTTreeExtractor {
+		JavaASTTreeExtractor {
 
 	private static final long serialVersionUID = -636216895677579526L;
 

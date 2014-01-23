@@ -27,7 +27,7 @@ import com.google.common.collect.Multimap;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class TempletizedEclipseTreeExtractor extends EclipseASTTreeExtractor {
+public class TempletizedJavaTreeExtractor extends JavaASTTreeExtractor {
 
 	public class TempletizedTreeExtractor extends TreeNodeExtractor {
 
@@ -158,7 +158,7 @@ public class TempletizedEclipseTreeExtractor extends EclipseASTTreeExtractor {
 		return symbol.hasAnnotation(TEMPLETIZED_VAR_PROPERTY);
 	}
 
-	public TempletizedEclipseTreeExtractor() {
+	public TempletizedJavaTreeExtractor() {
 		super();
 	}
 

@@ -64,6 +64,8 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 
 	}
 
+	private static final long serialVersionUID = 1182242333534701379L;
+
 	private static final double AVG_NUM_CHILDREN = .5;
 
 	final Map<SymbolProperty, Multiset<Integer>> symbolProductions;

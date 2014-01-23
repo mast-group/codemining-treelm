@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.languagetools.ParseKind;
-import codemining.lm.grammar.java.ast.TempletizedEclipseTreeExtractor;
+import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
@@ -32,7 +32,7 @@ public class TempletizedTSGrammarTest {
 		final JavaASTExtractor ex = new JavaASTExtractor(false,
 				useComments);
 		final ASTNode cu = ex.getAST(code, kind);
-		final TempletizedEclipseTreeExtractor converter = new TempletizedEclipseTreeExtractor();
+		final TempletizedJavaTreeExtractor converter = new TempletizedJavaTreeExtractor();
 		final TempletizedTSGrammar grammar = new TempletizedTSGrammar(converter);
 		final TreeNode<Integer> treeCu = converter.getTree(cu, useComments);
 		final TreeNode<TSGNode> treeCu2 = TSGNode.convertTree(treeCu, 0);

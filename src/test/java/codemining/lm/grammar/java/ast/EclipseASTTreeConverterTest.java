@@ -34,7 +34,7 @@ public class EclipseASTTreeConverterTest {
 		final JavaASTExtractor ex = new JavaASTExtractor(false,
 				useComments);
 		final ASTNode cu = ex.getAST(code, kind);
-		final EclipseASTTreeExtractor converter = new EclipseASTTreeExtractor();
+		final JavaASTTreeExtractor converter = new JavaASTTreeExtractor();
 		final TreeNode<Integer> treeCu = converter.getTree(cu, useComments);
 
 		final ASTNode reconvertedCu = converter.getASTFromTree(treeCu);

@@ -3,7 +3,7 @@
  */
 package codemining.lm.grammar.tsg.samplers;
 
-import codemining.lm.grammar.java.ast.TempletizedEclipseTreeExtractor;
+import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -35,12 +35,12 @@ public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 		if (symbol.nodeType != ASTNodeSymbol.TEMPLATE_NODE) {
 			return originalId;
 		} else if (!symbol
-				.hasAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
+				.hasAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
 			return originalId;
 		} else {
 			final String typeAnnotation = (String) symbol
-					.getAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
-			final ASTNodeSymbol newSymbol = TempletizedEclipseTreeExtractor
+					.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
+			final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
 					.constructTemplateSymbol(0, typeAnnotation);
 
 			return sampleGrammar.getTreeExtractor().getOrAddSymbolId(newSymbol);

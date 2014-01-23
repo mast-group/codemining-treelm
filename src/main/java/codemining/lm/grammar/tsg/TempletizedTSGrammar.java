@@ -8,7 +8,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayDeque;
 import java.util.Map;
 
-import codemining.lm.grammar.java.ast.TempletizedEclipseTreeExtractor;
+import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -67,12 +67,12 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 		final ASTNodeSymbol originalSymbol = treeFormat.getSymbol(root.nodeKey);
 		if (originalSymbol.nodeType == ASTNodeSymbol.TEMPLATE_NODE
 				&& originalSymbol
-						.hasAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
-			final ASTNodeSymbol newSymbol = TempletizedEclipseTreeExtractor
+						.hasAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
+			final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
 					.constructTemplateSymbol(
 							0,
 							(String) originalSymbol
-									.getAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY));
+									.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY));
 			final TSGNode newNode = new TSGNode(
 					treeFormat.getOrAddSymbolId(newSymbol));
 			newNode.isRoot = root.isRoot;
@@ -130,16 +130,16 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 				.getSymbol(originalData.nodeKey);
 
 		final TSGNode rootData;
-		if (TempletizedEclipseTreeExtractor.isTemplateVariable(originalSymbol)) {
+		if (TempletizedJavaTreeExtractor.isTemplateVariable(originalSymbol)) {
 			oldNewMapping
 					.put((Integer) (originalSymbol
-							.getAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_PROPERTY)),
+							.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)),
 							0);
-			final ASTNodeSymbol newSymbol = TempletizedEclipseTreeExtractor
+			final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
 					.constructTemplateSymbol(
 							0,
 							(String) originalSymbol
-									.getAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY));
+									.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY));
 			nextId++;
 			rootData = new TSGNode(treeFormat.getOrAddSymbolId(newSymbol));
 			rootData.isRoot = originalData.isRoot;
@@ -165,10 +165,10 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 							.getData().nodeKey);
 
 					final TSGNode toChildData;
-					if (TempletizedEclipseTreeExtractor
+					if (TempletizedJavaTreeExtractor
 							.isTemplateVariable(symbol)) {
 						final int oldId = (Integer) symbol
-								.getAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_PROPERTY);
+								.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY);
 
 						Integer newId = oldNewMapping.get(oldId);
 						if (newId == null) {
@@ -177,8 +177,8 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 							oldNewMapping.put(oldId, newId);
 						}
 						final String typeProperty = (String) symbol
-								.getAnnotation(TempletizedEclipseTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
-						final ASTNodeSymbol sym = TempletizedEclipseTreeExtractor
+								.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
+						final ASTNodeSymbol sym = TempletizedJavaTreeExtractor
 								.constructTemplateSymbol(newId, typeProperty);
 						toChildData = new TSGNode(
 								treeFormat.getOrAddSymbolId(sym));

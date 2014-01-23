@@ -13,15 +13,16 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.EclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.TempletizedEclipseTreeExtractor;
+import codemining.lm.grammar.java.ast.JavaASTTreeExtractor;
+import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.TempletizedTSGrammar;
 import codemining.lm.grammar.tsg.samplers.AbstractCollapsedGibbsSampler;
 import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.TempletizedCollapsedGibbsSampler;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -60,29 +61,30 @@ public class SampleTSG {
 
 			final AbstractJavaTreeExtractor format;
 			if (args[1].equals("normal")) {
-				format = new EclipseASTTreeExtractor();
+				format = new JavaASTTreeExtractor();
 
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binary")) {
 				format = new BinaryEclipseASTTreeExtractor(
-						new EclipseASTTreeExtractor());
+						new JavaASTTreeExtractor());
 
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binary-metavariables")) {
 				format = new BinaryEclipseASTTreeExtractor(
-						new TempletizedEclipseTreeExtractor());
-				sampler = new CollapsedGibbsSampler(20, 10,
-						new TempletizedTSGrammar(format),
-						new TempletizedTSGrammar(format));
+						new TempletizedJavaTreeExtractor());
+				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
 			} else if (args[1].equals("metavariables")) {
-				format = new TempletizedEclipseTreeExtractor();
+				format = new TempletizedJavaTreeExtractor();
+				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
+			} else if (args[1].equals("variables")) {
+				format = new VariableTypeJavaTreeExtractor();
 				sampler = new CollapsedGibbsSampler(20, 10,
-						new TempletizedTSGrammar(format),
-						new TempletizedTSGrammar(format));
+						new JavaFormattedTSGrammar(format),
+						new JavaFormattedTSGrammar(format));
 			} else {
 				throw new IllegalArgumentException("Unrecognizable parameter "
 						+ args[1]);

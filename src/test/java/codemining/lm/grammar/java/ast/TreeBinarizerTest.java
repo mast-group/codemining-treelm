@@ -84,7 +84,7 @@ public class TreeBinarizerTest {
 
 	@Test
 	public void testBinarizationSimple() {
-		AbstractJavaTreeExtractor extractor = new EclipseASTTreeExtractor();
+		AbstractJavaTreeExtractor extractor = new JavaASTTreeExtractor();
 
 		for (int i = 0; i < 10; i++) { // Create dummy symbols
 			extractor.getOrAddSymbolId(new ASTNodeSymbol(i));

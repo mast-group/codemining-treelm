@@ -44,7 +44,7 @@ import com.google.common.collect.Maps;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class EclipseASTTreeExtractor extends AbstractJavaTreeExtractor {
+public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
 
 	/**
 	 * Extract a TreeNode from a parsed AST
@@ -160,7 +160,7 @@ public class EclipseASTTreeExtractor extends AbstractJavaTreeExtractor {
 	}
 
 	private static final Logger LOGGER = Logger
-			.getLogger(EclipseASTTreeExtractor.class.getName());
+			.getLogger(JavaASTTreeExtractor.class.getName());
 
 	private static final long serialVersionUID = 8839242786256127809L;
 

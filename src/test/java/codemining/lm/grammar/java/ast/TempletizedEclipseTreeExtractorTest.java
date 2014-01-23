@@ -32,7 +32,7 @@ public class TempletizedEclipseTreeExtractorTest {
 		final JavaASTExtractor ex = new JavaASTExtractor(false,
 				useComments);
 		final ASTNode cu = ex.getAST(code, kind);
-		final TempletizedEclipseTreeExtractor converter = new TempletizedEclipseTreeExtractor();
+		final TempletizedJavaTreeExtractor converter = new TempletizedJavaTreeExtractor();
 		final TreeNode<Integer> treeCu = converter.getTree(cu, useComments);
 
 		final ASTNode reconvertedCu = converter.getASTFromTree(treeCu);
@@ -46,7 +46,7 @@ public class TempletizedEclipseTreeExtractorTest {
 				useComments);
 		final ASTNode cu = ex.getAST(code, kind);
 		final AbstractJavaTreeExtractor converter = new BinaryEclipseASTTreeExtractor(
-				new TempletizedEclipseTreeExtractor());
+				new TempletizedJavaTreeExtractor());
 		final TreeNode<Integer> treeCu = converter.getTree(cu);
 
 		final ASTNode reconvertedCu = converter.getASTFromTree(treeCu);
