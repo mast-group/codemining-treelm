@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import codemining.lm.grammar.tree.TreeNode;
+import codemining.lm.grammar.tsg.ITsgPosteriorProbabilityComputer;
 import codemining.lm.grammar.tsg.SequentialTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.math.distributions.GeometricDistribution;
@@ -30,6 +31,126 @@ import com.google.common.math.DoubleMath;
  * 
  */
 public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler {
+
+	protected static class GenericTsgPosteriorComputer implements
+			ITsgPosteriorProbabilityComputer<TSGNode> {
+		final SequentialTSGrammar sqGrammar;
+
+		protected double concentrationParameter;
+
+		protected double geometricProbability;
+
+		private static final double AVG_NUM_CHILDREN = .5;
+
+		final Map<SymbolProperty, Multiset<Integer>> symbolProductions;
+
+		GenericTsgPosteriorComputer(final SequentialTSGrammar sqGrammar,
+				final double avgTreeSize, final double DPconcentration) {
+			this.sqGrammar = sqGrammar;
+			concentrationParameter = DPconcentration;
+			geometricProbability = 1. / avgTreeSize;
+
+			symbolProductions = Maps.newHashMap();
+		}
+
+		@Override
+		public double computePosteriorProbability(
+				final TreeNode<TSGNode> subtree, final boolean remove) {
+			checkNotNull(subtree);
+
+			final Multiset<TreeNode<TSGNode>> trees = sqGrammar
+					.convertTreeNode(subtree, true);
+
+			double cumLogProbability = 0;
+
+			for (final Entry<TreeNode<TSGNode>> tree : trees.entrySet()) {
+				double nRulesCommonRoot = sqGrammar.countTreesWithRoot(tree
+						.getElement().getData());
+				double nRulesInGrammar = sqGrammar.countTreeOccurences(tree
+						.getElement());
+
+				checkArgument(nRulesCommonRoot >= nRulesInGrammar);
+				final double log2prior = getLog2PriorForTree(subtree);
+
+				if (nRulesInGrammar > 0 && remove) {
+					nRulesInGrammar--;
+					nRulesCommonRoot--;
+				}
+				final double log2Probability = StatsUtil.logSumOfExponentials(
+						DoubleMath.log2(nRulesInGrammar),
+						DoubleMath.log2(concentrationParameter) + log2prior)
+						- DoubleMath.log2(nRulesCommonRoot
+								+ concentrationParameter);
+
+				checkArgument(!Double.isNaN(log2Probability));
+				checkArgument(log2Probability <= 0);
+				cumLogProbability *= log2Probability * tree.getCount();
+			}
+			return cumLogProbability;
+		}
+
+		public double getLog2PriorForTree(final TreeNode<TSGNode> subtree) {
+			checkNotNull(subtree);
+			// final int treeSize = TreeNode.getTreeSize(subtree);
+			final double logRuleMLE = getTreeLog2Probability(subtree);
+
+			final double geometricLog2Prob = 0;
+			// GeometricDistribution.getLog2Prob(treeSize,geometricProbability);
+			return geometricLog2Prob + logRuleMLE;
+		}
+
+		private double getTreeLog2Probability(final TreeNode<TSGNode> subtree) {
+			checkNotNull(subtree);
+
+			final ArrayDeque<TreeNode<TSGNode>> toSee = new ArrayDeque<TreeNode<TSGNode>>();
+			toSee.push(subtree);
+
+			double logProbability = 0;
+			while (!toSee.isEmpty()) {
+				final TreeNode<TSGNode> currentNode = toSee.pop();
+				final List<List<TreeNode<TSGNode>>> properties = currentNode
+						.getChildrenByProperty();
+				for (int propertyId = 0; propertyId < properties.size(); propertyId++) {
+					final List<TreeNode<TSGNode>> childProperties = properties
+							.get(propertyId);
+					final boolean hasMultipleChildren = childProperties.size() > 2;
+					int childCount = 0;
+					for (final TreeNode<TSGNode> child : childProperties) {
+						if (!child.isLeaf()) {
+							toSee.push(child);
+						}
+
+						// Compute probability, only if it has multiple children
+						// and
+						// is not a root...
+						if (!hasMultipleChildren
+								|| (hasMultipleChildren && !child.getData().isRoot)) {
+							childCount++;
+
+							final Multiset<Integer> productions = symbolProductions
+									.get(new SymbolProperty(currentNode
+											.getData().nodeKey, propertyId));
+							final double logProb = DoubleMath
+									.log2(((double) productions.count(child
+											.getData().nodeKey))
+											/ productions.size());
+							checkArgument(!Double.isNaN(logProb));
+							checkArgument(logProb <= 0);
+							logProbability += logProb;
+						}
+					}
+					logProbability += GeometricDistribution.getLog2Prob(
+							childCount, AVG_NUM_CHILDREN);
+				}
+
+			}
+
+			checkArgument(!(Double.isInfinite(logProbability) || Double
+					.isNaN(logProbability)));
+			return logProbability;
+		}
+
+	}
 
 	private static class SymbolProperty {
 		final int symbolId;
@@ -64,11 +185,10 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 
 	}
 
+	GenericTsgPosteriorComputer posteriorComputer;
+
 	private static final long serialVersionUID = 1182242333534701379L;
 
-	private static final double AVG_NUM_CHILDREN = .5;
-
-	final Map<SymbolProperty, Multiset<Integer>> symbolProductions;
 	final SequentialTSGrammar sqGrammar;
 
 	/**
@@ -79,9 +199,11 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	public GenericCollapsedGibbsSampler(final double avgTreeSize,
 			final double DPconcentration, final SequentialTSGrammar grammar,
 			final SequentialTSGrammar allSamplesGrammar) {
-		super(avgTreeSize, DPconcentration, grammar, allSamplesGrammar);
-		symbolProductions = Maps.newHashMap();
+		super(grammar, allSamplesGrammar);
 		sqGrammar = grammar;
+		posteriorComputer = new GenericTsgPosteriorComputer(grammar,
+				avgTreeSize, DPconcentration);
+		sqGrammar.setPosteriorComputer(posteriorComputer);
 	}
 
 	private synchronized void addProductionsForNode(
@@ -94,10 +216,11 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 				final SymbolProperty from = new SymbolProperty(
 						currentNode.getData().nodeKey, propertyId);
 
-				Multiset<Integer> productions = symbolProductions.get(from);
+				Multiset<Integer> productions = posteriorComputer.symbolProductions
+						.get(from);
 				if (productions == null) {
 					productions = TreeMultiset.create();
-					symbolProductions.put(from, productions);
+					posteriorComputer.symbolProductions.put(from, productions);
 				}
 
 				productions.add(child.getData().nodeKey);
@@ -121,24 +244,6 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * codemining.lm.grammar.tsg.AbstractCollapsedGibbsSampler#getPriorForTree
-	 * (codemining.lm.grammar.tree.TreeNode)
-	 */
-	@Override
-	public double getLog2PriorForTree(final TreeNode<TSGNode> subtree) {
-		checkNotNull(subtree);
-		// final int treeSize = TreeNode.getTreeSize(subtree);
-		final double logRuleMLE = getTreeLog2Probability(subtree);
-
-		final double geometricLog2Prob = 0;
-		// GeometricDistribution.getLog2Prob(treeSize,geometricProbability);
-		return geometricLog2Prob + logRuleMLE;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see codemining.lm.grammar.tsg.AbstractCollapsedGibbsSampler#
 	 * getPosteriorProbabilityForTree(codemining.lm.grammar.tree.TreeNode,
 	 * boolean)
@@ -146,88 +251,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	@Override
 	public double getPosteriorLog2ProbabilityForTree(
 			final TreeNode<TSGNode> subtree, final boolean remove) {
-		checkNotNull(subtree);
-
-		final Multiset<TreeNode<TSGNode>> trees = sqGrammar.convertTreeNode(
-				subtree, true);
-
-		double cumLogProbability = 0;
-
-		for (final Entry<TreeNode<TSGNode>> tree : trees.entrySet()) {
-			double nRulesCommonRoot = sampleGrammar.countTreesWithRoot(tree
-					.getElement().getData());
-			double nRulesInGrammar = sampleGrammar.countTreeOccurences(tree
-					.getElement());
-
-			checkArgument(nRulesCommonRoot >= nRulesInGrammar);
-			final double log2prior = getLog2PriorForTree(subtree);
-
-			if (nRulesInGrammar > 0 && remove) {
-				nRulesInGrammar--;
-				nRulesCommonRoot--;
-			}
-			final double log2Probability = StatsUtil.logSumOfExponentials(
-					DoubleMath.log2(nRulesInGrammar),
-					DoubleMath.log2(concentrationParameter) + log2prior)
-					- DoubleMath
-							.log2(nRulesCommonRoot + concentrationParameter);
-
-			checkArgument(!Double.isNaN(log2Probability));
-			checkArgument(log2Probability <= 0);
-			cumLogProbability *= log2Probability * tree.getCount();
-		}
-		return cumLogProbability;
-	}
-
-	private double getTreeLog2Probability(final TreeNode<TSGNode> subtree) {
-		checkNotNull(subtree);
-
-		final ArrayDeque<TreeNode<TSGNode>> toSee = new ArrayDeque<TreeNode<TSGNode>>();
-		toSee.push(subtree);
-
-		double logProbability = 0;
-		while (!toSee.isEmpty()) {
-			final TreeNode<TSGNode> currentNode = toSee.pop();
-			final List<List<TreeNode<TSGNode>>> properties = currentNode
-					.getChildrenByProperty();
-			for (int propertyId = 0; propertyId < properties.size(); propertyId++) {
-				final List<TreeNode<TSGNode>> childProperties = properties
-						.get(propertyId);
-				final boolean hasMultipleChildren = childProperties.size() > 2;
-				int childCount = 0;
-				for (final TreeNode<TSGNode> child : childProperties) {
-					if (!child.isLeaf()) {
-						toSee.push(child);
-					}
-
-					// Compute probability, only if it has multiple children and
-					// is not a root...
-					if (!hasMultipleChildren
-							|| (hasMultipleChildren && !child.getData().isRoot)) {
-						childCount++;
-
-						final Multiset<Integer> productions = symbolProductions
-								.get(new SymbolProperty(
-										currentNode.getData().nodeKey,
-										propertyId));
-						final double logProb = DoubleMath
-								.log2(((double) productions.count(child
-										.getData().nodeKey))
-										/ productions.size());
-						checkArgument(!Double.isNaN(logProb));
-						checkArgument(logProb <= 0);
-						logProbability += logProb;
-					}
-				}
-				logProbability += GeometricDistribution.getLog2Prob(childCount,
-						AVG_NUM_CHILDREN);
-			}
-
-		}
-
-		checkArgument(!(Double.isInfinite(logProbability) || Double
-				.isNaN(logProbability)));
-		return logProbability;
+		return posteriorComputer.computePosteriorProbability(subtree, remove);
 	}
 
 	public void pruneRareTrees(final int threshold) {

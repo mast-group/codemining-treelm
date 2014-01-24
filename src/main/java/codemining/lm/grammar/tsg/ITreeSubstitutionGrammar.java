@@ -24,6 +24,14 @@ public interface ITreeSubstitutionGrammar<T extends Serializable> extends
 	public SortedMultiset<Integer> computeGrammarTreeSizeStats();
 
 	/**
+	 * Compute the posterior probability for this tree, given the TSG.
+	 * 
+	 * @param tree
+	 * @return
+	 */
+	public double computeTreePosteriorProbability(TreeNode<T> tree);
+
+	/**
 	 * Return the number of occurrences of the subtree given the root.
 	 * 
 	 * @param root

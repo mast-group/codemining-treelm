@@ -44,7 +44,7 @@ public class SampleTSG {
 			SerializationException {
 		if (args.length != 3) {
 			System.err
-					.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables <#iterations>");
+					.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables|variables <#iterations>");
 			return;
 		}
 		final int nIterations = Integer.parseInt(args[2]);

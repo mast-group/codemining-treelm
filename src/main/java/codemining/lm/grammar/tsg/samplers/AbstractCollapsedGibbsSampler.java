@@ -70,10 +70,6 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	public static final double BURN_IN_PCT = SettingsLoader.getNumericSetting(
 			"BurninPct", .75);
 
-	protected final double concentrationParameter;
-
-	protected final double geometricProbability;
-
 	/**
 	 * The grammar being mined. This represents the current sample of the
 	 * grammar.
@@ -97,13 +93,9 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * @param DPconcentration
 	 * @param grammar
 	 */
-	public AbstractCollapsedGibbsSampler(final double avgTreeSize,
-			final double DPconcentration,
+	public AbstractCollapsedGibbsSampler(
 			final JavaFormattedTSGrammar sampleGrammar,
 			final JavaFormattedTSGrammar allSamplesGrammar) {
-		geometricProbability = 1. / avgTreeSize;
-		concentrationParameter = DPconcentration;
-
 		checkArgument(sampleGrammar.getTreeExtractor() == allSamplesGrammar
 				.getTreeExtractor());
 		this.sampleGrammar = sampleGrammar;
@@ -179,14 +171,6 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	public JavaFormattedTSGrammar getBurnInGrammar() {
 		return allSamplesGrammar;
 	}
-
-	/**
-	 * Return the log2 prior probability for the tree.
-	 * 
-	 * @param subtree
-	 * @return
-	 */
-	public abstract double getLog2PriorForTree(final TreeNode<TSGNode> subtree);
 
 	/**
 	 * Return the posterior probability for the tree.

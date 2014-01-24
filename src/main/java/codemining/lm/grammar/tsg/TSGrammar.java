@@ -4,6 +4,7 @@
 package codemining.lm.grammar.tsg;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -43,6 +44,8 @@ public class TSGrammar<T extends Serializable> implements
 	 * A Map from a tree root to a multiset of productions.
 	 */
 	protected final ConcurrentMap<T, ConcurrentHashMultiset<TreeNode<T>>> grammar;
+
+	ITsgPosteriorProbabilityComputer<T> posteriorComputer = null;
 
 	/**
 	 * UNK node.
@@ -127,6 +130,12 @@ public class TSGrammar<T extends Serializable> implements
 			}
 		}
 		return treeSizes;
+	}
+
+	@Override
+	public double computeTreePosteriorProbability(final TreeNode<T> tree) {
+		return checkNotNull(posteriorComputer)
+				.computePosteriorProbability(tree, false);
 	}
 
 	/*
@@ -290,6 +299,11 @@ public class TSGrammar<T extends Serializable> implements
 		} else {
 			return productions.remove(subTree);
 		}
+	}
+
+	public final void setPosteriorComputer(
+			final ITsgPosteriorProbabilityComputer<T> computer) {
+		posteriorComputer = checkNotNull(computer);
 	}
 
 	@Override

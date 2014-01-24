@@ -7,6 +7,7 @@ import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
+import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.TempletizedTSGrammar;
 
@@ -18,6 +19,36 @@ import codemining.lm.grammar.tsg.TempletizedTSGrammar;
  */
 public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 
+	protected static class TempletizedPosteriorComputer extends
+			ClassicTsgPosteriorComputer {
+
+		TempletizedPosteriorComputer(final JavaFormattedTSGrammar grammar,
+				final double avgTreeSize, final double DPconcentration) {
+			super(grammar, avgTreeSize, DPconcentration);
+		}
+
+		@Override
+		protected int postprocessIdForCFG(final TreeNode<TSGNode> node) {
+			final int originalId = node.getData().nodeKey;
+			final ASTNodeSymbol symbol = grammar.getTreeExtractor().getSymbol(
+					originalId);
+
+			if (symbol.nodeType != ASTNodeSymbol.TEMPLATE_NODE) {
+				return originalId;
+			} else if (!symbol
+					.hasAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
+				return originalId;
+			} else {
+				final String typeAnnotation = (String) symbol
+						.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
+				final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
+						.constructTemplateSymbol(0, typeAnnotation);
+
+				return grammar.getTreeExtractor().getOrAddSymbolId(newSymbol);
+			}
+		}
+	}
+
 	private static final long serialVersionUID = 7351016344835333568L;
 
 	public TempletizedCollapsedGibbsSampler(final double avgTreeSize,
@@ -27,23 +58,9 @@ public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 	}
 
 	@Override
-	protected int postprocessIdForCFG(final TreeNode<TSGNode> node) {
-		final int originalId = node.getData().nodeKey;
-		final ASTNodeSymbol symbol = sampleGrammar.getTreeExtractor()
-				.getSymbol(originalId);
-
-		if (symbol.nodeType != ASTNodeSymbol.TEMPLATE_NODE) {
-			return originalId;
-		} else if (!symbol
-				.hasAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
-			return originalId;
-		} else {
-			final String typeAnnotation = (String) symbol
-					.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
-			final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
-					.constructTemplateSymbol(0, typeAnnotation);
-
-			return sampleGrammar.getTreeExtractor().getOrAddSymbolId(newSymbol);
-		}
+	protected void createPosteriorComputer(final double avgTreeSize,
+			final double DPconcentration, final JavaFormattedTSGrammar grammar) {
+		posteriorComputer = new ClassicTsgPosteriorComputer(grammar, avgTreeSize,
+				DPconcentration);
 	}
 }

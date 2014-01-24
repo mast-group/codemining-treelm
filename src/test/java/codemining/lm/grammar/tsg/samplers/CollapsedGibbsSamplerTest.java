@@ -93,12 +93,20 @@ public class CollapsedGibbsSamplerTest {
 		nc2.nodes.get(0).add(5);
 		nc2.nodes.get(0).add(6);
 
-		assertEquals(sampler.getLog2ProbForCFG(new CFGRule(1, nc)), 0, 0);
-		assertEquals(sampler.getLog2ProbForCFG(new CFGRule(2, nc2)), -1, 0);
+		assertEquals(
+				sampler.getPosteriorComputer().getLog2ProbForCFG(
+						new CFGRule(1, nc)), 0, 0);
+		assertEquals(
+				sampler.getPosteriorComputer().getLog2ProbForCFG(
+						new CFGRule(2, nc2)), -1, 0);
 
 		sampler.lockSamplerData();
-		assertEquals(sampler.getLog2ProbForCFG(new CFGRule(1, nc)), 0, 0);
-		assertEquals(sampler.getLog2ProbForCFG(new CFGRule(2, nc2)), -1, 0);
+		assertEquals(
+				sampler.getPosteriorComputer().getLog2ProbForCFG(
+						new CFGRule(1, nc)), 0, 0);
+		assertEquals(
+				sampler.getPosteriorComputer().getLog2ProbForCFG(
+						new CFGRule(2, nc2)), -1, 0);
 	}
 
 	@Test
@@ -110,11 +118,15 @@ public class CollapsedGibbsSamplerTest {
 		sampler.addTree(generateSampleTree(), true);
 
 		final double geometricProb = Math.pow(.9, 5) * .1;
-		assertEquals(sampler.getLog2PriorForTree(generateSampleTree()),
+		assertEquals(
+				sampler.getPosteriorComputer().getLog2PriorForTree(
+						generateSampleTree()),
 				DoubleMath.log2(.25 * geometricProb), 10E-10);
 
 		sampler.lockSamplerData();
-		assertEquals(sampler.getLog2PriorForTree(generateSampleTree()),
+		assertEquals(
+				sampler.getPosteriorComputer().getLog2PriorForTree(
+						generateSampleTree()),
 				DoubleMath.log2(.25 * geometricProb), 10E-10);
 	}
 
