@@ -58,18 +58,18 @@ public class CollapsedGibbsSamplerTest {
 
 		final double geometricProb = Math.pow(.9, 5) * .1;
 		final double prior = .25 * geometricProb;
-		assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+		assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 				generateSampleTree(), true), DoubleMath.log2(prior), 10E-10);
 
-		assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+		assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 				generateSampleTree(), false),
 				DoubleMath.log2((1. + 10 * prior) / 11), 10E-10);
 
 		sampler.lockSamplerData();
-		assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+		assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 				generateSampleTree(), true), DoubleMath.log2(prior), 10E-10);
 
-		assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+		assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 				generateSampleTree(), false),
 				DoubleMath.log2((1. + 10 * prior) / 11), 10E-10);
 	}
@@ -160,18 +160,18 @@ public class CollapsedGibbsSamplerTest {
 			sampler.sampleAt(toBeSampled, root);
 			if (toBeSampled.getData().isRoot) {
 				countRoot++;
-				assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+				assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 						generateSampleTree(), true),
 						DoubleMath.log2(prior * 10. / 11), 10E-10);
-				assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+				assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 						generateSampleTree(), false),
 						DoubleMath.log2((10 * prior) / 11), 10E-10);
 
 			} else {
-				assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+				assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 						generateSampleTree(), true), DoubleMath.log2(prior),
 						10E-10);
-				assertEquals(sampler.getPosteriorLog2ProbabilityForTree(
+				assertEquals(sampler.getSamplePosteriorLog2ProbabilityForTree(
 						generateSampleTree(), false),
 						DoubleMath.log2((1. + 10 * prior) / 11), 10E-10);
 			}

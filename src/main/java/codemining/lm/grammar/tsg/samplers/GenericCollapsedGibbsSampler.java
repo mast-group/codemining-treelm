@@ -249,7 +249,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	 * boolean)
 	 */
 	@Override
-	public double getPosteriorLog2ProbabilityForTree(
+	public double getSamplePosteriorLog2ProbabilityForTree(
 			final TreeNode<TSGNode> subtree, final boolean remove) {
 		return posteriorComputer.computePosteriorProbability(subtree, remove);
 	}

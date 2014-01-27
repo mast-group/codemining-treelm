@@ -125,7 +125,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * 
 	 * @return
 	 */
-	private SampleStats calculateCorpusLogProb() {
+	protected SampleStats calculateCorpusLogProb() {
 		final AtomicDouble logProbSum = new AtomicDouble(0.);
 		final AtomicInteger nNodes = new AtomicInteger(0);
 		final ParallelThreadPool ptp = new ParallelThreadPool();
@@ -134,7 +134,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 
 				@Override
 				public void run() {
-					logProbSum.addAndGet(calculateLogProbOf(tree));
+					logProbSum.addAndGet(calculateLog2ProbOf(tree));
 					nNodes.addAndGet(TreeNode.getTreeSize(tree));
 				}
 
@@ -151,13 +151,14 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * @param tree
 	 * @return
 	 */
-	public double calculateLogProbOf(final TreeNode<TSGNode> tree) {
+	public double calculateLog2ProbOf(final TreeNode<TSGNode> tree) {
 		final List<TreeNode<TSGNode>> rules = TSGNode.getAllRootsOf(tree);
 
 		double logProbSum = 0;
 
 		for (final TreeNode<TSGNode> tsgRule : rules) {
-			logProbSum += getPosteriorLog2ProbabilityForTree(tsgRule, false);
+			logProbSum += getSamplePosteriorLog2ProbabilityForTree(tsgRule,
+					false);
 		}
 
 		return logProbSum;
@@ -173,16 +174,6 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	}
 
 	/**
-	 * Return the posterior probability for the tree.
-	 * 
-	 * @param subtree
-	 * @param remove
-	 * @return
-	 */
-	public abstract double getPosteriorLog2ProbabilityForTree(
-			final TreeNode<TSGNode> subtree, final boolean remove);
-
-	/**
 	 * Returns the grammar at the current sample.
 	 * 
 	 * @return the grammar
@@ -190,6 +181,16 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	public JavaFormattedTSGrammar getSampleGrammar() {
 		return sampleGrammar;
 	}
+
+	/**
+	 * Return the posterior probability for the tree.
+	 * 
+	 * @param subtree
+	 * @param remove
+	 * @return
+	 */
+	public abstract double getSamplePosteriorLog2ProbabilityForTree(
+			final TreeNode<TSGNode> subtree, final boolean remove);
 
 	public final List<TreeNode<TSGNode>> getTreeCorpus() {
 		return treeCorpus;
@@ -224,7 +225,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	/**
 	 * Print statistics on stdout.
 	 */
-	private void printStats() {
+	protected void printStats() {
 		final SortedMultiset<Integer> sizeDistribution = sampleGrammar
 				.computeGrammarTreeSizeStats();
 		System.out.println("Size Stats: 1-5:"
@@ -254,7 +255,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * Sample all the trees once.
 	 * 
 	 * @param totalIterations
-	 *            TODO
+	 * 
 	 */
 	public void sampleAllTreesOnce(final int currentIteration,
 			final int totalIterations) {
@@ -298,11 +299,11 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		final TreeNode<TSGNode> splitTree1 = TSGNode.getSubTreeFromRoot(root);
 		final TreeNode<TSGNode> splitTree2 = TSGNode.getSubTreeFromRoot(node);
 
-		final double log2ProbJoined = getPosteriorLog2ProbabilityForTree(
+		final double log2ProbJoined = getSamplePosteriorLog2ProbabilityForTree(
 				joinedTree, !previousRootStatus);
-		final double log2ProbSplit = getPosteriorLog2ProbabilityForTree(
+		final double log2ProbSplit = getSamplePosteriorLog2ProbabilityForTree(
 				splitTree1, previousRootStatus)
-				+ getPosteriorLog2ProbabilityForTree(splitTree2,
+				+ getSamplePosteriorLog2ProbabilityForTree(splitTree2,
 						previousRootStatus);
 
 		final double joinTheshold;
