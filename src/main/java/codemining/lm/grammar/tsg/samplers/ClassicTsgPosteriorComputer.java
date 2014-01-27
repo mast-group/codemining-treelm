@@ -12,7 +12,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import cc.mallet.optimize.ConjugateGradient;
 import cc.mallet.optimize.Optimizable;
-import cc.mallet.optimize.Optimizer;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
@@ -24,9 +23,11 @@ import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler.CFGRule;
 import codemining.math.distributions.GeometricDistribution;
 import codemining.util.SettingsLoader;
 import codemining.util.StatsUtil;
+import codemining.util.parallel.ParallelThreadPool;
 
 import com.google.common.collect.Lists;
 import com.google.common.math.DoubleMath;
+import com.google.common.util.concurrent.AtomicDouble;
 
 /**
  * A TSG posterior computer given the sample. This class computes the
@@ -72,64 +73,90 @@ class ClassicTsgPosteriorComputer implements
 
 		@Override
 		public double getValue() {
-			double logProbSum = 0;
+			final AtomicDouble logProbSum = new AtomicDouble(0);
+
+			final ParallelThreadPool ptp = new ParallelThreadPool();
 			for (final TreeNode<TSGNode> fullTree : treeCorpus) {
 				for (final TreeNode<TSGNode> tree : TSGNode
 						.getAllRootsOf(fullTree)) {
-					logProbSum += computePosteriorProbability(tree, true);
+					ptp.pushTask(new Runnable() {
+
+						@Override
+						public void run() {
+							logProbSum.addAndGet(computePosteriorProbability(
+									tree, true));
+						}
+
+					});
+
 				}
 			}
-			return logProbSum;
+			ptp.waitForTermination();
+
+			return logProbSum.get();
 		}
 
 		@Override
 		public void getValueGradient(final double[] gradients) {
-			double concentrationGradient = 0;
-			double geometricGradient = 0;
+			final AtomicDouble concentrationGradient = new AtomicDouble(0);
+			final AtomicDouble geometricGradient = new AtomicDouble(0);
+
+			final ParallelThreadPool ptp = new ParallelThreadPool();
 
 			for (final TreeNode<TSGNode> fullTree : treeCorpus) {
 				for (final TreeNode<TSGNode> tree : TSGNode
 						.getAllRootsOf(fullTree)) {
-					final double nRulesCommonRoot = grammar
-							.countTreesWithRoot(tree.getData()) - 1;
-					final double nRulesInGrammar = grammar
-							.countTreeOccurences(tree) - 1;
+					ptp.pushTask(new Runnable() {
+						@Override
+						public void run() {
+							final double nRulesCommonRoot = grammar
+									.countTreesWithRoot(tree.getData()) - 1;
+							final double nRulesInGrammar = grammar
+									.countTreeOccurences(tree) - 1;
 
-					checkArgument(nRulesCommonRoot >= nRulesInGrammar,
-							"Counts are not correct");
+							checkArgument(nRulesCommonRoot >= nRulesInGrammar,
+									"Counts are not correct");
 
-					final int treeSize = TreeNode.getTreeSize(tree);
-					final double logRuleMLE = getTreeCFLog2Probability(tree);
+							final int treeSize = TreeNode.getTreeSize(tree);
+							final double logRuleMLE = getTreeCFLog2Probability(tree);
 
-					final double geometricLogProb = GeometricDistribution
-							.getLog2Prob(treeSize, geometricProbability);
+							final double geometricLogProb = GeometricDistribution
+									.getLog2Prob(treeSize, geometricProbability);
 
-					final double priorLog2Prob = geometricLogProb + logRuleMLE
-							+ DoubleMath.log2(concentrationParameter);
+							final double priorLog2Prob = geometricLogProb
+									+ logRuleMLE
+									+ DoubleMath.log2(concentrationParameter);
 
-					final double log2denominator = StatsUtil
-							.logSumOfExponentials(
-									DoubleMath.log2(nRulesInGrammar),
-									priorLog2Prob);
-					concentrationGradient += Math.pow(2, geometricLogProb
-							+ logRuleMLE - log2denominator)
-							- 1. / (nRulesCommonRoot + concentrationParameter);
+							final double log2denominator = StatsUtil
+									.logSumOfExponentials(
+											DoubleMath.log2(nRulesInGrammar),
+											priorLog2Prob);
+							concentrationGradient.addAndGet(Math.pow(2,
+									geometricLogProb + logRuleMLE
+											- log2denominator)
+									- 1.
+									/ (nRulesCommonRoot + concentrationParameter));
 
-					final double geomGradient = Math.pow(
-							1 - geometricProbability, treeSize - 1)
-							- (treeSize - 1.)
-							* geometricProbability
-							* Math.pow(1 - geometricProbability, treeSize - 2);
+							final double geomGradient = Math.pow(
+									1 - geometricProbability, treeSize - 1)
+									- (treeSize - 1.)
+									* geometricProbability
+									* Math.pow(1 - geometricProbability,
+											treeSize - 2);
 
-					geometricGradient += concentrationParameter
-							* Math.pow(2, logRuleMLE - log2denominator)
-							* geomGradient;
+							geometricGradient.addAndGet(concentrationParameter
+									* Math.pow(2, logRuleMLE - log2denominator)
+									* geomGradient);
+						}
 
+					});
 				}
 			}
 
-			gradients[0] = concentrationGradient / Math.log(2);
-			gradients[1] = geometricGradient / Math.log(2);
+			ptp.waitForTermination();
+
+			gradients[0] = concentrationGradient.get() / Math.log(2);
+			gradients[1] = geometricGradient.get() / Math.log(2);
 		}
 
 		private void limitParams() {
@@ -339,7 +366,8 @@ class ClassicTsgPosteriorComputer implements
 			geometricProbability -= dx;
 		}
 
-		final Optimizer optimizer = new ConjugateGradient(optimizable);
+		final ConjugateGradient optimizer = new ConjugateGradient(optimizable);
+		optimizer.setTolerance(1E-6);
 
 		try {
 			optimizer.optimize();

@@ -193,9 +193,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 		}
 
 		if (currentIteration % HYPERPARAM_OPTIMIZATION_FREQ == HYPERPARAM_OPTIMIZATION_FREQ - 1) {
-			System.out.println(calculateCorpusLogProb());
 			posteriorComputer.optimizeHyperparameters(treeCorpus);
-			System.out.println(calculateCorpusLogProb());
 		}
 		super.sampleAllTreesOnce(currentIteration, totalIterations);
 	}
