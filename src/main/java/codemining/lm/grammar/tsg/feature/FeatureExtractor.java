@@ -18,6 +18,7 @@ import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.pattern.PatternExtractor;
 import codemining.util.SettingsLoader;
 
 import com.google.common.base.Objects;
@@ -28,7 +29,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
 
 /**
  * Extract a featureset from a TSG and set of trees.
@@ -96,18 +96,6 @@ public class FeatureExtractor {
 			.getNumericSetting("nPreviousNodes", 10);
 
 	/**
-	 * The minimum size of a TSG rule to be considered as a pattern.
-	 */
-	public static final int MIN_SIZE_PATTERN = (int) SettingsLoader
-			.getNumericSetting("minSizePattern", 6);
-
-	/**
-	 * The minimum count of a TSG rule to be considered a pattern.
-	 */
-	public static final int MIN_PATTERN_COUNT = (int) SettingsLoader
-			.getNumericSetting("minPatternCount", 20);
-
-	/**
 	 * A predicate for comparing integer tree nodes.
 	 */
 	public static final Predicate<NodeDataPair<Integer>> BASE_EQUALITY_COMPARATOR = new Predicate<NodeDataPair<Integer>>() {
@@ -152,17 +140,10 @@ public class FeatureExtractor {
 	 * @param grammar
 	 */
 	public void addTreePatterns() {
-		for (final Multiset<TreeNode<TSGNode>> rules : tsGrammar
-				.getInternalGrammar().values()) {
-			for (final Entry<TreeNode<TSGNode>> ruleEntry : rules.entrySet()) {
-				if (ruleEntry.getCount() < MIN_PATTERN_COUNT
-						|| TreeNode.getTreeSize(ruleEntry.getElement()) < MIN_SIZE_PATTERN) {
-					continue;
-				}
-				tsgPatterns.put(TSGNode.tsgTreeToInt(ruleEntry.getElement()),
-						nextTsgPatternId);
-				nextTsgPatternId++;
-			}
+		for (final TreeNode<Integer> pattern : PatternExtractor
+				.getPatternsFrom(tsGrammar)) {
+			tsgPatterns.put(pattern, nextTsgPatternId);
+			nextTsgPatternId++;
 		}
 	}
 
