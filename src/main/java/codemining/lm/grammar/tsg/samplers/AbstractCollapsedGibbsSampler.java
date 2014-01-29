@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang.math.RandomUtils;
 
@@ -45,6 +47,9 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		}
 
 	}
+
+	private static final Logger LOGGER = Logger
+			.getLogger(AbstractCollapsedGibbsSampler.class.getName());
 
 	private static final long serialVersionUID = 1787249023145790854L;
 
@@ -197,16 +202,24 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	}
 
 	/**
-	 * Gibbs sampling the TSG n times.
+	 * Gibbs sampling the TSG n times. This function registers an
 	 * 
 	 * @param iterations
 	 */
 	public void performSampling(final int iterations) {
+		final AtomicBoolean stop = new AtomicBoolean(false);
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				stop.set(true);
+			}
+
+		});
 		allSamplesGrammar.clear();
 
 		for (int i = 0; i < iterations; i++) {
 			System.out.println("=======Iteration " + i + "==============");
-			sampleAllTreesOnce(i, iterations);
+			sampleAllTreesOnce(i, iterations, stop);
 			if (CALC_LOGPROB && i % CALC_INTERVAL == 0) {
 				System.out.println(calculateCorpusLogProb());
 			}
@@ -218,8 +231,12 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 			if (i > BURN_IN_PCT * iterations) {
 				allSamplesGrammar.addAll(sampleGrammar);
 			}
-
+			if (stop.get()) {
+				LOGGER.info("Sampling interrupted.");
+				break;
+			}
 		}
+
 	}
 
 	/**
@@ -255,10 +272,21 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * Sample all the trees once.
 	 * 
 	 * @param totalIterations
+	 * @param stop
 	 * 
 	 */
 	public void sampleAllTreesOnce(final int currentIteration,
-			final int totalIterations) {
+			final int totalIterations, final AtomicBoolean stop) {
+		final ParallelThreadPool ptp = new ParallelThreadPool();
+		final Thread shutdownHook = new Thread() {
+			@Override
+			public void run() {
+				stop.set(true);
+				ptp.interrupt();
+			}
+		};
+		Runtime.getRuntime().addShutdownHook(shutdownHook);
+
 		final List<Runnable> samplings = Lists.newArrayList();
 		for (final TreeNode<TSGNode> tree : treeCorpus) {
 			samplings.add(new Runnable() {
@@ -270,9 +298,15 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		}
 		// Shuffle to add some more randomness
 		Collections.shuffle(samplings);
-		final ParallelThreadPool ptp = new ParallelThreadPool();
+
 		ptp.pushAll(samplings);
 		ptp.waitForTermination();
+
+		try {
+			Runtime.getRuntime().removeShutdownHook(shutdownHook);
+		} catch (final Throwable e) {
+			// Nothing here. It happens almost surely on interruption.
+		}
 	}
 
 	/**

@@ -5,6 +5,7 @@ package codemining.lm.grammar.tsg.tui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -112,6 +113,23 @@ public class SampleTSG {
 			sampler.lockSamplerData();
 		}
 
+		final AtomicBoolean finished = new AtomicBoolean(false);
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				int i = 0;
+				while (!finished.get() && i < 1000) {
+					try {
+						Thread.sleep(500);
+						i++;
+					} catch (final InterruptedException e) {
+						LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
+					}
+				}
+			}
+
+		});
+
 		sampler.performSampling(nIterations);
 
 		try {
@@ -133,5 +151,6 @@ public class SampleTSG {
 		// sampler.pruneNonSurprisingRules(1);
 		sampler.pruneRareTrees((int) (AbstractCollapsedGibbsSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(sampler.getBurnInGrammar().toString());
+		finished.set(true);
 	}
 }

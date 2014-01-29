@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.math.RandomUtils;
 
@@ -173,7 +174,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 
 	@Override
 	public void sampleAllTreesOnce(final int currentIteration,
-			final int totalIterations) {
+			final int totalIterations, final AtomicBoolean stop) {
 
 		// Add new trees, if any
 		final int sizeOfCorpus = (int) Math
@@ -195,7 +196,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 		if (currentIteration % HYPERPARAM_OPTIMIZATION_FREQ == HYPERPARAM_OPTIMIZATION_FREQ - 1) {
 			posteriorComputer.optimizeHyperparameters(treeCorpus);
 		}
-		super.sampleAllTreesOnce(currentIteration, totalIterations);
+		super.sampleAllTreesOnce(currentIteration, totalIterations, stop);
 	}
 
 	/**
