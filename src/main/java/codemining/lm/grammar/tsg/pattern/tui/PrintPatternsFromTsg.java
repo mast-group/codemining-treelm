@@ -26,16 +26,19 @@ public class PrintPatternsFromTsg {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length != 1) {
-			System.err.println("Usage <tsg>");
+		if (args.length != 3) {
+			System.err
+					.println("Usage <tsg> <minPatternCount> <minPatternSize>");
 			System.exit(-1);
 		}
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
+		final int minPatternCount = Integer.parseInt(args[1]);
+		final int minPatternSize = Integer.parseInt(args[2]);
 		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
 		final Set<TreeNode<TSGNode>> patterns = PatternExtractor
-				.getTSGPatternsFrom(grammar);
+				.getTSGPatternsFrom(grammar, minPatternCount, minPatternSize);
 
 		for (final TreeNode<TSGNode> pattern : patterns) {
 			System.out
@@ -47,8 +50,12 @@ public class PrintPatternsFromTsg {
 			System.out.println(format.getASTFromTree(intTree));
 			final TreeNode<TSGNode> tsgTree = pattern;
 			final int count = grammar.countTreeOccurences(tsgTree);
+			final int totalProductions = grammar.countTreesWithRoot(tsgTree
+					.getData());
+			final double probability = ((double) count) / totalProductions;
 			final int size = pattern.getTreeSize();
-			System.out.println("Count: " + count + " Size:" + size);
+			System.out.println("Count: " + count + " Size:" + size + " Prob:"
+					+ String.format("%.4f", probability));
 			System.out
 					.println("______________________________________________________");
 
