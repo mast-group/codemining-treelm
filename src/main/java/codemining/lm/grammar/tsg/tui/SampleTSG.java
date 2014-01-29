@@ -130,11 +130,18 @@ public class SampleTSG {
 
 		});
 
-		sampler.performSampling(nIterations);
+		final int nItererationCompleted = sampler.performSampling(nIterations);
 
+		final JavaFormattedTSGrammar grammarToUse;
+		if (nItererationCompleted >= nIterations) {
+			LOGGER.info("Sampling complete. Outputing burnin grammar...");
+			grammarToUse = sampler.getBurnInGrammar();
+		} else {
+			LOGGER.warning("Sampling not complete. Outputing sample grammar...");
+			grammarToUse = sampler.getSampleGrammar();
+		}
 		try {
-			Serializer.getSerializer().serialize(sampler.getBurnInGrammar(),
-					"tsg.ser");
+			Serializer.getSerializer().serialize(grammarToUse, "tsg.ser");
 		} catch (final Throwable e) {
 			LOGGER.severe("Failed to serialize grammar: "
 					+ ExceptionUtils.getFullStackTrace(e));
@@ -150,7 +157,8 @@ public class SampleTSG {
 
 		// sampler.pruneNonSurprisingRules(1);
 		sampler.pruneRareTrees((int) (AbstractCollapsedGibbsSampler.BURN_IN_PCT * nIterations) - 10);
-		System.out.println(sampler.getBurnInGrammar().toString());
-		finished.set(true);
+		System.out.println(grammarToUse.toString());
+		finished.set(true); // we have finished and thus the shutdown hook can
+							// now stop waiting for us.
 	}
 }

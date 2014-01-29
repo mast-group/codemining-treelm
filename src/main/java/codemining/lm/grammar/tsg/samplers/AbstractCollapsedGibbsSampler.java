@@ -205,8 +205,10 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * Gibbs sampling the TSG n times. This function registers an
 	 * 
 	 * @param iterations
+	 * @return the iteration that the sampling has stopped at or iterations+1 if
+	 *         all iterations have been performed.
 	 */
-	public void performSampling(final int iterations) {
+	public int performSampling(final int iterations) {
 		final AtomicBoolean stop = new AtomicBoolean(false);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -217,18 +219,20 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		});
 		allSamplesGrammar.clear();
 
-		for (int i = 0; i < iterations; i++) {
-			System.out.println("=======Iteration " + i + "==============");
-			sampleAllTreesOnce(i, iterations, stop);
-			if (CALC_LOGPROB && i % CALC_INTERVAL == 0) {
+		int currentIteration = 0;
+		for (currentIteration = 0; currentIteration < iterations; currentIteration++) {
+			System.out.println("=======Iteration " + currentIteration
+					+ "==============");
+			sampleAllTreesOnce(currentIteration, iterations, stop);
+			if (CALC_LOGPROB && currentIteration % CALC_INTERVAL == 0) {
 				System.out.println(calculateCorpusLogProb());
 			}
-			if (CALC_STATS && i % CALC_INTERVAL == 0) {
+			if (CALC_STATS && currentIteration % CALC_INTERVAL == 0) {
 				printStats();
 			}
 
 			// Now add everything to sample, if burn-in has passed
-			if (i > BURN_IN_PCT * iterations) {
+			if (currentIteration > BURN_IN_PCT * iterations) {
 				allSamplesGrammar.addAll(sampleGrammar);
 			}
 			if (stop.get()) {
@@ -237,6 +241,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 			}
 		}
 
+		return currentIteration;
 	}
 
 	/**
