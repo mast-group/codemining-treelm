@@ -63,14 +63,14 @@ public class TreeProbabilityComputer<T extends Serializable> {
 	 * @param nodeProductionProbabilities
 	 * @param current
 	 * @param allRuleLog2Probabilities
-	 * @param possibleProductions
+	 * @param productions
 	 */
 	private void computeNodeProbabilities(
 			final Map<TreeNode<T>, Double> nodeProductionProbabilities,
 			final TreeNode<T> current,
-			final Multiset<TreeNode<T>> possibleProductions) {
+			final Multiset<TreeNode<T>> productions) {
 		final List<Double> allRuleLog2Probabilities = Lists.newArrayList();
-		for (final Entry<TreeNode<T>> productionEntry : possibleProductions
+		for (final Entry<TreeNode<T>> productionEntry : productions
 				.entrySet()) {
 			// We need to see if it's a partial match, get all it's end
 			// points
@@ -90,7 +90,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 					productionEntry.getElement(), current);
 
 			double productionLog2Prob = DoubleMath.log2(productionEntry
-					.getCount()) - DoubleMath.log2(possibleProductions.size());
+					.getCount()) - DoubleMath.log2(productions.size());
 			for (final TreeNode<T> subtree : endPoints) {
 				checkArgument(nodeProductionProbabilities.containsKey(subtree));
 				productionLog2Prob += nodeProductionProbabilities.get(subtree);
@@ -164,17 +164,17 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			// the
 			// nodes they terminate in (if any)
 			// sum the log probabilities for the rule and the lower nodes
-			Multiset<TreeNode<T>> possibleProductions = null;
+			Multiset<TreeNode<T>> productions = null;
 			for (final java.util.Map.Entry<T, ? extends Multiset<TreeNode<T>>> grammarProduction : grammar
 					.entrySet()) {
 				if (equalityComparator.apply(new NodeDataPair<T>(
 						grammarProduction.getKey(), current.getData()))) {
-					possibleProductions = grammarProduction.getValue();
+					productions = grammarProduction.getValue();
 					break;
 				}
 			}
 
-			if (possibleProductions == null) {
+			if (productions == null) {
 				// We don't know that, so now compute it naively
 				double logProb = 0;
 				final List<List<TreeNode<T>>> childrenProperties = current
@@ -188,7 +188,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 				nodeProductionProbabilities.put(current, logProb);
 			} else {
 				computeNodeProbabilities(nodeProductionProbabilities, current,
-						possibleProductions);
+						productions);
 				// Since the rule matching may be partial, this may be wrong.
 				// What should we do? TODO TODO
 

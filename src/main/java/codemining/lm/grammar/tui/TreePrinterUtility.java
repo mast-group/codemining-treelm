@@ -41,17 +41,17 @@ public class TreePrinterUtility {
 
 	}
 
-	public static void treePrinterHelper(final StringBuffer buffer,
+	public static void treePrinterHelper(final StringBuffer sb,
 			final TreeNode<Integer> currentNode, final String prefix,
 			final AbstractJavaTreeExtractor format) {
-		buffer.append(prefix);
-		buffer.append(currentNode.getData() + ":");
-		buffer.append(format.getSymbol(currentNode.getData()));
-		buffer.append('\n');
+		sb.append(prefix);
+		sb.append(currentNode.getData() + ":");
+		sb.append(format.getSymbol(currentNode.getData()));
+		sb.append('\n');
 		for (final List<TreeNode<Integer>> childProperties : currentNode
 				.getChildrenByProperty()) {
 			for (final TreeNode<Integer> child : childProperties) {
-				treePrinterHelper(buffer, child, prefix + "-", format);
+				treePrinterHelper(sb, child, prefix + "-", format);
 			}
 		}
 
