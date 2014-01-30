@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import codemining.languagetools.ITokenizer;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 
 /**
  * A generic interface for extracting tree nodes from code.
@@ -57,10 +57,10 @@ public interface ITreeExtractor<T extends Serializable> {
 	/**
 	 * Return a tree from the given code.
 	 * 
-	 * @param fileContent
-	 * @param parseKind
+	 * @param code
+	 * @param parseType
 	 * @return
 	 */
-	public TreeNode<T> getTree(String fileContent, ParseKind parseKind);
+	public TreeNode<T> getTree(String code, ParseType parseType);
 
 }

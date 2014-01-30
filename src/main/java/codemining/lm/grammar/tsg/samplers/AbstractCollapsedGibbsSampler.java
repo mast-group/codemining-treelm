@@ -31,19 +31,19 @@ import com.google.common.util.concurrent.AtomicDouble;
 public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 
 	public static class SampleStats {
-		final double logProb;
+		final double log2Prob;
 		final int totalNodes;
 
 		public SampleStats(final double logProb, final int totalNodes) {
-			this.logProb = logProb;
+			this.log2Prob = logProb;
 			this.totalNodes = totalNodes;
 		}
 
 		@Override
 		public String toString() {
-			return "Log-Prob: " + String.format("%.2f", logProb) + " ("
+			return "Log-Prob: " + String.format("%.2f", log2Prob) + " ("
 					+ totalNodes + " nodes with avg log-prob "
-					+ String.format("%.3f", logProb / totalNodes) + ")";
+					+ String.format("%.3f", log2Prob / totalNodes) + ")";
 		}
 
 	}
@@ -84,7 +84,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	/**
 	 * The grammar after summing across the MCMC iteration (after burn-in).
 	 */
-	protected final JavaFormattedTSGrammar allSamplesGrammar;
+	protected final JavaFormattedTSGrammar burninGrammar;
 
 	/**
 	 * The tree corpus where we mine TSGs from.
@@ -104,7 +104,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		checkArgument(sampleGrammar.getTreeExtractor() == allSamplesGrammar
 				.getTreeExtractor());
 		this.sampleGrammar = sampleGrammar;
-		this.allSamplesGrammar = allSamplesGrammar;
+		this.burninGrammar = allSamplesGrammar;
 	}
 
 	/**
@@ -161,8 +161,8 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 
 		double logProbSum = 0;
 
-		for (final TreeNode<TSGNode> tsgRule : rules) {
-			logProbSum += getSamplePosteriorLog2ProbabilityForTree(tsgRule,
+		for (final TreeNode<TSGNode> rule : rules) {
+			logProbSum += getSamplePosteriorLog2ProbabilityForTree(rule,
 					false);
 		}
 
@@ -175,7 +175,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	 * @return
 	 */
 	public JavaFormattedTSGrammar getBurnInGrammar() {
-		return allSamplesGrammar;
+		return burninGrammar;
 	}
 
 	/**
@@ -217,7 +217,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 			}
 
 		});
-		allSamplesGrammar.clear();
+		burninGrammar.clear();
 
 		int currentIteration = 0;
 		for (currentIteration = 0; currentIteration < iterations; currentIteration++) {
@@ -233,7 +233,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 
 			// Now add everything to sample, if burn-in has passed
 			if (currentIteration > BURN_IN_PCT * iterations) {
-				allSamplesGrammar.addAll(sampleGrammar);
+				burninGrammar.addAll(sampleGrammar);
 			}
 			if (stop.get()) {
 				LOGGER.info("Sampling interrupted.");
@@ -283,14 +283,14 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 	public void sampleAllTreesOnce(final int currentIteration,
 			final int totalIterations, final AtomicBoolean stop) {
 		final ParallelThreadPool ptp = new ParallelThreadPool();
-		final Thread shutdownHook = new Thread() {
+		final Thread termSignalHandler = new Thread() {
 			@Override
 			public void run() {
 				stop.set(true);
 				ptp.interrupt();
 			}
 		};
-		Runtime.getRuntime().addShutdownHook(shutdownHook);
+		Runtime.getRuntime().addShutdownHook(termSignalHandler);
 
 		final List<Runnable> samplings = Lists.newArrayList();
 		for (final TreeNode<TSGNode> tree : treeCorpus) {
@@ -308,7 +308,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		ptp.waitForTermination();
 
 		try {
-			Runtime.getRuntime().removeShutdownHook(shutdownHook);
+			Runtime.getRuntime().removeShutdownHook(termSignalHandler);
 		} catch (final Throwable e) {
 			// Nothing here. It happens almost surely on interruption.
 		}

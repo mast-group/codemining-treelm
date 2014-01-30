@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.codeutils.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
@@ -150,10 +150,10 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.lang.String)
 	 */
 	@Override
-	public TreeNode<Integer> getTree(final String fileContent,
-			final ParseKind parseKind) {
+	public TreeNode<Integer> getTree(final String code,
+			final ParseType parseType) {
 		final JavaASTExtractor astExtractor = new JavaASTExtractor(false);
-		final ASTNode u = astExtractor.getAST(fileContent, parseKind);
+		final ASTNode u = astExtractor.getAST(code, parseType);
 		return getTree(u);
 	}
 

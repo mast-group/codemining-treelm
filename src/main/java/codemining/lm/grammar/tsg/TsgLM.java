@@ -15,7 +15,7 @@ import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.lang.NotImplementedException;
 
 import codemining.languagetools.ITokenizer;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 import codemining.lm.ILanguageModel;
 import codemining.lm.grammar.tree.TreeNode;
 
@@ -64,7 +64,7 @@ public class TsgLM implements ILanguageModel {
 				grammar.getInternalGrammar(), true,
 				TreeProbabilityComputer.TSGNODE_MATCHER);
 		final TreeNode<Integer> tree = grammar.getTreeExtractor().getTree(
-				fileContent, ParseKind.COMPILATION_UNIT);
+				fileContent, ParseType.COMPILATION_UNIT);
 		final TreeNode<TSGNode> tsgTree = TSGNode.convertTree(tree, 0);
 		return probComputer.getLog2ProbabilityOf(tsgTree);
 	}

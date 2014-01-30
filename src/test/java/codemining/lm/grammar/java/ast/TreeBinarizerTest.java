@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -32,9 +32,9 @@ public class TreeBinarizerTest {
 	 * @param code
 	 */
 	private void assertRoundTripConversion(final String code,
-			final ParseKind kind) {
+			final ParseType parseType) {
 		final JavaASTExtractor ex = new JavaASTExtractor(false);
-		final ASTNode cu = ex.getAST(code, kind);
+		final ASTNode cu = ex.getAST(code, parseType);
 		final BinaryEclipseASTTreeExtractor converter = new BinaryEclipseASTTreeExtractor(
 				new ParentTypeAnnotatedEclipseASTExtractor());
 		final TreeNode<Integer> binaryTreeCu = converter.getTree(cu);
@@ -99,9 +99,9 @@ public class TreeBinarizerTest {
 
 	@Test
 	public void testRoundtrip() {
-		assertRoundTripConversion(classContent, ParseKind.COMPILATION_UNIT);
-		assertRoundTripConversion(classContent2, ParseKind.COMPILATION_UNIT);
-		assertRoundTripConversion(methodContent, ParseKind.METHOD);
+		assertRoundTripConversion(classContent, ParseType.COMPILATION_UNIT);
+		assertRoundTripConversion(classContent2, ParseType.COMPILATION_UNIT);
+		assertRoundTripConversion(methodContent, ParseType.METHOD);
 	}
 
 }

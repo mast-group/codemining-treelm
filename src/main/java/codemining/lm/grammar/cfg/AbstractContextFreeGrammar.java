@@ -19,7 +19,7 @@ import org.apache.commons.io.filefilter.AbstractFileFilter;
 
 import codemining.java.codeutils.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 import codemining.lm.ILanguageModel;
 import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.ITreeExtractor;
@@ -185,11 +185,11 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	 * Get the grammar rules from code
 	 * 
 	 */
-	public void addGrammarRulesFromCode(final String sourceCode,
+	public void addGrammarRulesFromCode(final String code,
 			final Map<Integer, Multiset<NodeConsequent>> ruleset,
-			final ParseKind parseKind) {
-		final TreeNode<Integer> tree = treeExtractor.getTree(sourceCode,
-				parseKind);
+			final ParseType parseType) {
+		final TreeNode<Integer> tree = treeExtractor.getTree(code,
+				parseType);
 		updateRules(tree, ruleset);
 	}
 
@@ -201,20 +201,20 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 		while (!toVisit.isEmpty()) {
 			final TreeNode<Integer> currentNode = toVisit.pop();
-			final Multiset<NodeConsequent> consequents = grammar
+			final Multiset<NodeConsequent> productions = grammar
 					.get(currentNode.getData());
-			if (consequents != null) {
+			if (productions != null) {
 				final NodeConsequent selected = SampleUtils
-						.getRandomElement(consequents);
+						.getRandomElement(productions);
 
-				for (int j = 0; j < selected.nodes.size(); j++) {
-					final List<Integer> nodes = selected.nodes.get(j);
+				for (int i = 0; i < selected.nodes.size(); i++) {
+					final List<Integer> nodes = selected.nodes.get(i);
 					for (final int node : nodes) {
 						final ASTNodeSymbol symbol = treeExtractor
 								.getSymbol(node);
 						final TreeNode<Integer> treeNode = TreeNode.create(
 								node, symbol.nChildProperties());
-						currentNode.addChildNode(treeNode, j);
+						currentNode.addChildNode(treeNode, i);
 						toVisit.push(treeNode);
 					}
 				}
@@ -233,16 +233,16 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	@Override
 	public double getAbsoluteEntropy(final String fileContent) {
-		return getAbsoluteEntropy(fileContent, ParseKind.COMPILATION_UNIT);
+		return getAbsoluteEntropy(fileContent, ParseType.COMPILATION_UNIT);
 	}
 
 	public double getAbsoluteEntropy(final String fileContent,
-			final ParseKind parseKind) {
-		final Map<Integer, Multiset<NodeConsequent>> fileRules = Maps
+			final ParseType parseType) {
+		final Map<Integer, Multiset<NodeConsequent>> rules = Maps
 				.newConcurrentMap();
 
-		addGrammarRulesFromCode(fileContent, fileRules, parseKind);
-		final double entropy = getEntropyOfRules(fileRules);
+		addGrammarRulesFromCode(fileContent, rules, parseType);
+		final double entropy = getEntropyOfRules(rules);
 
 		checkArgument(entropy != 0);
 		checkArgument(!Double.isNaN(entropy));

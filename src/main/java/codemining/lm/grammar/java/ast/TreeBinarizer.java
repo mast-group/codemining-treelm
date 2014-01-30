@@ -120,18 +120,18 @@ public class TreeBinarizer implements Serializable {
 		toStack.push(child1To);
 
 		for (int i = childrenForProperty.size() - 3; i >= 0; i--) {
-			final TreeNode<Integer> realChildFrom = childrenForProperty.get(i);
-			final TreeNode<Integer> realChildTo = TreeNode.create(
-					realChildFrom.getData(), realChildFrom.nProperties());
+			final TreeNode<Integer> fromChild = childrenForProperty.get(i);
+			final TreeNode<Integer> toChild = TreeNode.create(
+					fromChild.getData(), fromChild.nProperties());
 
 			final TreeNode<Integer> multiNode = TreeNode.create(extractor
-					.getOrAddSymbolId(createMultinodeSymbol(realChildTo
+					.getOrAddSymbolId(createMultinodeSymbol(toChild
 							.getData())), 2);
 			multiNode.addChildNode(currentTreeNode, 1); // Next nodes
-			multiNode.addChildNode(realChildTo, 0); // Current node
+			multiNode.addChildNode(toChild, 0); // Current node
 
-			fromStack.push(realChildFrom);
-			toStack.push(realChildTo);
+			fromStack.push(fromChild);
+			toStack.push(toChild);
 
 			currentTreeNode = multiNode;
 		}
@@ -139,13 +139,13 @@ public class TreeBinarizer implements Serializable {
 		currentTo.addChildNode(currentTreeNode, propertyId);
 	}
 
-	private ASTNodeSymbol createMultinodeSymbol(final int currentId) {
+	private ASTNodeSymbol createMultinodeSymbol(final int type) {
 		final ASTNodeSymbol multinode = new ASTNodeSymbol(
 				ASTNodeSymbol.MULTI_NODE);
 		multinode.addChildProperty("Current");
 		multinode.addChildProperty("Next");
 		if (annotateMultinodes) {
-			multinode.addAnnotation("Type", currentId);
+			multinode.addAnnotation("Type", type);
 		}
 		return multinode;
 	}

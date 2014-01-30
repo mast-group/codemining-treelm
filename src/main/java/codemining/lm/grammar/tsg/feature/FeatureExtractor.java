@@ -120,7 +120,7 @@ public class FeatureExtractor {
 	 * The next id of a TSG pattern in tsgPatterns. 0 is reserved for the
 	 * unknown/no pattern.
 	 */
-	private int nextTsgPatternId = 1;
+	private int nextId = 1;
 
 	/**
 	 * The grammar form which we are extracting patterns.
@@ -142,8 +142,8 @@ public class FeatureExtractor {
 	public void addTreePatterns() {
 		for (final TreeNode<Integer> pattern : PatternExtractor
 				.getPatternsFrom(tsGrammar)) {
-			tsgPatterns.put(pattern, nextTsgPatternId);
-			nextTsgPatternId++;
+			tsgPatterns.put(pattern, nextId);
+			nextId++;
 		}
 	}
 

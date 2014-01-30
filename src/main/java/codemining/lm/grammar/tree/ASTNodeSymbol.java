@@ -99,28 +99,28 @@ public class ASTNodeSymbol implements Serializable {
 	}
 
 	@Override
-	public boolean equals(final Object other) {
-		if (this == other) {
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
 		}
-		if (!(other instanceof ASTNodeSymbol)) {
+		if (!(obj instanceof ASTNodeSymbol)) {
 			return false;
 		}
-		final ASTNodeSymbol oSymbol = (ASTNodeSymbol) other;
+		final ASTNodeSymbol other = (ASTNodeSymbol) obj;
 
-		if (nodeType != oSymbol.nodeType) {
-			return false;
-		}
-
-		if (!simplePropValues.equals(oSymbol.simplePropValues)) {
+		if (nodeType != other.nodeType) {
 			return false;
 		}
 
-		if (!annotations.equals(oSymbol.annotations)) {
+		if (!simplePropValues.equals(other.simplePropValues)) {
 			return false;
 		}
 
-		return childProperties.equals(oSymbol.childProperties);
+		if (!annotations.equals(other.annotations)) {
+			return false;
+		}
+
+		return childProperties.equals(other.childProperties);
 	}
 
 	public final Object getAnnotation(final String annotation) {

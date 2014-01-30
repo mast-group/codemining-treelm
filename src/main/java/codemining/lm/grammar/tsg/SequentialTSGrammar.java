@@ -36,8 +36,8 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 	}
 
 	@Override
-	public void addTree(final TreeNode<TSGNode> subTree) {
-		for (final TreeNode<TSGNode> tree : convertTreeNode(subTree, true)) {
+	public void addTree(final TreeNode<TSGNode> root) {
+		for (final TreeNode<TSGNode> tree : convertTreeNode(root, true)) {
 			baseGrammar.addTree(tree);
 		}
 	}
@@ -76,11 +76,11 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 			final TreeNode<TSGNode> currentTo = toStack.pop();
 			final TreeNode<TSGNode> currentFrom = fromStack.pop();
 
-			final List<List<TreeNode<TSGNode>>> childrenProperties = currentFrom
+			final List<List<TreeNode<TSGNode>>> children = currentFrom
 					.getChildrenByProperty();
 
-			for (int i = 0; i < childrenProperties.size(); i++) {
-				final List<TreeNode<TSGNode>> childrenForProperty = childrenProperties
+			for (int i = 0; i < children.size(); i++) {
+				final List<TreeNode<TSGNode>> childrenForProperty = children
 						.get(i);
 				if (childrenForProperty.size() <= 2) {
 					for (final TreeNode<TSGNode> fromChild : childrenForProperty) {
@@ -149,15 +149,15 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 
 	/**
 	 * @param childrenForProperty
-	 * @param tsgNode
+	 * @param rootNode
 	 * @param k
 	 * @return
 	 */
 	public TreeNode<TSGNode> createMultinodeTree(
 			final List<TreeNode<TSGNode>> childrenForProperty,
-			final TSGNode tsgNode, final int k) {
-		final TreeNode<TSGNode> fromMultinode = TreeNode.create(tsgNode, 2);
-		final TreeNode<TSGNode> toMultinode = TreeNode.create(tsgNode, 2);
+			final TSGNode rootNode, final int k) {
+		final TreeNode<TSGNode> fromMultinode = TreeNode.create(rootNode, 2);
+		final TreeNode<TSGNode> toMultinode = TreeNode.create(rootNode, 2);
 
 		final TreeNode<TSGNode> intermediateNode = childrenForProperty.get(k);
 		final TreeNode<TSGNode> intermediateNodeCopy = TreeNode.create(
@@ -234,10 +234,10 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 
 		// add it as a child to the current node, and
 		// don't further visit.
-		final TSGNode tsgNode = new TSGNode(multinodeId);
-		tsgNode.isRoot = true;
+		final TSGNode rootNode = new TSGNode(multinodeId);
+		rootNode.isRoot = true;
 
-		final TreeNode<TSGNode> multinode = TreeNode.create(tsgNode, 2);
+		final TreeNode<TSGNode> multinode = TreeNode.create(rootNode, 2);
 		currentTo.addChildNode(multinode, propertyId);
 
 		// Add trees for all intermediate nodes
@@ -248,14 +248,15 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 			if (endPos > childrenForProperty.size()) {
 				endPos = childrenForProperty.size();
 			}
-			for (int k = startPos; k < endPos; k++) {
+			for (int i = startPos; i < endPos; i++) {
 				final TreeNode<TSGNode> fromMultinode = createMultinodeTree(
-						childrenForProperty, tsgNode, k);
+						childrenForProperty, rootNode, i);
 				convertedTrees.add(fromMultinode);
 			}
 
 			// Now also add an empty
-			final TreeNode<TSGNode> nullMultinode = TreeNode.create(tsgNode, 2);
+			final TreeNode<TSGNode> nullMultinode = TreeNode
+					.create(rootNode, 2);
 			convertedTrees.add(nullMultinode);
 		}
 
@@ -267,9 +268,9 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 	}
 
 	@Override
-	public boolean removeTree(final TreeNode<TSGNode> subTree) {
+	public boolean removeTree(final TreeNode<TSGNode> root) {
 		boolean result = true;
-		for (final TreeNode<TSGNode> tree : convertTreeNode(subTree, true)) {
+		for (final TreeNode<TSGNode> tree : convertTreeNode(root, true)) {
 			result &= baseGrammar.removeTree(tree);
 		}
 		return result;

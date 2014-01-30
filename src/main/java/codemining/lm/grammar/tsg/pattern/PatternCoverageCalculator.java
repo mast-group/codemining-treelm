@@ -24,7 +24,7 @@ import com.google.common.collect.Multiset;
 
 /**
  * 
- * @author Miltos Allamanis<m.allamanis@ed.ac.uk>
+ * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  */
 class PatternCoverageCalculator {
 
@@ -80,10 +80,10 @@ class PatternCoverageCalculator {
 	public List<TreeNode<Integer>> getPatternsForFile(final File f)
 			throws IOException {
 		final List<TreeNode<Integer>> patterns = Lists.newArrayList();
-		final TreeNode<Integer> fileAstTree = treeFormat.getTree(f);
+		final TreeNode<Integer> tree = treeFormat.getTree(f);
 
 		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
-		toLook.push(fileAstTree);
+		toLook.push(tree);
 
 		// Do a pre-visit
 		while (!toLook.isEmpty()) {

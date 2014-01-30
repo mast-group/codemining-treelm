@@ -82,7 +82,7 @@ public class TreeNodeTest {
 		final List<Integer> propertyPathFrom5to1 = Lists.newArrayList(1, 0, 0);
 		final List<Integer> childPathFrom5to1 = Lists.newArrayList(0, 1, 0);
 		assertEquals(route1.nextProperty, propertyPathFrom5to1);
-		assertEquals(route1.nextChildNum, childPathFrom5to1);
+		assertEquals(route1.nextChildIndex, childPathFrom5to1);
 
 		// Test the route from 7 to 1
 		final NodeParents<Integer> route2 = node7.getNodeParents(node1);
@@ -94,14 +94,14 @@ public class TreeNodeTest {
 		final List<Integer> propertyPathFrom7to1 = Lists.newArrayList(1, 1);
 		final List<Integer> childPathFrom7to1 = Lists.newArrayList(0, 0);
 		assertEquals(route2.nextProperty, propertyPathFrom7to1);
-		assertEquals(route2.nextChildNum, childPathFrom7to1);
+		assertEquals(route2.nextChildIndex, childPathFrom7to1);
 
 		// Test (dummy) route from 1 to 1
 		final NodeParents<Integer> route3 = node1.getNodeParents(node1);
 		assertEquals(route3.targetNode, node1);
 		assertEquals(route3.throughNodes, Collections.emptyList());
 		assertEquals(route3.nextProperty, Collections.emptyList());
-		assertEquals(route3.nextChildNum, Collections.emptyList());
+		assertEquals(route3.nextChildIndex, Collections.emptyList());
 	}
 
 	@Test

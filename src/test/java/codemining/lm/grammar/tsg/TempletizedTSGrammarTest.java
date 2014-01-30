@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
@@ -28,10 +28,10 @@ public class TempletizedTSGrammarTest {
 	private String methodContent;
 
 	private void assertReparametrizationUnaffected(final String code,
-			final ParseKind kind, final boolean useComments) {
+			final ParseType parseType, final boolean useComments) {
 		final JavaASTExtractor ex = new JavaASTExtractor(false,
 				useComments);
-		final ASTNode cu = ex.getAST(code, kind);
+		final ASTNode cu = ex.getAST(code, parseType);
 		final TempletizedJavaTreeExtractor converter = new TempletizedJavaTreeExtractor();
 		final TempletizedTSGrammar grammar = new TempletizedTSGrammar(converter);
 		final TreeNode<Integer> treeCu = converter.getTree(cu, useComments);
@@ -50,20 +50,20 @@ public class TempletizedTSGrammarTest {
 	@Test
 	public void checkReparametrization() {
 		assertReparametrizationUnaffected(classContent,
-				ParseKind.COMPILATION_UNIT, false);
+				ParseType.COMPILATION_UNIT, false);
 		assertReparametrizationUnaffected(classContent2,
-				ParseKind.COMPILATION_UNIT, false);
-		assertReparametrizationUnaffected(methodContent, ParseKind.METHOD,
+				ParseType.COMPILATION_UNIT, false);
+		assertReparametrizationUnaffected(methodContent, ParseType.METHOD,
 				false);
 	}
 
 	@Test
 	public void checkReparametrizationWithComments() {
 		assertReparametrizationUnaffected(classContent,
-				ParseKind.COMPILATION_UNIT, true);
+				ParseType.COMPILATION_UNIT, true);
 		assertReparametrizationUnaffected(classContent2,
-				ParseKind.COMPILATION_UNIT, true);
-		assertReparametrizationUnaffected(methodContent, ParseKind.METHOD, true);
+				ParseType.COMPILATION_UNIT, true);
+		assertReparametrizationUnaffected(methodContent, ParseType.METHOD, true);
 	}
 
 	/**

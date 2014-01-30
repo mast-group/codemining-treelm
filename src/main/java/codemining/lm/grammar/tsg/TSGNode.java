@@ -45,17 +45,17 @@ public class TSGNode implements Serializable {
 	/**
 	 * Wrap TreeNode<Integer> trees in TreeNode<TSGNode> trees.
 	 * 
-	 * @param treeRoot
+	 * @param tree
 	 * @return
 	 */
 	public static TreeNode<TSGNode> convertTree(
-			final TreeNode<Integer> treeRoot,
+			final TreeNode<Integer> tree,
 			final double percentRootsToIntroduce) {
-		final TSGNode rootNode = new TSGNode(treeRoot.getData());
+		final TSGNode rootNode = new TSGNode(tree.getData());
 		rootNode.isRoot = true;
 		final TreeNode<TSGNode> root = TreeNode.create(rootNode,
-				treeRoot.nProperties());
-		copyChildren(root, treeRoot, percentRootsToIntroduce);
+				tree.nProperties());
+		copyChildren(root, tree, percentRootsToIntroduce);
 		return root;
 	}
 
@@ -81,8 +81,8 @@ public class TSGNode implements Serializable {
 			final List<List<TreeNode<TSGNode>>> children = currentFrom
 					.getChildrenByProperty();
 
-			final int childrenSize = children.size();
-			for (int i = 0; i < childrenSize; i++) {
+			final int nChildren = children.size();
+			for (int i = 0; i < nChildren; i++) {
 				for (final TreeNode<TSGNode> fromChild : children.get(i)) {
 					final int toChildData = fromChild.getData().nodeKey;
 					final TreeNode<Integer> toChild = TreeNode.create(

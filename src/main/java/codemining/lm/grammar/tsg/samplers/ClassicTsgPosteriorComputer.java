@@ -56,19 +56,19 @@ class ClassicTsgPosteriorComputer implements
 		}
 
 		@Override
-		public double getParameter(final int idx) {
-			if (idx == 0) {
+		public double getParameter(final int index) {
+			if (index == 0) {
 				return concentrationParameter;
-			} else if (idx == 1) {
+			} else if (index == 1) {
 				return geometricProbability;
 			}
 			throw new IllegalArgumentException("We have only 2 parameters");
 		}
 
 		@Override
-		public void getParameters(final double[] params) {
-			params[0] = concentrationParameter;
-			params[1] = geometricProbability;
+		public void getParameters(final double[] values) {
+			values[0] = concentrationParameter;
+			values[1] = geometricProbability;
 		}
 
 		@Override
@@ -76,15 +76,15 @@ class ClassicTsgPosteriorComputer implements
 			final AtomicDouble logProbSum = new AtomicDouble(0);
 
 			final ParallelThreadPool ptp = new ParallelThreadPool();
-			for (final TreeNode<TSGNode> fullTree : treeCorpus) {
-				for (final TreeNode<TSGNode> tree : TSGNode
-						.getAllRootsOf(fullTree)) {
+			for (final TreeNode<TSGNode> tree : treeCorpus) {
+				for (final TreeNode<TSGNode> root : TSGNode
+						.getAllRootsOf(tree)) {
 					ptp.pushTask(new Runnable() {
 
 						@Override
 						public void run() {
 							logProbSum.addAndGet(computePosteriorProbability(
-									tree, true));
+									root, true));
 						}
 
 					});
@@ -103,22 +103,22 @@ class ClassicTsgPosteriorComputer implements
 
 			final ParallelThreadPool ptp = new ParallelThreadPool();
 
-			for (final TreeNode<TSGNode> fullTree : treeCorpus) {
-				for (final TreeNode<TSGNode> tree : TSGNode
-						.getAllRootsOf(fullTree)) {
+			for (final TreeNode<TSGNode> tree : treeCorpus) {
+				for (final TreeNode<TSGNode> subTree : TSGNode
+						.getAllRootsOf(tree)) {
 					ptp.pushTask(new Runnable() {
 						@Override
 						public void run() {
 							final double nRulesCommonRoot = grammar
-									.countTreesWithRoot(tree.getData()) - 1;
+									.countTreesWithRoot(subTree.getData()) - 1;
 							final double nRulesInGrammar = grammar
-									.countTreeOccurences(tree) - 1;
+									.countTreeOccurences(subTree) - 1;
 
 							checkArgument(nRulesCommonRoot >= nRulesInGrammar,
 									"Counts are not correct");
 
-							final int treeSize = TreeNode.getTreeSize(tree);
-							final double logRuleMLE = getTreeCFLog2Probability(tree);
+							final int treeSize = TreeNode.getTreeSize(subTree);
+							final double logRuleMLE = getTreeCFLog2Probability(subTree);
 
 							final double geometricLogProb = GeometricDistribution
 									.getLog2Prob(treeSize, geometricProbability);
@@ -340,10 +340,10 @@ class ClassicTsgPosteriorComputer implements
 	}
 
 	public void optimizeHyperparameters(
-			final Collection<TreeNode<TSGNode>> corpus) {
+			final Collection<TreeNode<TSGNode>> treeCorpus) {
 
 		final HyperparameterOptimizable optimizable = new HyperparameterOptimizable(
-				corpus);
+				treeCorpus);
 
 		if (DO_GRADIENT_CHECK) {
 			final double[] gradient = new double[2];

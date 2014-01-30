@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
@@ -28,10 +28,10 @@ public class TempletizedEclipseTreeExtractorTest {
 	private String methodContent;
 
 	private void assertRoundTripConversion(final String code,
-			final ParseKind kind, final boolean useComments) {
+			final ParseType parseType, final boolean useComments) {
 		final JavaASTExtractor ex = new JavaASTExtractor(false,
 				useComments);
-		final ASTNode cu = ex.getAST(code, kind);
+		final ASTNode cu = ex.getAST(code, parseType);
 		final TempletizedJavaTreeExtractor converter = new TempletizedJavaTreeExtractor();
 		final TreeNode<Integer> treeCu = converter.getTree(cu, useComments);
 
@@ -41,10 +41,10 @@ public class TempletizedEclipseTreeExtractorTest {
 	}
 
 	private void assertRoundTripConversionBinarizer(final String code,
-			final ParseKind kind, final boolean useComments) {
+			final ParseType parseType, final boolean useComments) {
 		final JavaASTExtractor ex = new JavaASTExtractor(false,
 				useComments);
-		final ASTNode cu = ex.getAST(code, kind);
+		final ASTNode cu = ex.getAST(code, parseType);
 		final AbstractJavaTreeExtractor converter = new BinaryEclipseASTTreeExtractor(
 				new TempletizedJavaTreeExtractor());
 		final TreeNode<Integer> treeCu = converter.getTree(cu);
@@ -57,35 +57,35 @@ public class TempletizedEclipseTreeExtractorTest {
 	@Test
 	public void checkBinarizedCrossConversion() {
 		assertRoundTripConversionBinarizer(classContent,
-				ParseKind.COMPILATION_UNIT, false);
+				ParseType.COMPILATION_UNIT, false);
 
 		assertRoundTripConversionBinarizer(classContent2,
-				ParseKind.COMPILATION_UNIT, false);
+				ParseType.COMPILATION_UNIT, false);
 
-		assertRoundTripConversionBinarizer(methodContent, ParseKind.METHOD,
+		assertRoundTripConversionBinarizer(methodContent, ParseType.METHOD,
 				false);
 	}
 
 	@Test
 	public void checkCrossConversion() {
-		assertRoundTripConversion(classContent, ParseKind.COMPILATION_UNIT,
+		assertRoundTripConversion(classContent, ParseType.COMPILATION_UNIT,
 				false);
 
-		assertRoundTripConversion(classContent2, ParseKind.COMPILATION_UNIT,
+		assertRoundTripConversion(classContent2, ParseType.COMPILATION_UNIT,
 				false);
 
-		assertRoundTripConversion(methodContent, ParseKind.METHOD, false);
+		assertRoundTripConversion(methodContent, ParseType.METHOD, false);
 	}
 
 	@Test
 	public void checkCrossConversionWithComments() {
-		assertRoundTripConversion(classContent, ParseKind.COMPILATION_UNIT,
+		assertRoundTripConversion(classContent, ParseType.COMPILATION_UNIT,
 				true);
 
-		assertRoundTripConversion(classContent2, ParseKind.COMPILATION_UNIT,
+		assertRoundTripConversion(classContent2, ParseType.COMPILATION_UNIT,
 				true);
 
-		assertRoundTripConversion(methodContent, ParseKind.METHOD, true);
+		assertRoundTripConversion(methodContent, ParseType.METHOD, true);
 	}
 
 	/**

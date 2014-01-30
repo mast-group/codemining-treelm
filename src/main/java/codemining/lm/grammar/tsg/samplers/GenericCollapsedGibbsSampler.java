@@ -34,6 +34,9 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 
 	protected static class GenericTsgPosteriorComputer implements
 			ITsgPosteriorProbabilityComputer<TSGNode> {
+
+		private static final long serialVersionUID = 365942057220010212L;
+
 		final SequentialTSGrammar sqGrammar;
 
 		protected double concentrationParameter;
@@ -108,14 +111,15 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 			double logProbability = 0;
 			while (!toSee.isEmpty()) {
 				final TreeNode<TSGNode> currentNode = toSee.pop();
-				final List<List<TreeNode<TSGNode>>> properties = currentNode
+				final List<List<TreeNode<TSGNode>>> children = currentNode
 						.getChildrenByProperty();
-				for (int propertyId = 0; propertyId < properties.size(); propertyId++) {
-					final List<TreeNode<TSGNode>> childProperties = properties
-							.get(propertyId);
-					final boolean hasMultipleChildren = childProperties.size() > 2;
+				for (int i = 0; i < children.size(); i++) {
+					final List<TreeNode<TSGNode>> childrenForProperty = children
+							.get(i);
+					final boolean hasMultipleChildren = childrenForProperty
+							.size() > 2;
 					int childCount = 0;
-					for (final TreeNode<TSGNode> child : childProperties) {
+					for (final TreeNode<TSGNode> child : childrenForProperty) {
 						if (!child.isLeaf()) {
 							toSee.push(child);
 						}
@@ -129,14 +133,14 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 
 							final Multiset<Integer> productions = symbolProductions
 									.get(new SymbolProperty(currentNode
-											.getData().nodeKey, propertyId));
-							final double logProb = DoubleMath
+											.getData().nodeKey, i));
+							final double log2Probability = DoubleMath
 									.log2(((double) productions.count(child
 											.getData().nodeKey))
 											/ productions.size());
-							checkArgument(!Double.isNaN(logProb));
-							checkArgument(logProb <= 0);
-							logProbability += logProb;
+							checkArgument(!Double.isNaN(log2Probability));
+							checkArgument(log2Probability <= 0);
+							logProbability += log2Probability;
 						}
 					}
 					logProbability += GeometricDistribution.getLog2Prob(

@@ -126,11 +126,11 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			final TreeNode<T> current = stack.pop();
 			ordered.add(current);
 
-			final List<List<TreeNode<T>>> childrenByProperty = current
+			final List<List<TreeNode<T>>> children = current
 					.getChildrenByProperty();
 			for (int i = 0; i < current.nProperties(); i++) {
-				final List<TreeNode<T>> children = childrenByProperty.get(i);
-				for (final TreeNode<T> child : children) {
+				final List<TreeNode<T>> childrenForProperty = children.get(i);
+				for (final TreeNode<T> child : childrenForProperty) {
 					stack.push(child);
 				}
 			}
@@ -180,8 +180,8 @@ public class TreeProbabilityComputer<T extends Serializable> {
 				final List<List<TreeNode<T>>> childrenProperties = current
 						.getChildrenByProperty();
 
-				for (final List<TreeNode<T>> children : childrenProperties) {
-					for (final TreeNode<T> child : children) {
+				for (final List<TreeNode<T>> childrenForProperty : childrenProperties) {
+					for (final TreeNode<T> child : childrenForProperty) {
 						logProb += nodeProductionProbabilities.get(child);
 					}
 				}
@@ -210,17 +210,17 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			final TreeNode<T> tree) {
 		final Set<TreeNode<T>> endpoints = Sets.newIdentityHashSet();
 
-		final Deque<TreeNode<T>> ruleVisit = new ArrayDeque<TreeNode<T>>();
-		final Deque<TreeNode<T>> treeVisit = new ArrayDeque<TreeNode<T>>();
+		final Deque<TreeNode<T>> ruleStack = new ArrayDeque<TreeNode<T>>();
+		final Deque<TreeNode<T>> treeStack = new ArrayDeque<TreeNode<T>>();
 
-		ruleVisit.push(rule);
-		treeVisit.push(tree);
+		ruleStack.push(rule);
+		treeStack.push(tree);
 
 		// Start walking through the rule, until you reach a rule-leaf. Add that
 		// to set
-		while (!ruleVisit.isEmpty()) {
-			final TreeNode<T> ruleNode = ruleVisit.pop();
-			final TreeNode<T> treeNode = treeVisit.pop();
+		while (!ruleStack.isEmpty()) {
+			final TreeNode<T> ruleNode = ruleStack.pop();
+			final TreeNode<T> treeNode = treeStack.pop();
 
 			if (ruleNode.isLeaf()) {
 				endpoints.add(treeNode);
@@ -234,19 +234,19 @@ public class TreeProbabilityComputer<T extends Serializable> {
 						.getChildrenByProperty();
 				final int end = ruleProperties.size();
 				for (int propertyId = 0; propertyId < end; propertyId++) {
-					final List<TreeNode<T>> rulePropertyChildren = ruleProperties
+					final List<TreeNode<T>> ruleChildrenForProperty = ruleProperties
 							.get(propertyId);
-					final List<TreeNode<T>> treePropertyChildren = treeProperties
+					final List<TreeNode<T>> treeChildrenForProperty = treeProperties
 							.get(propertyId);
 
-					checkArgument((rulePropertyChildren.size() == treePropertyChildren
+					checkArgument((ruleChildrenForProperty.size() == treeChildrenForProperty
 							.size() && requireAllChildren)
-							|| (!requireAllChildren && rulePropertyChildren
-									.size() >= treePropertyChildren.size()));
+							|| (!requireAllChildren && ruleChildrenForProperty
+									.size() >= treeChildrenForProperty.size()));
 
-					for (int i = 0; i < treePropertyChildren.size(); i++) {
-						ruleVisit.push(rulePropertyChildren.get(i));
-						treeVisit.push(treePropertyChildren.get(i));
+					for (int i = 0; i < treeChildrenForProperty.size(); i++) {
+						ruleStack.push(ruleChildrenForProperty.get(i));
+						treeStack.push(treeChildrenForProperty.get(i));
 					}
 				}
 			}

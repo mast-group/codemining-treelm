@@ -138,7 +138,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 		posteriorComputer = new ClassicTsgPosteriorComputer(grammar,
 				avgTreeSize, DPconcentration);
 		allSamplesPosteriorComputer = new ClassicTsgPosteriorComputer(
-				allSamplesGrammar, avgTreeSize, DPconcentration);
+				burninGrammar, avgTreeSize, DPconcentration);
 	}
 
 	public ClassicTsgPosteriorComputer getPosteriorComputer() {
@@ -169,7 +169,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 
 	public void pruneRareTrees(final int threshold) {
 		sampleGrammar.prune(threshold);
-		allSamplesGrammar.prune(threshold);
+		burninGrammar.prune(threshold);
 	}
 
 	@Override

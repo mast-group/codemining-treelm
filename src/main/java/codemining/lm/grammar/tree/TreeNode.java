@@ -77,7 +77,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 		public final List<Integer> nextProperty = Lists.newArrayList();
 
-		public final List<Integer> nextChildNum = Lists.newArrayList();
+		public final List<Integer> nextChildIndex = Lists.newArrayList();
 
 		public NodeParents(final TreeNode<T> root, final TreeNode<T> targetNode) {
 			this.targetNode = targetNode;
@@ -93,15 +93,15 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 			final List<List<TreeNode<T>>> children = currentNode.childrenProperties;
 
 			for (int propertyId = 0; propertyId < children.size(); propertyId++) {
-				final List<TreeNode<T>> propertyChildren = children
+				final List<TreeNode<T>> childrenForProperty = children
 						.get(propertyId);
-				for (int i = 0; i < propertyChildren.size(); i++) {
-					final TreeNode<T> currentChild = propertyChildren.get(i);
+				for (int i = 0; i < childrenForProperty.size(); i++) {
+					final TreeNode<T> currentChild = childrenForProperty.get(i);
 					final boolean isInPath = reachTarget(currentChild);
 					if (isInPath) {
 						throughNodes.add(currentNode);
 						nextProperty.add(propertyId);
-						nextChildNum.add(i);
+						nextChildIndex.add(i);
 						return true;
 					}
 				}
@@ -243,13 +243,13 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	}
 
 	/**
-	 * Static utility to create TreeNode.
+	 * Static utility to create TreeNode from another TreeNode.
 	 * 
 	 * @return
 	 */
 	public static final <T extends Serializable> TreeNode<T> create(
-			final TreeNode<T> other) {
-		return new TreeNode<T>(other.getData(), other.nProperties());
+			final TreeNode<T> tree) {
+		return new TreeNode<T>(tree.getData(), tree.nProperties());
 	}
 
 	/**
@@ -667,15 +667,15 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	@Override
 	public String toString() {
-		final StringBuffer buffer = new StringBuffer();
-		treePrinterHelper(buffer, this, "", new Function<T, String>() {
+		final StringBuffer sb = new StringBuffer();
+		treePrinterHelper(sb, this, "", new Function<T, String>() {
 
 			@Override
-			public String apply(final T element) {
-				return element.toString();
+			public String apply(final T node) {
+				return node.toString();
 			}
 		});
-		return buffer.toString();
+		return sb.toString();
 	}
 
 	/**
@@ -685,9 +685,9 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @return
 	 */
 	public String toString(final Function<T, String> toStringConverter) {
-		final StringBuffer buffer = new StringBuffer();
-		treePrinterHelper(buffer, this, "", toStringConverter);
-		return buffer.toString();
+		final StringBuffer sb = new StringBuffer();
+		treePrinterHelper(sb, this, "", toStringConverter);
+		return sb.toString();
 	}
 
 	/**

@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import codemining.languagetools.ParseKind;
+import codemining.languagetools.ParseType;
 import codemining.lm.grammar.tree.ITreeExtractor;
 import codemining.util.SettingsLoader;
 import codemining.util.parallel.ParallelThreadPool;
@@ -96,7 +96,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 			final Map<Integer, Multiset<NodeConsequent>> grammarToAdd)
 			throws IOException {
 		final String code = FileUtils.readFileToString(sourceFile);
-		addGrammarRulesFromCode(code, grammarToAdd, ParseKind.COMPILATION_UNIT);
+		addGrammarRulesFromCode(code, grammarToAdd, ParseType.COMPILATION_UNIT);
 	}
 
 	/*

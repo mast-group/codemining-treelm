@@ -81,8 +81,8 @@ public class TSGrammar<T extends Serializable> implements
 	 * .lm.grammar.tree.TreeNode)
 	 */
 	@Override
-	public void addTree(final TreeNode<T> subTree) {
-		addTree(subTree, 1);
+	public void addTree(final TreeNode<T> tree) {
+		addTree(tree, 1);
 	}
 
 	/**
@@ -147,12 +147,12 @@ public class TSGrammar<T extends Serializable> implements
 	 */
 	@Override
 	public int countTreeOccurences(final TreeNode<T> root) {
-		final ConcurrentHashMultiset<TreeNode<T>> set = grammar.get(root
+		final ConcurrentHashMultiset<TreeNode<T>> productions = grammar.get(root
 				.getData());
-		if (set == null) {
+		if (productions == null) {
 			return 0;
 		}
-		return set.count(root);
+		return productions.count(root);
 	}
 
 	/*
@@ -211,10 +211,10 @@ public class TSGrammar<T extends Serializable> implements
 				}
 			} else if (!currentNode.isLeaf()) {
 				// Keep walking
-				for (int j = 0; j < currentNode.getChildrenByProperty().size(); j++) {
-					final List<TreeNode<T>> nodes = currentNode
-							.getChildrenByProperty().get(j);
-					for (final TreeNode<T> node : nodes) {
+				for (int i = 0; i < currentNode.getChildrenByProperty().size(); i++) {
+					final List<TreeNode<T>> childrenForProperty = currentNode
+							.getChildrenByProperty().get(i);
+					for (final TreeNode<T> node : childrenForProperty) {
 						toVisit.push(node);
 					}
 				}
@@ -250,25 +250,25 @@ public class TSGrammar<T extends Serializable> implements
 	 * @param threshold
 	 */
 	public void prune(final int threshold) {
-		final ArrayList<T> toRemove = Lists.newArrayList();
+		final ArrayList<T> headsToBeRemoved = Lists.newArrayList();
 		for (final Entry<T, ? extends Multiset<TreeNode<T>>> ruleHeadEntry : grammar
 				.entrySet()) {
 			final T ruleHead = ruleHeadEntry.getKey();
 			final Multiset<TreeNode<T>> productions = ruleHeadEntry.getValue();
 			if (productions.size() < threshold) {
-				toRemove.add(ruleHead);
+				headsToBeRemoved.add(ruleHead);
 				continue;
 			}
 
-			final ArrayList<TreeNode<T>> toBeRemoved = Lists.newArrayList();
+			final ArrayList<TreeNode<T>> productionsToBeRemoved = Lists.newArrayList();
 			for (final TreeNode<T> rule : productions.elementSet()) {
 				if (productions.count(rule) < threshold) {
-					toBeRemoved.add(rule);
+					productionsToBeRemoved.add(rule);
 				}
 			}
 
 			int sum = 0;
-			for (final TreeNode<T> rule : toBeRemoved) {
+			for (final TreeNode<T> rule : productionsToBeRemoved) {
 				final int cnt = productions.count(rule);
 				sum += cnt;
 				productions.remove(rule, cnt);
@@ -277,7 +277,7 @@ public class TSGrammar<T extends Serializable> implements
 			productions.add(UNK_NODE, sum);
 		}
 
-		for (final T node : toRemove) {
+		for (final T node : headsToBeRemoved) {
 			grammar.remove(node);
 		}
 	}
