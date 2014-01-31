@@ -33,11 +33,11 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 	/**
 	 * A node printer using the symbols.
 	 */
-	private class NodePrinter implements Function<Integer, String> {
+	private class NodePrinter implements Function<TreeNode<Integer>, String> {
 
 		@Override
-		public String apply(final Integer id) {
-			return getSymbol(id).toString();
+		public String apply(final TreeNode<Integer> node) {
+			return getSymbol(node.getData()).toString();
 		}
 
 	}
@@ -162,7 +162,7 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 	 * 
 	 * @return
 	 */
-	public Function<Integer, String> getTreePrinter() {
+	public Function<TreeNode<Integer>, String> getTreePrinter() {
 		return new NodePrinter();
 	}
 

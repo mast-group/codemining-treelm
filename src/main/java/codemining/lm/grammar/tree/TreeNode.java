@@ -668,11 +668,11 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer();
-		treePrinterHelper(sb, this, "", new Function<T, String>() {
+		treePrinterHelper(sb, this, "", new Function<TreeNode<T>, String>() {
 
 			@Override
-			public String apply(final T node) {
-				return node.toString();
+			public String apply(final TreeNode<T> node) {
+				return node.getData().toString();
 			}
 		});
 		return sb.toString();
@@ -684,7 +684,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @param toStringConverter
 	 * @return
 	 */
-	public String toString(final Function<T, String> toStringConverter) {
+	public String toString(final Function<TreeNode<T>, String> toStringConverter) {
 		final StringBuffer sb = new StringBuffer();
 		treePrinterHelper(sb, this, "", toStringConverter);
 		return sb.toString();
@@ -699,10 +699,10 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 */
 	public void treePrinterHelper(final StringBuffer buffer,
 			final TreeNode<T> currentNode, final String prefix,
-			final Function<T, String> dataToString) {
+			final Function<TreeNode<T>, String> dataToString) {
 		buffer.append(prefix);
 		if (currentNode != null) {
-			buffer.append(dataToString.apply(currentNode.getData()));
+			buffer.append(dataToString.apply(currentNode));
 			buffer.append('\n');
 			for (int i = 0; i < currentNode.childrenProperties.size(); i++) {
 				for (final TreeNode<T> child : currentNode.childrenProperties

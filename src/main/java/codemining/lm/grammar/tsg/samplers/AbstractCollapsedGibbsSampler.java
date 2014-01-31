@@ -22,6 +22,7 @@ import codemining.util.SettingsLoader;
 import codemining.util.StatsUtil;
 import codemining.util.parallel.ParallelThreadPool;
 
+import com.google.common.base.Function;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -162,8 +163,7 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		double logProbSum = 0;
 
 		for (final TreeNode<TSGNode> rule : rules) {
-			logProbSum += getSamplePosteriorLog2ProbabilityForTree(rule,
-					false);
+			logProbSum += getSamplePosteriorLog2ProbabilityForTree(rule, false);
 		}
 
 		return logProbSum;
@@ -244,6 +244,16 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 		return currentIteration;
 	}
 
+	public void printCorpusProbs() {
+		for (final TreeNode<TSGNode> tree : treeCorpus) {
+			System.out.println("----------------------------------------");
+			System.out.println(printTreeWithRootProbabilities(tree));
+			System.out.println("________________________________________");
+			System.out.println(sampleGrammar.getJavaTreeExtractor()
+					.getASTFromTree(TSGNode.tsgTreeToInt(tree)));
+		}
+	}
+
 	/**
 	 * Print statistics on stdout.
 	 */
@@ -271,6 +281,82 @@ public abstract class AbstractCollapsedGibbsSampler implements Serializable {
 
 		final double avgSize = (((double) sumOfSizes) / sizeDistribution.size());
 		System.out.println("Avg Tree Size: " + String.format("%.2f", avgSize));
+	}
+
+	/**
+	 * Return a string with the join probabilities for each node (the bit) in
+	 * the tree, given the current state of the sampler.
+	 * 
+	 * @param tree
+	 */
+	public String printTreeWithRootProbabilities(final TreeNode<TSGNode> tree) {
+		final Map<TreeNode<TSGNode>, TreeNode<TSGNode>> roots = TSGNode
+				.getNodeToRootMap(tree);
+
+		return tree.toString(new Function<TreeNode<TSGNode>, String>() {
+
+			@Override
+			public String apply(final TreeNode<TSGNode> input) {
+				final TreeNode<TSGNode> root = roots.get(input);
+				String toAppend;
+				if (root == null) {
+					toAppend = "";
+				} else if (input.isLeaf()) {
+					toAppend = "";
+				} else {
+					toAppend = " (Join prob: "
+							+ String.format("%.3f", probJoinAt(input, root))
+							+ ")";
+				}
+				return sampleGrammar.getJavaTreeExtractor().getTreePrinter()
+						.apply(TreeNode.create(input.getData().nodeKey, 0))
+						+ toAppend;
+			}
+		});
+	}
+
+	/**
+	 * Compute the probability of joining the nodes. Note that this is a
+	 * duplicate from sampleAt, without any (eventual) side effects.
+	 * 
+	 * These are kept separate for computational efficiency reasons.;
+	 */
+	public double probJoinAt(final TreeNode<TSGNode> node,
+			final TreeNode<TSGNode> root) {
+		checkNotNull(node);
+		checkNotNull(root);
+		checkArgument(node != root,
+				"The given node should not be the root but its parent root");
+
+		final boolean previousRootStatus = node.getData().isRoot;
+		node.getData().isRoot = false;
+		final TreeNode<TSGNode> joinedTree = TSGNode.getSubTreeFromRoot(root);
+
+		node.getData().isRoot = true;
+		final TreeNode<TSGNode> splitTree1 = TSGNode.getSubTreeFromRoot(root);
+		final TreeNode<TSGNode> splitTree2 = TSGNode.getSubTreeFromRoot(node);
+
+		final double log2ProbJoined = getSamplePosteriorLog2ProbabilityForTree(
+				joinedTree, !previousRootStatus);
+		final double log2ProbSplit = getSamplePosteriorLog2ProbabilityForTree(
+				splitTree1, previousRootStatus)
+				+ getSamplePosteriorLog2ProbabilityForTree(splitTree2,
+						previousRootStatus);
+
+		final double joinTheshold;
+		if (!Double.isInfinite(log2ProbJoined)) {
+			final double splitLog2Prob = log2ProbJoined
+					- StatsUtil.logSumOfExponentials(log2ProbJoined,
+							log2ProbSplit);
+			joinTheshold = Math.pow(2, splitLog2Prob);
+		} else {
+			// Split if probJoined == 0, regardless of the splitting prob.
+			joinTheshold = 0;
+		}
+		// Revert
+		node.getData().isRoot = previousRootStatus;
+
+		return joinTheshold;
 	}
 
 	/**

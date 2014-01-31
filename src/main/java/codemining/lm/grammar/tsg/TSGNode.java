@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
 
@@ -14,6 +15,7 @@ import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * A node for Tree Substitution Grammar that contains the extra information
@@ -48,8 +50,7 @@ public class TSGNode implements Serializable {
 	 * @param tree
 	 * @return
 	 */
-	public static TreeNode<TSGNode> convertTree(
-			final TreeNode<Integer> tree,
+	public static TreeNode<TSGNode> convertTree(final TreeNode<Integer> tree,
 			final double percentRootsToIntroduce) {
 		final TSGNode rootNode = new TSGNode(tree.getData());
 		rootNode.isRoot = true;
@@ -205,6 +206,49 @@ public class TSGNode implements Serializable {
 			}
 		}
 		return nodes;
+	}
+
+	/**
+	 * Return an identity map containing for all the nodes the immediate root in
+	 * the TSG tree. Root is not included.
+	 * 
+	 * @param tree
+	 * @return
+	 */
+	public static Map<TreeNode<TSGNode>, TreeNode<TSGNode>> getNodeToRootMap(
+			final TreeNode<TSGNode> tree) {
+		final Map<TreeNode<TSGNode>, TreeNode<TSGNode>> rootMap = Maps
+				.newIdentityHashMap();
+
+		// A queue containing the next node and the next node's root
+		final ArrayDeque<CopyPair> toVisit = new ArrayDeque<CopyPair>();
+		toVisit.push(new CopyPair(tree, tree));
+
+		while (!toVisit.isEmpty()) {
+			final CopyPair current = toVisit.pop();
+			if (current.fromNode != current.toNode) {
+				// This is not the root, then add
+				rootMap.put(current.fromNode, current.toNode);
+			}
+			final TreeNode<TSGNode> nextRoot;
+			if (current.fromNode.getData().isRoot) {
+				nextRoot = current.fromNode;
+			} else {
+				nextRoot = current.toNode;
+			}
+
+			final List<List<TreeNode<TSGNode>>> children = current.fromNode
+					.getChildrenByProperty();
+			for (int i = 0; i < children.size(); i++) {
+				final List<TreeNode<TSGNode>> childrenForProperty = children
+						.get(i);
+				for (final TreeNode<TSGNode> child : childrenForProperty) {
+					toVisit.push(new CopyPair(child, nextRoot));
+				}
+			}
+		}
+
+		return rootMap;
 	}
 
 	/**

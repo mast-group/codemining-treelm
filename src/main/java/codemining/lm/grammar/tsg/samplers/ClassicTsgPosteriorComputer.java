@@ -77,14 +77,14 @@ class ClassicTsgPosteriorComputer implements
 
 			final ParallelThreadPool ptp = new ParallelThreadPool();
 			for (final TreeNode<TSGNode> tree : treeCorpus) {
-				for (final TreeNode<TSGNode> root : TSGNode
-						.getAllRootsOf(tree)) {
+				for (final TreeNode<TSGNode> root : TSGNode.getAllRootsOf(tree)) {
 					ptp.pushTask(new Runnable() {
 
 						@Override
 						public void run() {
-							logProbSum.addAndGet(computeLog2PosteriorProbability(
-									root, true));
+							logProbSum
+									.addAndGet(computeLog2PosteriorProbability(
+											root, true));
 						}
 
 					});
@@ -233,6 +233,9 @@ class ClassicTsgPosteriorComputer implements
 		}
 
 		final double log2prior = getLog2PriorForTree(tree);
+		if (nRulesCommonRoot == 0 || Double.isInfinite(log2prior)) {
+			return Double.NEGATIVE_INFINITY;
+		}
 
 		if (nRulesInGrammar > 0 && remove) {
 			nRulesInGrammar--;
@@ -300,8 +303,7 @@ class ClassicTsgPosteriorComputer implements
 		final double logProb = DoubleMath.log2(cfg.getMLProbability(rule.root,
 				rule.ruleConsequent));
 
-		checkArgument(!(Double.isInfinite(logProb) || Double.isNaN(logProb)),
-				"LogProb is %s", logProb);
+		checkArgument(!Double.isNaN(logProb), "LogProb is %s", logProb);
 		return logProb;
 	}
 
@@ -334,8 +336,7 @@ class ClassicTsgPosteriorComputer implements
 			logProbability += nodeLogProb;
 		}
 
-		checkArgument(!(Double.isInfinite(logProbability) || Double
-				.isNaN(logProbability)));
+		checkArgument(!Double.isNaN(logProbability));
 		return logProbability;
 	}
 

@@ -35,14 +35,16 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 	 * the format.
 	 * 
 	 */
-	public final class IntKeyToSymbol implements Function<TSGNode, String> {
+	public final class IntKeyToSymbol implements
+			Function<TreeNode<TSGNode>, String> {
 
 		@Override
-		public final String apply(final TSGNode node) {
-			if (node == null) {
+		public final String apply(final TreeNode<TSGNode> node) {
+			if (node == null || node.getData() == null) {
 				return "UNK";
 			}
-			return treeFormat.getSymbol(checkNotNull(node).nodeKey).toString();
+			return treeFormat.getSymbol(checkNotNull(node).getData().nodeKey)
+					.toString();
 		}
 	}
 
