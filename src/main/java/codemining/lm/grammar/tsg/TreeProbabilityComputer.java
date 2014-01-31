@@ -69,6 +69,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			final Map<TreeNode<T>, Double> nodeProductionProbabilities,
 			final TreeNode<T> current, final Multiset<TreeNode<T>> productions) {
 		final List<Double> allRuleLog2Probabilities = Lists.newArrayList();
+
 		for (final Entry<TreeNode<T>> productionEntry : productions.entrySet()) {
 			// We need to see if it's a partial match, get all it's end
 			// points
@@ -88,7 +89,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 					productionEntry.getElement(), current);
 
 			double productionLog2Prob = tsGrammar
-					.computeTreePosteriorProbability(productionEntry
+					.computeTreePosteriorLog2Probability(productionEntry
 							.getElement());
 
 			for (final TreeNode<T> subtree : endPoints) {
@@ -98,15 +99,27 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			allRuleLog2Probabilities.add(productionLog2Prob);
 		}
 
-		if (allRuleLog2Probabilities.isEmpty()) {
-			nodeProductionProbabilities.put(current, Double.NEGATIVE_INFINITY);
-		} else {
-			// log-sum-exp the probabilities of all the exponentials
-			final double logProb = StatsUtil
-					.logSumOfExponentials(allRuleLog2Probabilities);
-			// store log-probability for this node and go to next.
-			nodeProductionProbabilities.put(current, logProb);
+		// Add the CFG production, only if it isn't already in the possible
+		// productions.
+		final TreeNode<T> cfgRule = TreeNode.create(current);
+		for (int i = 0; i < current.nProperties(); i++) {
+			final List<TreeNode<T>> childrenForProperty = current
+					.getChildrenByProperty().get(i);
+			for (final TreeNode<T> child : childrenForProperty) {
+				cfgRule.addChildNode(child, i);
+			}
 		}
+		if (!productions.contains(cfgRule)) {
+			allRuleLog2Probabilities.add(tsGrammar
+					.computeTreePosteriorLog2Probability(cfgRule));
+		}
+
+		// log-sum-exp the probabilities of all the probabilities
+		final double log2Prob = StatsUtil
+				.log2SumOfExponentials(allRuleLog2Probabilities);
+		// store log-probability for this node and go to next.
+		nodeProductionProbabilities.put(current, log2Prob);
+
 	}
 
 	/**

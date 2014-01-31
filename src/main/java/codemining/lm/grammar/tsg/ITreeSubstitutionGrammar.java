@@ -29,7 +29,7 @@ public interface ITreeSubstitutionGrammar<T extends Serializable> extends
 	 * @param tree
 	 * @return
 	 */
-	public double computeTreePosteriorProbability(TreeNode<T> tree);
+	public double computeTreePosteriorLog2Probability(TreeNode<T> tree);
 
 	/**
 	 * Return the number of occurrences of the subtree given the root.
