@@ -57,7 +57,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 		}
 
 		@Override
-		public double computePosteriorProbability(
+		public double computeLog2PosteriorProbability(
 				final TreeNode<TSGNode> subtree, final boolean remove) {
 			checkNotNull(subtree);
 
@@ -255,7 +255,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	@Override
 	public double getSamplePosteriorLog2ProbabilityForTree(
 			final TreeNode<TSGNode> subtree, final boolean remove) {
-		return posteriorComputer.computePosteriorProbability(subtree, remove);
+		return posteriorComputer.computeLog2PosteriorProbability(subtree, remove);
 	}
 
 	public void pruneRareTrees(final int threshold) {

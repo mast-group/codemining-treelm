@@ -83,7 +83,7 @@ class ClassicTsgPosteriorComputer implements
 
 						@Override
 						public void run() {
-							logProbSum.addAndGet(computePosteriorProbability(
+							logProbSum.addAndGet(computeLog2PosteriorProbability(
 									root, true));
 						}
 
@@ -217,7 +217,7 @@ class ClassicTsgPosteriorComputer implements
 	}
 
 	@Override
-	public double computePosteriorProbability(final TreeNode<TSGNode> tree,
+	public double computeLog2PosteriorProbability(final TreeNode<TSGNode> tree,
 			final boolean remove) {
 		checkNotNull(tree);
 

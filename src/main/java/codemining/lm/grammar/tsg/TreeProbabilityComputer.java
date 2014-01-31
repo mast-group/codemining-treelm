@@ -22,7 +22,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
-import com.google.common.math.DoubleMath;
 
 /**
  * Compute the tree probability.
@@ -33,6 +32,7 @@ import com.google.common.math.DoubleMath;
 public class TreeProbabilityComputer<T extends Serializable> {
 
 	private final Map<T, ? extends Multiset<TreeNode<T>>> grammar;
+	private final TSGrammar<T> tsGrammar;
 	private final Predicate<NodeDataPair<T>> equalityComparator;
 	private final boolean requireAllChildren;
 	/**
@@ -47,18 +47,18 @@ public class TreeProbabilityComputer<T extends Serializable> {
 
 	};
 
-	public TreeProbabilityComputer(
-			final Map<T, ? extends Multiset<TreeNode<T>>> grammar,
+	public TreeProbabilityComputer(final TSGrammar<T> tsGrammar,
 			final boolean requireAllChildren,
 			final Predicate<NodeDataPair<T>> equalityComparator) {
-		this.grammar = grammar;
+		this.tsGrammar = tsGrammar;
+		this.grammar = tsGrammar.grammar;
 		this.requireAllChildren = requireAllChildren;
 		this.equalityComparator = equalityComparator;
 	}
 
 	/**
 	 * Given a set of possible productions, compute the probability of the
-	 * current node.
+	 * current node. If none of the productions apply, backoff to a CFG.
 	 * 
 	 * @param nodeProductionProbabilities
 	 * @param current
@@ -67,11 +67,9 @@ public class TreeProbabilityComputer<T extends Serializable> {
 	 */
 	private void computeNodeProbabilities(
 			final Map<TreeNode<T>, Double> nodeProductionProbabilities,
-			final TreeNode<T> current,
-			final Multiset<TreeNode<T>> productions) {
+			final TreeNode<T> current, final Multiset<TreeNode<T>> productions) {
 		final List<Double> allRuleLog2Probabilities = Lists.newArrayList();
-		for (final Entry<TreeNode<T>> productionEntry : productions
-				.entrySet()) {
+		for (final Entry<TreeNode<T>> productionEntry : productions.entrySet()) {
 			// We need to see if it's a partial match, get all it's end
 			// points
 			if (requireAllChildren) {
@@ -89,8 +87,10 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			final Set<TreeNode<T>> endPoints = getRuleEndPointsInTree(
 					productionEntry.getElement(), current);
 
-			double productionLog2Prob = DoubleMath.log2(productionEntry
-					.getCount()) - DoubleMath.log2(productions.size());
+			double productionLog2Prob = tsGrammar
+					.computeTreePosteriorProbability(productionEntry
+							.getElement());
+
 			for (final TreeNode<T> subtree : endPoints) {
 				checkArgument(nodeProductionProbabilities.containsKey(subtree));
 				productionLog2Prob += nodeProductionProbabilities.get(subtree);
@@ -190,7 +190,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 				computeNodeProbabilities(nodeProductionProbabilities, current,
 						productions);
 				// Since the rule matching may be partial, this may be wrong.
-				// What should we do? TODO TODO
+				// What should we do? TODO
 
 			}
 

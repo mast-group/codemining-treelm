@@ -5,17 +5,12 @@ package codemining.lm.grammar.tsg;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Map;
-
 import org.junit.Test;
 
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -23,6 +18,30 @@ import com.google.common.math.DoubleMath;
  * 
  */
 public class TreeProbabilityComputerTest {
+
+	public static final class MlPosteriorComputer implements
+			ITsgPosteriorProbabilityComputer<String> {
+		private final TSGrammar<String> grammar;
+
+		public MlPosteriorComputer(final TSGrammar<String> grammar) {
+			this.grammar = grammar;
+		}
+
+		@Override
+		public double computeLog2PosteriorProbability(
+				final TreeNode<String> tree, final boolean remove) {
+			double nRulesCommonRoot = grammar
+					.countTreesWithRoot(tree.getData());
+			double nRulesInGrammar = grammar.countTreeOccurences(tree);
+
+			if (nRulesInGrammar > 0 && remove) {
+				nRulesInGrammar--;
+				nRulesCommonRoot--;
+			}
+
+			return DoubleMath.log2(nRulesInGrammar / nRulesCommonRoot);
+		}
+	}
 
 	/**
 	 * The default matching predicate.
@@ -95,18 +114,17 @@ public class TreeProbabilityComputerTest {
 
 	@Test
 	public void testAutocompletion() {
-		final Map<String, Multiset<TreeNode<String>>> grammar = Maps
-				.newTreeMap();
-		final Multiset<TreeNode<String>> aRules = HashMultiset.create();
+		final TSGrammar<String> grammar = new TSGrammar<String>();
 
-		aRules.add(generateTree(), 1);
-		aRules.add(generateRule1(), 1);
-		grammar.put("A", aRules);
+		final ITsgPosteriorProbabilityComputer<String> mlPosteriorComputer = new MlPosteriorComputer(
+				grammar);
+		grammar.setPosteriorComputer(mlPosteriorComputer);
 
-		final Multiset<TreeNode<String>> bRules = HashMultiset.create();
-		bRules.add(generateRule2(), 1);
-		bRules.add(generateRule3(), 1);
-		grammar.put("B", bRules);
+		grammar.addTree(generateTree());
+		grammar.addTree(generateRule1());
+
+		grammar.addTree(generateRule2());
+		grammar.addTree(generateRule3());
 
 		final TreeProbabilityComputer<String> computer = new TreeProbabilityComputer<String>(
 				grammar, false, DEFAULT_MATCHER);
@@ -117,18 +135,18 @@ public class TreeProbabilityComputerTest {
 
 	@Test
 	public void testFull() {
-		final Map<String, Multiset<TreeNode<String>>> grammar = Maps
-				.newTreeMap();
-		final Multiset<TreeNode<String>> aRules = HashMultiset.create();
+		final TSGrammar<String> grammar = new TSGrammar<String>();
 
-		aRules.add(generateTree(), 1);
-		aRules.add(generateRule1(), 1);
-		grammar.put("A", aRules);
+		final ITsgPosteriorProbabilityComputer<String> mlPosteriorComputer = new MlPosteriorComputer(
+				grammar);
 
-		final Multiset<TreeNode<String>> bRules = HashMultiset.create();
-		bRules.add(generateRule2(), 1);
-		bRules.add(generateRule3(), 1);
-		grammar.put("B", bRules);
+		grammar.setPosteriorComputer(mlPosteriorComputer);
+
+		grammar.addTree(generateTree());
+		grammar.addTree(generateRule1());
+
+		grammar.addTree(generateRule2());
+		grammar.addTree(generateRule3());
 
 		final TreeProbabilityComputer<String> computer = new TreeProbabilityComputer<String>(
 				grammar, true, DEFAULT_MATCHER);
@@ -143,9 +161,7 @@ public class TreeProbabilityComputerTest {
 		fullTree.getChild(0, 0).getChild(0, 0)
 				.addChildNode(TreeNode.create("D", 1), 0);
 
-		final HashMultiset<TreeNode<String>> dRules = HashMultiset.create();
-		dRules.add(generateRule4());
-		grammar.put("D", dRules);
+		grammar.addTree(generateRule4());
 		assertEquals(computer2.getLog2ProbabilityOf(fullTree),
 				Double.NEGATIVE_INFINITY, 10E-10);
 

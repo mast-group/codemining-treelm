@@ -135,7 +135,7 @@ public class TSGrammar<T extends Serializable> implements
 	@Override
 	public double computeTreePosteriorProbability(final TreeNode<T> tree) {
 		return checkNotNull(posteriorComputer)
-				.computePosteriorProbability(tree, false);
+				.computeLog2PosteriorProbability(tree, false);
 	}
 
 	/*

@@ -65,8 +65,7 @@ public class TSGEntropy {
 								.toCharArray());
 
 				final TreeProbabilityComputer<TSGNode> probabilityComputer = new TreeProbabilityComputer<TSGNode>(
-						grammar.getInternalGrammar(), false,
-						TreeProbabilityComputer.TSGNODE_MATCHER);
+						grammar, false, TreeProbabilityComputer.TSGNODE_MATCHER);
 				final double probability = probabilityComputer
 						.getLog2ProbabilityOf(tsgTree);
 

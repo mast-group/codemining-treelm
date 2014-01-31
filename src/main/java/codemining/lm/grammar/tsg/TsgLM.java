@@ -46,8 +46,7 @@ public class TsgLM implements ILanguageModel {
 	@Override
 	public double getAbsoluteEntropy(final File file) throws IOException {
 		final TreeProbabilityComputer<TSGNode> probComputer = new TreeProbabilityComputer<TSGNode>(
-				grammar.getInternalGrammar(), true,
-				TreeProbabilityComputer.TSGNODE_MATCHER);
+				grammar, true, TreeProbabilityComputer.TSGNODE_MATCHER);
 		final TreeNode<Integer> tree = grammar.getTreeExtractor().getTree(file);
 		final TreeNode<TSGNode> tsgTree = TSGNode.convertTree(tree, 0);
 		return probComputer.getLog2ProbabilityOf(tsgTree);
@@ -61,8 +60,7 @@ public class TsgLM implements ILanguageModel {
 	@Override
 	public double getAbsoluteEntropy(final String fileContent) {
 		final TreeProbabilityComputer<TSGNode> probComputer = new TreeProbabilityComputer<TSGNode>(
-				grammar.getInternalGrammar(), true,
-				TreeProbabilityComputer.TSGNODE_MATCHER);
+				grammar, true, TreeProbabilityComputer.TSGNODE_MATCHER);
 		final TreeNode<Integer> tree = grammar.getTreeExtractor().getTree(
 				fileContent, ParseType.COMPILATION_UNIT);
 		final TreeNode<TSGNode> tsgTree = TSGNode.convertTree(tree, 0);

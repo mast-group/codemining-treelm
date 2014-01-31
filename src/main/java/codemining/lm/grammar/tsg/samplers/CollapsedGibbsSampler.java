@@ -156,7 +156,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 	@Override
 	public double getSamplePosteriorLog2ProbabilityForTree(
 			final TreeNode<TSGNode> subtree, final boolean remove) {
-		return posteriorComputer.computePosteriorProbability(subtree, remove);
+		return posteriorComputer.computeLog2PosteriorProbability(subtree, remove);
 	}
 
 	/**
