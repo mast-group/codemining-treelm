@@ -300,8 +300,12 @@ class ClassicTsgPosteriorComputer implements
 	 */
 	public double getLog2ProbForCFG(final CFGRule rule) {
 		checkNotNull(rule);
-		final double logProb = DoubleMath.log2(cfg.getMLProbability(rule.root,
-				rule.ruleConsequent));
+		double mlProbability = cfg.getMLProbability(rule.root,
+				rule.ruleConsequent);
+		if (Double.compare(mlProbability, 0) == 0) {
+			mlProbability = 10E-10; // An arbitrary small probability.
+		}
+		final double logProb = DoubleMath.log2(mlProbability);
 
 		checkArgument(!Double.isNaN(logProb), "LogProb is %s", logProb);
 		return logProb;
