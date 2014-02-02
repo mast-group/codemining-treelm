@@ -233,9 +233,9 @@ class ClassicTsgPosteriorComputer implements
 		}
 
 		final double log2prior = getLog2PriorForTree(tree);
-		if (nRulesCommonRoot == 0 || Double.isInfinite(log2prior)) {
-			return Double.NEGATIVE_INFINITY;
-		}
+		checkArgument(
+				!Double.isInfinite(log2prior) && !Double.isNaN(log2prior),
+				"Prior is %s", log2prior);
 
 		if (nRulesInGrammar > 0 && remove) {
 			nRulesInGrammar--;
@@ -247,7 +247,10 @@ class ClassicTsgPosteriorComputer implements
 				DoubleMath.log2(concentrationParameter) + log2prior)
 				- DoubleMath.log2(nRulesCommonRoot + concentrationParameter);
 
-		checkArgument(!Double.isNaN(log2Probability));
+		checkArgument(
+				!Double.isNaN(log2Probability)
+						&& !Double.isInfinite(log2Probability),
+				"Posterior probability is %s", log2Probability);
 		checkArgument(log2Probability <= 0);
 		return log2Probability;
 	}

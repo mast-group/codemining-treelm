@@ -102,16 +102,19 @@ public class TreeProbabilityComputer<T extends Serializable> {
 		// Add the CFG production, only if it isn't already in the possible
 		// productions.
 		final TreeNode<T> cfgRule = TreeNode.create(current);
+		double cfgLogProb = 0;
 		for (int i = 0; i < current.nProperties(); i++) {
 			final List<TreeNode<T>> childrenForProperty = current
 					.getChildrenByProperty().get(i);
 			for (final TreeNode<T> child : childrenForProperty) {
-				cfgRule.addChildNode(child, i);
+				cfgRule.addChildNode(TreeNode.create(child), i);
+				cfgLogProb += nodeProductionProbabilities.get(child);
 			}
 		}
 		if (!productions.contains(cfgRule)) {
-			allRuleLog2Probabilities.add(tsGrammar
-					.computeTreePosteriorLog2Probability(cfgRule));
+			final double nodeLogProb = tsGrammar
+					.computeTreePosteriorLog2Probability(cfgRule) + cfgLogProb;
+			allRuleLog2Probabilities.add(nodeLogProb);
 		}
 
 		// log-sum-exp the probabilities of all the probabilities
