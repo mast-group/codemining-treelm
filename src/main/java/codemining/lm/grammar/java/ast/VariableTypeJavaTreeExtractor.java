@@ -39,7 +39,7 @@ public class VariableTypeJavaTreeExtractor extends JavaASTTreeExtractor {
 				final boolean useComments) {
 			super(useComments);
 			definedVariables = VariableScopeExtractor
-					.getDefinedVarsPerNode(extracted);
+					.getDefinedVarsPerNode(extracted.getRoot());
 		}
 
 		/**
