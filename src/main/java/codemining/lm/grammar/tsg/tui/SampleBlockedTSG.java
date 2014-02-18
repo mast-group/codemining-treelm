@@ -21,6 +21,7 @@ import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.FilteredBlockCollapsedGibbsSampler;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -40,13 +41,13 @@ public class SampleBlockedTSG {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length != 3) {
+		if (args.length != 4) {
 			System.err
-					.println("Usage <TrainingDir> normal|binary|binaryvariables|variables <#iterations>");
+					.println("Usage <TrainingDir> normal|binary|binaryvariables|variables block|filterblock <#iterations>");
 			System.exit(-1);
 		}
 
-		final int nIterations = Integer.parseInt(args[2]);
+		final int nIterations = Integer.parseInt(args[3]);
 		final File samplerCheckpoint = new File("tsgSampler.ser");
 		final BlockCollapsedGibbsSampler sampler;
 
@@ -60,31 +61,30 @@ public class SampleBlockedTSG {
 			final AbstractJavaTreeExtractor format;
 			if (args[1].equals("normal")) {
 				format = new JavaASTTreeExtractor();
-
-				sampler = new BlockCollapsedGibbsSampler(100, 10,
-						new JavaFormattedTSGrammar(format),
-						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binary")) {
 				format = new BinaryEclipseASTTreeExtractor(
 						new JavaASTTreeExtractor());
-
-				sampler = new BlockCollapsedGibbsSampler(100, 10,
-						new JavaFormattedTSGrammar(format),
-						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("variables")) {
 				format = new VariableTypeJavaTreeExtractor();
-				sampler = new BlockCollapsedGibbsSampler(100, 10,
-						new JavaFormattedTSGrammar(format),
-						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binaryvariables")) {
 				format = new BinaryEclipseASTTreeExtractor(
 						new VariableTypeJavaTreeExtractor());
+			} else {
+				throw new IllegalArgumentException(
+						"Unrecognizable training type parameter " + args[1]);
+			}
+
+			if (args[2].equals("block")) {
 				sampler = new BlockCollapsedGibbsSampler(100, 10,
+						new JavaFormattedTSGrammar(format),
+						new JavaFormattedTSGrammar(format));
+			} else if (args[2].equals("filterblock")) {
+				sampler = new FilteredBlockCollapsedGibbsSampler(100, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else {
 				throw new IllegalArgumentException(
-						"Unrecognizable training type parameter " + args[1]);
+						"Unrecognizable training type parameter " + args[2]);
 			}
 			final double percentRootsInit = .9;
 			int nFiles = 0;
@@ -152,14 +152,11 @@ public class SampleBlockedTSG {
 		}
 
 		// sampler.pruneNonSurprisingRules(1);
-		sampler.getBurnInGrammar().prune(
-				(int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
-		sampler.getSampleGrammar().prune(
-				(int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
+		grammarToUse
+				.prune((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(grammarToUse.toString());
 		finished.set(true); // we have finished and thus the shutdown hook can
 							// now stop waiting for us.
 
 	}
-
 }
