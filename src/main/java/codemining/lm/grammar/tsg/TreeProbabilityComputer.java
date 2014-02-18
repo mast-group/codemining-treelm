@@ -89,7 +89,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 					productionEntry.getElement(), current);
 
 			double productionLog2Prob = tsGrammar
-					.computeTreePosteriorLog2Probability(productionEntry
+					.computeRulePosteriorLog2Probability(productionEntry
 							.getElement());
 
 			for (final TreeNode<T> subtree : endPoints) {
@@ -113,7 +113,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 		}
 		if (!productions.contains(cfgRule)) {
 			final double nodeLogProb = tsGrammar
-					.computeTreePosteriorLog2Probability(cfgRule) + cfgLogProb;
+					.computeRulePosteriorLog2Probability(cfgRule) + cfgLogProb;
 			allRuleLog2Probabilities.add(nodeLogProb);
 		}
 

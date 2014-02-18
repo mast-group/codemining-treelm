@@ -3,7 +3,6 @@ package codemining.lm.grammar.tsg.samplers;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,12 +13,11 @@ import cc.mallet.optimize.ConjugateGradient;
 import cc.mallet.optimize.Optimizable;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
-import codemining.lm.grammar.cfg.ContextFreeGrammar;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.ITsgPosteriorProbabilityComputer;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler.CFGRule;
+import codemining.lm.grammar.tsg.samplers.CFGPrior.IRuleCreator;
 import codemining.math.distributions.GeometricDistribution;
 import codemining.util.SettingsLoader;
 import codemining.util.StatsUtil;
@@ -37,7 +35,7 @@ import com.google.common.util.concurrent.AtomicDouble;
  * 
  */
 class ClassicTsgPosteriorComputer implements
-		ITsgPosteriorProbabilityComputer<TSGNode> {
+		ITsgPosteriorProbabilityComputer<TSGNode>, IRuleCreator {
 
 	private class HyperparameterOptimizable implements
 			Optimizable.ByGradientValue {
@@ -83,7 +81,7 @@ class ClassicTsgPosteriorComputer implements
 						@Override
 						public void run() {
 							logProbSum
-									.addAndGet(computeLog2PosteriorProbability(
+									.addAndGet(computeLog2PosteriorProbabilityOfRule(
 											root, true));
 						}
 
@@ -118,7 +116,8 @@ class ClassicTsgPosteriorComputer implements
 									"Counts are not correct");
 
 							final int treeSize = TreeNode.getTreeSize(subTree);
-							final double logRuleMLE = getTreeCFLog2Probability(subTree);
+							final double logRuleMLE = prior
+									.getTreeCFLog2Probability(subTree);
 
 							final double geometricLogProb = GeometricDistribution
 									.getLog2Prob(treeSize, geometricProbability);
@@ -128,7 +127,7 @@ class ClassicTsgPosteriorComputer implements
 									+ DoubleMath.log2(concentrationParameter);
 
 							final double log2denominator = StatsUtil
-									.logSumOfExponentials(
+									.log2SumOfExponentials(
 											DoubleMath.log2(nRulesInGrammar),
 											priorLog2Prob);
 							concentrationGradient.addAndGet(Math.pow(2,
@@ -195,12 +194,9 @@ class ClassicTsgPosteriorComputer implements
 
 	protected double geometricProbability;
 
-	/**
-	 * A map containing the PCFG rules and their counts.
-	 */
-	protected AbstractContextFreeGrammar cfg;
-
 	final JavaFormattedTSGrammar grammar;
+
+	protected final CFGPrior prior;
 
 	static final Logger LOGGER = Logger
 			.getLogger(ClassicTsgPosteriorComputer.class.getName());
@@ -211,14 +207,14 @@ class ClassicTsgPosteriorComputer implements
 	ClassicTsgPosteriorComputer(final JavaFormattedTSGrammar grammar,
 			final double avgTreeSize, final double DPconcentration) {
 		this.grammar = grammar;
-		cfg = new ContextFreeGrammar(grammar.getTreeExtractor());
+		prior = new CFGPrior(grammar.getTreeExtractor(), this);
 		concentrationParameter = DPconcentration;
 		geometricProbability = 1. / avgTreeSize;
 	}
 
 	@Override
-	public double computeLog2PosteriorProbability(final TreeNode<TSGNode> tree,
-			final boolean remove) {
+	public double computeLog2PosteriorProbabilityOfRule(
+			final TreeNode<TSGNode> tree, final boolean remove) {
 		checkNotNull(tree);
 
 		double nRulesCommonRoot = grammar.countTreesWithRoot(tree.getData());
@@ -242,7 +238,7 @@ class ClassicTsgPosteriorComputer implements
 			nRulesCommonRoot--;
 		}
 
-		final double log2Probability = StatsUtil.logSumOfExponentials(
+		final double log2Probability = StatsUtil.log2SumOfExponentials(
 				DoubleMath.log2(nRulesInGrammar),
 				DoubleMath.log2(concentrationParameter) + log2prior)
 				- DoubleMath.log2(nRulesCommonRoot + concentrationParameter);
@@ -255,13 +251,9 @@ class ClassicTsgPosteriorComputer implements
 		return log2Probability;
 	}
 
-	/**
-	 * Create a node consequent.
-	 * 
-	 * @param node
-	 * @return
-	 */
-	public CFGRule createRuleForNode(final TreeNode<TSGNode> node) {
+	@Override
+	public AbstractContextFreeGrammar.CFGRule createRuleForNode(
+			final TreeNode<TSGNode> node) {
 		final List<List<TreeNode<TSGNode>>> childrenByProperty = node
 				.getChildrenByProperty();
 		final NodeConsequent cons = new NodeConsequent(
@@ -274,7 +266,8 @@ class ClassicTsgPosteriorComputer implements
 				propertyChildren.add(postprocessIdForCFG(child));
 			}
 		}
-		return new CFGRule(postprocessIdForCFG(node), cons);
+		return new AbstractContextFreeGrammar.CFGRule(
+				postprocessIdForCFG(node), cons);
 	}
 
 	/**
@@ -287,64 +280,15 @@ class ClassicTsgPosteriorComputer implements
 	public double getLog2PriorForTree(final TreeNode<TSGNode> subtree) {
 		checkNotNull(subtree);
 		final int treeSize = TreeNode.getTreeSize(subtree);
-		final double logRuleMLE = getTreeCFLog2Probability(subtree);
+		final double logRuleMLE = prior.getTreeCFLog2Probability(subtree);
 
 		final double geometricLogProb = GeometricDistribution.getLog2Prob(
 				treeSize, geometricProbability);
 		return geometricLogProb + logRuleMLE;
 	}
 
-	/**
-	 * Return the log probability of the given PCFG rule.
-	 * 
-	 * @param from
-	 * @param to
-	 * @return
-	 */
-	public double getLog2ProbForCFG(final CFGRule rule) {
-		checkNotNull(rule);
-		double mlProbability = cfg.getMLProbability(rule.root,
-				rule.ruleConsequent);
-		if (Double.compare(mlProbability, 0) == 0) {
-			mlProbability = 10E-10; // An arbitrary small probability.
-		}
-		final double logProb = DoubleMath.log2(mlProbability);
-
-		checkArgument(!Double.isNaN(logProb), "LogProb is %s", logProb);
-		return logProb;
-	}
-
-	/**
-	 * Get the probability of the given subtree as seen from the PCFG.
-	 * 
-	 * @param subtree
-	 * @return
-	 */
-	private double getTreeCFLog2Probability(final TreeNode<TSGNode> subtree) {
-		checkNotNull(subtree);
-
-		final ArrayDeque<TreeNode<TSGNode>> toSee = new ArrayDeque<TreeNode<TSGNode>>();
-		toSee.push(subtree);
-
-		double logProbability = 0;
-		while (!toSee.isEmpty()) {
-			final TreeNode<TSGNode> currentNode = toSee.pop();
-
-			for (final List<TreeNode<TSGNode>> childProperties : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<TSGNode> child : childProperties) {
-					if (!child.isLeaf()) {
-						toSee.push(child);
-					}
-				}
-			}
-			final CFGRule rule = createRuleForNode(currentNode);
-			final double nodeLogProb = getLog2ProbForCFG(rule);
-			logProbability += nodeLogProb;
-		}
-
-		checkArgument(!Double.isNaN(logProbability));
-		return logProbability;
+	public CFGPrior getPrior() {
+		return prior;
 	}
 
 	public void optimizeHyperparameters(

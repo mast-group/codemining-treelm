@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import codemining.lm.ILanguageModel;
+import codemining.lm.grammar.tree.TreeNode;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
@@ -32,6 +33,21 @@ public class ImmutableContextFreeGrammar extends AbstractContextFreeGrammar {
 	public ImmutableContextFreeGrammar(final AbstractContextFreeGrammar original) {
 		super(original.treeExtractor, null);
 		grammar = getImmutableCopy(original.grammar);
+	}
+
+	@Override
+	public void addCFGRule(final CFGRule rule) {
+		throw new IllegalArgumentException("Immutable CFG cannot be modified");
+	}
+
+	@Override
+	public void addCFGRule(final int rootId, final NodeConsequent ruleConsequent) {
+		throw new IllegalArgumentException("Immutable CFG cannot be modified");
+	}
+
+	@Override
+	public void addRulesFrom(final TreeNode<Integer> node) {
+		throw new IllegalArgumentException("Immutable CFG cannot be modified");
 	}
 
 	private Map<Integer, Multiset<NodeConsequent>> getImmutableCopy(

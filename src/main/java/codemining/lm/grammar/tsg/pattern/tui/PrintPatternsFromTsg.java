@@ -5,6 +5,7 @@ package codemining.lm.grammar.tsg.pattern.tui;
 
 import java.util.Set;
 
+import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
@@ -36,31 +37,63 @@ public class PrintPatternsFromTsg {
 				.getSerializer().deserializeFrom(args[0]);
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
-		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
 		final Set<TreeNode<TSGNode>> patterns = PatternExtractor
 				.getTSGPatternsFrom(grammar, minPatternCount, minPatternSize);
 
 		for (final TreeNode<TSGNode> pattern : patterns) {
-			System.out
-					.println("------------------------------------------------------");
-			final TreeNode<Integer> intTree = TSGNode.tsgTreeToInt(pattern);
-			System.out.println(intTree.toString(format.getTreePrinter()));
-			System.out
-					.println("______________________________________________________");
-			System.out.println(format.getASTFromTree(intTree));
-			final TreeNode<TSGNode> tsgTree = pattern;
-			final int count = grammar.countTreeOccurences(tsgTree);
-			final int totalProductions = grammar.countTreesWithRoot(tsgTree
-					.getData());
-			final double probability = ((double) count) / totalProductions;
-			final int size = pattern.getTreeSize();
-			System.out.println("Count: " + count + " Size:" + size + " Prob:"
-					+ String.format("%.4f", probability));
-			System.out
-					.println("______________________________________________________");
+			try {
+				System.out
+						.println("------------------------------------------------------");
+				printPattern(grammar, pattern);
+			} catch (final Throwable e) {
+				System.out.println("Error printing.");
+			}
 
 		}
 
+	}
+
+	/**
+	 * @param grammar
+	 * @param format
+	 * @param intTree
+	 */
+	public static void printIntTree(final AbstractJavaTreeExtractor format,
+			final TreeNode<Integer> intTree) {
+		System.out.println(intTree.toString(format.getTreePrinter()));
+		System.out
+				.println("______________________________________________________");
+		if (format.getSymbol(intTree.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
+			final StringBuffer sb = new StringBuffer();
+			format.printMultinode(sb, intTree);
+			System.out.println(sb.toString());
+		} else {
+			System.out.println(format.getASTFromTree(intTree));
+		}
+	}
+
+	/**
+	 * @param grammar
+	 * @param format
+	 * @param pattern
+	 */
+	public static void printPattern(final JavaFormattedTSGrammar grammar,
+			final TreeNode<TSGNode> pattern) {
+		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
+
+		final TreeNode<Integer> intTree = TSGNode.tsgTreeToInt(pattern);
+		printIntTree(format, intTree);
+
+		final TreeNode<TSGNode> tsgTree = pattern;
+		final int count = grammar.countTreeOccurences(tsgTree);
+		final int totalProductions = grammar.countTreesWithRoot(tsgTree
+				.getData());
+		final double probability = ((double) count) / totalProductions;
+		final int size = pattern.getTreeSize();
+		System.out.println("Count: " + count + " Size:" + size + " Prob:"
+				+ String.format("%.4f", probability));
+		System.out
+				.println("______________________________________________________");
 	}
 
 }

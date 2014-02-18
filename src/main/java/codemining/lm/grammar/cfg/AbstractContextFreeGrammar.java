@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
@@ -27,13 +26,25 @@ import codemining.lm.grammar.tree.TreeNode;
 import codemining.math.random.SampleUtils;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.math.DoubleMath;
 
 public abstract class AbstractContextFreeGrammar implements ILanguageModel {
+
+	/**
+	 * A CFG rule struct.
+	 */
+	public static class CFGRule {
+		public final int root;
+		public final NodeConsequent ruleConsequent;
+
+		public CFGRule(final int from, final NodeConsequent to) {
+			root = from;
+			ruleConsequent = to;
+		}
+
+	}
 
 	/**
 	 * A struct class to hold the node consequents.
@@ -79,35 +90,53 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	private static final long serialVersionUID = 3019243696898888854L;
 
 	/**
-	 * Add a single CFG rule
+	 * The actual grammar (in symbols)
+	 */
+	protected Map<Integer, Multiset<NodeConsequent>> grammar;
+
+	private transient ITokenizer tokenizer = new JavaTokenizer();
+
+	/**
+	 * The tree extractor.
+	 */
+	protected final ITreeExtractor<Integer> treeExtractor;
+
+	public AbstractContextFreeGrammar(
+			final ITreeExtractor<Integer> treeExtractor,
+			final Map<Integer, Multiset<NodeConsequent>> grammar) {
+		this.treeExtractor = checkNotNull(treeExtractor);
+		this.grammar = grammar;
+	}
+
+	public abstract void addCFGRule(final CFGRule rule);
+
+	/**
+	 * Add a single CFG rule to this grammar.
 	 * 
 	 * @param rootId
 	 * @param ruleConsequent
 	 * @param grammar
 	 */
-	public static void addCFGRule(final int rootId,
-			final NodeConsequent ruleConsequent,
-			final Map<Integer, Multiset<NodeConsequent>> grammar) {
-		Multiset<NodeConsequent> ruleProduction;
-		final Multiset<NodeConsequent> tempMultiset = ConcurrentHashMultiset
-				.create();
+	public abstract void addCFGRule(final int rootId,
+			final NodeConsequent ruleConsequent);
 
-		if (grammar instanceof ConcurrentMap) {
-			final ConcurrentMap<Integer, Multiset<NodeConsequent>> conGrammar = (ConcurrentMap<Integer, Multiset<NodeConsequent>>) grammar;
-			ruleProduction = conGrammar.putIfAbsent(rootId, tempMultiset);
-		} else {
-			if (grammar.containsKey(rootId)) {
-				ruleProduction = grammar.get(rootId);
-			} else {
-				ruleProduction = null;
-			}
-		}
-		if (ruleProduction == null) {
-			ruleProduction = tempMultiset;
-		}
-
-		ruleProduction.add(ruleConsequent);
+	/**
+	 * Add grammar rules from the given code.
+	 * 
+	 */
+	public void addGrammarRulesFromCode(final String code,
+			final ParseType parseType) {
+		final TreeNode<Integer> tree = treeExtractor.getTree(code, parseType);
+		addRulesFrom(tree);
 	}
+
+	/**
+	 * Recursively update tree frequencies. I.e. when a tree is added to the
+	 * corpus, update the counts appropriately.
+	 * 
+	 * @param node
+	 */
+	public abstract void addRulesFrom(final TreeNode<Integer> node);
 
 	/**
 	 * Create a single CFG rule for the given node.
@@ -115,8 +144,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	 * @param currentNode
 	 * @param grammar2
 	 */
-	public static void createCFRuleForNode(final TreeNode<Integer> currentNode,
-			final Map<Integer, Multiset<NodeConsequent>> grammar) {
+	public CFGRule createCFRuleForNode(final TreeNode<Integer> currentNode) {
 		final int rootId = currentNode.getData();
 
 		final int nProperties = currentNode.nProperties();
@@ -133,66 +161,14 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 			}
 		}
 
-		addCFGRule(rootId, ruleConsequent, grammar);
+		return new CFGRule(rootId, ruleConsequent);
 	}
 
 	/**
-	 * Recursively update tree frequencies. I.e. when a tree is added to the
-	 * corpus, update the counts appropriately.
+	 * Generate a random tree based on this CFG.
 	 * 
-	 * @param node
+	 * @return
 	 */
-	public static void updateRules(final TreeNode<Integer> node,
-			final Map<Integer, Multiset<NodeConsequent>> grammar) {
-		checkNotNull(node);
-
-		final ArrayDeque<TreeNode<Integer>> nodeUpdates = new ArrayDeque<TreeNode<Integer>>();
-		nodeUpdates.push(node);
-
-		while (!nodeUpdates.isEmpty()) {
-			final TreeNode<Integer> currentNode = nodeUpdates.pop();
-			createCFRuleForNode(currentNode, grammar);
-
-			for (final List<TreeNode<Integer>> childProperty : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<Integer> child : childProperty) {
-					if (!child.isLeaf()) {
-						nodeUpdates.push(child);
-					}
-				}
-			}
-
-		}
-	}
-
-	/**
-	 * The actual grammar (in symbols)
-	 */
-	protected Map<Integer, Multiset<NodeConsequent>> grammar;
-
-	private transient ITokenizer tokenizer = new JavaTokenizer();
-
-	protected final ITreeExtractor<Integer> treeExtractor;
-
-	public AbstractContextFreeGrammar(
-			final ITreeExtractor<Integer> treeExtractor,
-			final Map<Integer, Multiset<NodeConsequent>> grammar) {
-		this.treeExtractor = checkNotNull(treeExtractor);
-		this.grammar = grammar;
-	}
-
-	/**
-	 * Get the grammar rules from code
-	 * 
-	 */
-	public void addGrammarRulesFromCode(final String code,
-			final Map<Integer, Multiset<NodeConsequent>> ruleset,
-			final ParseType parseType) {
-		final TreeNode<Integer> tree = treeExtractor.getTree(code,
-				parseType);
-		updateRules(tree, ruleset);
-	}
-
 	public TreeNode<Integer> generateRandom() {
 		final TreeNode<Integer> root = treeExtractor.getKeyForCompilationUnit();
 
@@ -238,11 +214,11 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	public double getAbsoluteEntropy(final String fileContent,
 			final ParseType parseType) {
-		final Map<Integer, Multiset<NodeConsequent>> rules = Maps
-				.newConcurrentMap();
+		final ContextFreeGrammar otherCfg = new ContextFreeGrammar(
+				treeExtractor);
 
-		addGrammarRulesFromCode(fileContent, rules, parseType);
-		final double entropy = getEntropyOfRules(rules);
+		otherCfg.addGrammarRulesFromCode(fileContent, parseType);
+		final double entropy = getEntropyOfRules(otherCfg);
 
 		checkArgument(entropy != 0);
 		checkArgument(!Double.isNaN(entropy));
@@ -252,14 +228,13 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	/**
 	 * Return the entropy (unnormalised) of the given rules
 	 * 
-	 * @param fileRules
+	 * @param otherCfg
 	 * @return
 	 */
-	public double getEntropyOfRules(
-			final Map<Integer, Multiset<NodeConsequent>> fileRules) {
+	public double getEntropyOfRules(final ContextFreeGrammar otherCfg) {
 		double sum = 0;
 
-		for (final Entry<Integer, Multiset<NodeConsequent>> entry : fileRules
+		for (final Entry<Integer, Multiset<NodeConsequent>> entry : otherCfg.grammar
 				.entrySet()) {
 			final int fromNode = entry.getKey();
 			for (final com.google.common.collect.Multiset.Entry<NodeConsequent> toNodes : entry
@@ -296,11 +271,6 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 				/ tokens.size();
 		checkArgument(!Double.isNaN(crossEntropy));
 		return crossEntropy;
-	}
-
-	@Override
-	public ILanguageModel getImmutableVersion() {
-		return new ImmutableContextFreeGrammar(this);
 	}
 
 	public Map<Integer, Multiset<NodeConsequent>> getInternalGrammar() {

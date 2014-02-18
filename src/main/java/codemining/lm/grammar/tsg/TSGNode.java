@@ -159,7 +159,8 @@ public class TSGNode implements Serializable {
 			final List<List<TreeNode<TSGNode>>> children = currentFrom
 					.getChildrenByProperty();
 
-			for (int i = 0; i < children.size(); i++) {
+			final int nProperties = children.size();
+			for (int i = 0; i < nProperties; i++) {
 				for (final TreeNode<TSGNode> fromChild : children.get(i)) {
 					final TSGNode toChildData = new TSGNode(fromChild.getData());
 					final TreeNode<TSGNode> toChild = TreeNode.create(
@@ -176,7 +177,7 @@ public class TSGNode implements Serializable {
 	}
 
 	/**
-	 * Return a list of all the rooted trees in this tree.
+	 * Return a list containing copies of the rooted trees in this tree.
 	 * 
 	 * @param tree
 	 * @return
@@ -266,6 +267,63 @@ public class TSGNode implements Serializable {
 				topNode.nProperties());
 		copyChildren(topNode, root, true);
 		return root;
+	}
+
+	/**
+	 * Return true if the two nodes match until the roots.
+	 * 
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	public static boolean treesMatchToRoot(final TreeNode<TSGNode> from,
+			final TreeNode<TSGNode> to) {
+		final ArrayDeque<CopyPair> stack = new ArrayDeque<CopyPair>();
+		stack.push(new CopyPair(from, to));
+
+		while (!stack.isEmpty()) {
+			final CopyPair pair = stack.pop();
+			final TreeNode<TSGNode> currentFrom = pair.fromNode;
+			final TreeNode<TSGNode> currentTo = pair.toNode;
+
+			final List<List<TreeNode<TSGNode>>> childrenFrom = currentFrom
+					.getChildrenByProperty();
+			final List<List<TreeNode<TSGNode>>> childrenTo = currentTo
+					.getChildrenByProperty();
+
+			if (childrenFrom.size() != childrenTo.size()) {
+				return false;
+			}
+
+			for (int i = 0; i < childrenFrom.size(); i++) {
+				final List<TreeNode<TSGNode>> childrenFromByProperty = childrenFrom
+						.get(i);
+				final List<TreeNode<TSGNode>> childrenToByProperty = childrenTo
+						.get(i);
+
+				final int childrenFromByPropertySize = childrenFromByProperty
+						.size();
+				if (childrenFromByPropertySize != childrenToByProperty.size()) {
+					return false;
+				}
+
+				for (int j = 0; j < childrenFromByPropertySize; j++) {
+					final TreeNode<TSGNode> fromChild = childrenFromByProperty
+							.get(j);
+					final TreeNode<TSGNode> toChild = childrenToByProperty
+							.get(j);
+
+					if (!toChild.getData().equals(fromChild.getData())) {
+						return false;
+					}
+
+					if (!toChild.getData().isRoot) {
+						stack.push(new CopyPair(fromChild, toChild));
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	/**

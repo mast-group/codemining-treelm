@@ -4,7 +4,6 @@
 package codemining.lm.grammar.tsg.tui;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
@@ -15,46 +14,44 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaASTTreeExtractor;
-import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
-import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler;
-import codemining.lm.grammar.tsg.samplers.TempletizedCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
 /**
+ * Sample a TSG using a blocked sampler.
+ * 
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class SampleTSG {
+public class SampleBlockedTSG {
 
-	private static final Logger LOGGER = Logger.getLogger(SampleTSG.class
-			.getName());
+	private static final Logger LOGGER = Logger
+			.getLogger(SampleBlockedTSG.class.getName());
 
 	/**
 	 * @param args
-	 * @throws IOException
 	 * @throws SerializationException
 	 */
-	public static void main(final String[] args) throws IOException,
-			SerializationException {
+	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 3) {
 			System.err
-					.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables|variables <#iterations>");
-			return;
+					.println("Usage <TrainingDir> normal|binary|binaryvariables|variables <#iterations>");
+			System.exit(-1);
 		}
-		final int nIterations = Integer.parseInt(args[2]);
 
+		final int nIterations = Integer.parseInt(args[2]);
 		final File samplerCheckpoint = new File("tsgSampler.ser");
-		final CollapsedGibbsSampler sampler;
+		final BlockCollapsedGibbsSampler sampler;
 
 		if (samplerCheckpoint.exists()) {
-			sampler = (CollapsedGibbsSampler) Serializer.getSerializer()
+			sampler = (BlockCollapsedGibbsSampler) Serializer.getSerializer()
 					.deserializeFrom("tsgSampler.ser");
 			LOGGER.info("Resuming sampling");
 
@@ -64,31 +61,30 @@ public class SampleTSG {
 			if (args[1].equals("normal")) {
 				format = new JavaASTTreeExtractor();
 
-				sampler = new CollapsedGibbsSampler(20, 10,
+				sampler = new BlockCollapsedGibbsSampler(100, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binary")) {
 				format = new BinaryEclipseASTTreeExtractor(
 						new JavaASTTreeExtractor());
 
-				sampler = new CollapsedGibbsSampler(20, 10,
+				sampler = new BlockCollapsedGibbsSampler(100, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
-			} else if (args[1].equals("binary-metavariables")) {
-				format = new BinaryEclipseASTTreeExtractor(
-						new TempletizedJavaTreeExtractor());
-				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
-			} else if (args[1].equals("metavariables")) {
-				format = new TempletizedJavaTreeExtractor();
-				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
 			} else if (args[1].equals("variables")) {
 				format = new VariableTypeJavaTreeExtractor();
-				sampler = new CollapsedGibbsSampler(20, 10,
+				sampler = new BlockCollapsedGibbsSampler(100, 10,
+						new JavaFormattedTSGrammar(format),
+						new JavaFormattedTSGrammar(format));
+			} else if (args[1].equals("binaryvariables")) {
+				format = new BinaryEclipseASTTreeExtractor(
+						new VariableTypeJavaTreeExtractor());
+				sampler = new BlockCollapsedGibbsSampler(100, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else {
-				throw new IllegalArgumentException("Unrecognizable parameter "
-						+ args[1]);
+				throw new IllegalArgumentException(
+						"Unrecognizable training type parameter " + args[1]);
 			}
 			final double percentRootsInit = .9;
 			int nFiles = 0;
@@ -156,9 +152,14 @@ public class SampleTSG {
 		}
 
 		// sampler.pruneNonSurprisingRules(1);
-		sampler.pruneRareTrees((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
+		sampler.getBurnInGrammar().prune(
+				(int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
+		sampler.getSampleGrammar().prune(
+				(int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(grammarToUse.toString());
 		finished.set(true); // we have finished and thus the shutdown hook can
 							// now stop waiting for us.
+
 	}
+
 }

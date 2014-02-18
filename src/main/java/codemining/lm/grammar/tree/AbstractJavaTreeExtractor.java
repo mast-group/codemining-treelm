@@ -166,4 +166,31 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 		return new NodePrinter();
 	}
 
+	/**
+	 * @param javaFormattedTSGrammar
+	 *            TODO
+	 * @param buf
+	 * @param intTree
+	 */
+	public void printMultinode(final StringBuffer buf,
+			final TreeNode<Integer> intTree) {
+		if (intTree.isLeaf()) {
+			return;
+		}
+		for (int i = 0; i < intTree.getChildrenByProperty().get(0).size(); i++) {
+			buf.append(getASTFromTree(intTree.getChild(i, 0)));
+			buf.append(" ");
+		}
+
+		if (intTree.getChildrenByProperty().get(1).isEmpty()) {
+			return;
+		}
+		final TreeNode<Integer> next = intTree.getChild(0, 1);
+		if (getSymbol(next.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
+			printMultinode(buf, next);
+		} else {
+			buf.append(getASTFromTree(next));
+		}
+	}
+
 }

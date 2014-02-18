@@ -3,22 +3,29 @@
  */
 package codemining.lm.grammar.cfg;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.languagetools.ParseType;
+import codemining.lm.ILanguageModel;
 import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.tree.TreeNode;
 import codemining.util.SettingsLoader;
 import codemining.util.parallel.ParallelThreadPool;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
+import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 
@@ -62,7 +69,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 		@Override
 		public void run() {
 			try {
-				addGrammarRulesFromFile(sourceFile, grammar);
+				addGrammarRulesFromFile(sourceFile);
 			} catch (final IOException e) {
 				LOGGER.warning("Failed to get AST from "
 						+ sourceFile.getAbsolutePath() + " "
@@ -85,6 +92,34 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 				.<Integer, Multiset<NodeConsequent>> newConcurrentMap());
 	}
 
+	@Override
+	public void addCFGRule(final CFGRule rule) {
+		addCFGRule(rule.root, rule.ruleConsequent);
+	}
+
+	@Override
+	public void addCFGRule(final int rootId, final NodeConsequent ruleConsequent) {
+		Multiset<NodeConsequent> ruleProduction;
+		final Multiset<NodeConsequent> tempMultiset = ConcurrentHashMultiset
+				.create();
+
+		if (grammar instanceof ConcurrentMap) {
+			final ConcurrentMap<Integer, Multiset<NodeConsequent>> conGrammar = (ConcurrentMap<Integer, Multiset<NodeConsequent>>) grammar;
+			ruleProduction = conGrammar.putIfAbsent(rootId, tempMultiset);
+		} else {
+			if (grammar.containsKey(rootId)) {
+				ruleProduction = grammar.get(rootId);
+			} else {
+				ruleProduction = null;
+			}
+		}
+		if (ruleProduction == null) {
+			ruleProduction = tempMultiset;
+		}
+
+		ruleProduction.add(ruleConsequent);
+	}
+
 	/**
 	 * Get the grammar rules from a file.
 	 * 
@@ -92,11 +127,38 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 	 * @param grammarToAdd
 	 * @throws IOException
 	 */
-	public void addGrammarRulesFromFile(final File sourceFile,
-			final Map<Integer, Multiset<NodeConsequent>> grammarToAdd)
+	public void addGrammarRulesFromFile(final File sourceFile)
 			throws IOException {
 		final String code = FileUtils.readFileToString(sourceFile);
-		addGrammarRulesFromCode(code, grammarToAdd, ParseType.COMPILATION_UNIT);
+		addGrammarRulesFromCode(code, ParseType.COMPILATION_UNIT);
+	}
+
+	@Override
+	public void addRulesFrom(final TreeNode<Integer> node) {
+		checkNotNull(node);
+
+		final ArrayDeque<TreeNode<Integer>> nodeUpdates = new ArrayDeque<TreeNode<Integer>>();
+		nodeUpdates.push(node);
+
+		while (!nodeUpdates.isEmpty()) {
+			final TreeNode<Integer> currentNode = nodeUpdates.pop();
+			final CFGRule rule = createCFRuleForNode(currentNode);
+			addCFGRule(rule.root, rule.ruleConsequent);
+			for (final List<TreeNode<Integer>> childProperty : currentNode
+					.getChildrenByProperty()) {
+				for (final TreeNode<Integer> child : childProperty) {
+					if (!child.isLeaf()) {
+						nodeUpdates.push(child);
+					}
+				}
+			}
+
+		}
+	}
+
+	@Override
+	public ILanguageModel getImmutableVersion() {
+		return new ImmutableContextFreeGrammar(this);
 	}
 
 	/*

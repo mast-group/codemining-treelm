@@ -1,4 +1,4 @@
-package codemining.lm.grammar.tsg.samplers;
+package codemining.lm.grammar.tsg.samplers.blocked;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -16,7 +16,7 @@ import codemining.lm.grammar.tsg.TSGNode;
 
 import com.google.common.math.DoubleMath;
 
-public class CollapsedGibbsSamplerTest {
+public class BlockCollapsedGibbsSamplerTest {
 
 	public TreeNode<TSGNode> generateSampleTree() {
 		final TSGNode rootNode = new TSGNode(1);
@@ -52,8 +52,8 @@ public class CollapsedGibbsSamplerTest {
 	public void getPosteriorForTree() {
 		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
-		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(10, 10,
-				mockGrammar, mockGrammar);
+		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
+				10, 10, mockGrammar, mockGrammar);
 		sampler.addTree(generateSampleTree(), true);
 
 		final double geometricProb = Math.pow(.9, 5) * .1;
@@ -84,8 +84,8 @@ public class CollapsedGibbsSamplerTest {
 	public void testGetPosteriorProbabilityForTree() {
 		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
-		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(5, 10,
-				mockGrammar, mockGrammar);
+		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
+				5, 10, mockGrammar, mockGrammar);
 		sampler.addTree(generateSampleTree(), true);
 
 		final NodeConsequent nc = new NodeConsequent();
@@ -131,8 +131,8 @@ public class CollapsedGibbsSamplerTest {
 	public void testPriorForTree() {
 		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
-		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(10, 10,
-				mockGrammar, mockGrammar);
+		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
+				10, 10, mockGrammar, mockGrammar);
 		sampler.addTree(generateSampleTree(), true);
 
 		final double geometricProb = Math.pow(.9, 5) * .1;
@@ -153,13 +153,13 @@ public class CollapsedGibbsSamplerTest {
 		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final TreeNode<TSGNode> root = generateSampleTree();
-		final TreeNode<TSGNode> toBeSampled = root.getChild(0, 1);
 
-		final AbstractCollapsedGibbsSampler sampler = new CollapsedGibbsSampler(
+		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
 				10, 10, mockGrammar, mockGrammar);
-		sampler.addTree(root, true);
+		final TreeNode<TSGNode> addedTree = sampler.addTree(root, true);
+		final TreeNode<TSGNode> toBeSampled = addedTree.getChild(0, 1);
 
-		testSampler(root, toBeSampled, sampler);
+		testSampler(addedTree, toBeSampled, sampler);
 	}
 
 	/**
@@ -169,13 +169,13 @@ public class CollapsedGibbsSamplerTest {
 	 */
 	public void testSampler(final TreeNode<TSGNode> root,
 			final TreeNode<TSGNode> toBeSampled,
-			final AbstractCollapsedGibbsSampler sampler) {
+			final BlockCollapsedGibbsSampler sampler) {
 		int countRoot = 0;
 		final double geometricProb = Math.pow(.9, 5) * .1;
 		final double prior = .25 * geometricProb;
 
 		for (int i = 0; i < 10000; i++) {
-			sampler.sampleAt(toBeSampled, root);
+			sampler.sampleAt(toBeSampled);
 			if (toBeSampled.getData().isRoot) {
 				countRoot++;
 				assertEquals(
@@ -212,12 +212,15 @@ public class CollapsedGibbsSamplerTest {
 		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final TreeNode<TSGNode> root = generateSampleTree();
-		final TreeNode<TSGNode> toBeSampled = root.getChild(0, 1);
 
-		final CollapsedGibbsSampler sampler = new CollapsedGibbsSampler(10, 10,
-				mockGrammar, mockGrammar);
-		sampler.addTree(generateSampleTree(), true);
+		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
+				10, 10, mockGrammar, mockGrammar);
+		final TreeNode<TSGNode> addedTree = sampler.addTree(
+				generateSampleTree(), true);
 		sampler.lockSamplerData();
-		testSampler(root, toBeSampled, sampler);
+
+		final TreeNode<TSGNode> toBeSampled = addedTree.getChild(0, 1);
+		testSampler(addedTree, toBeSampled, sampler);
 	}
+
 }

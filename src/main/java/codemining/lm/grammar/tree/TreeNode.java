@@ -9,7 +9,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -369,21 +368,11 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 			return false;
 		}
 		final TreeNode<T> other = (TreeNode<T>) obj;
-		if (nodeData == null) {
-			if (other.nodeData != null) {
-				return false;
-			}
-		} else if (!nodeData.equals(other.nodeData)) {
+		// Check equalities here, for speedup
+		if (!Objects.equal(nodeData, other.nodeData)) {
 			return false;
 		}
-		if (childrenProperties == null) {
-			if (other.childrenProperties != null) {
-				return false;
-			}
-		} else if (!childrenProperties.equals(other.childrenProperties)) {
-			return false;
-		}
-		return true;
+		return isIdenticalTo(other);
 	}
 
 	/**
@@ -402,7 +391,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @return
 	 */
 	public List<List<TreeNode<T>>> getChildrenByProperty() {
-		return Collections.unmodifiableList(childrenProperties);
+		return childrenProperties;
 	}
 
 	/**
@@ -440,6 +429,56 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		} else {
 			return Objects.hashCode(nodeData);
 		}
+	}
+
+	/**
+	 * Non-recursive equality function, for speed.
+	 */
+	private boolean isIdenticalTo(final TreeNode<T> other) {
+		final ArrayDeque<NodePair<T>> stack = new ArrayDeque<NodePair<T>>();
+		stack.push(new NodePair<T>(this, other));
+
+		while (!stack.isEmpty()) {
+			final NodePair<T> pair = stack.pop();
+			final TreeNode<T> currentThis = pair.fromNode;
+			final TreeNode<T> currentOther = pair.toNode;
+
+			final List<List<TreeNode<T>>> thisChildren = currentThis
+					.getChildrenByProperty();
+			final List<List<TreeNode<T>>> otherChildren = currentOther
+					.getChildrenByProperty();
+
+			final int thisChildrenSize = thisChildren.size();
+			if (thisChildrenSize != otherChildren.size()) {
+				return false;
+			}
+
+			for (int i = 0; i < thisChildrenSize; i++) {
+				final List<TreeNode<T>> thisChildrenByProperty = thisChildren
+						.get(i);
+				final List<TreeNode<T>> otherChildrenByProperty = otherChildren
+						.get(i);
+
+				final int thisChildByPropertySize = thisChildrenByProperty
+						.size();
+				if (thisChildByPropertySize != otherChildrenByProperty.size()) {
+					return false;
+				}
+
+				for (int j = 0; j < thisChildByPropertySize; j++) {
+					final TreeNode<T> thisChild = thisChildrenByProperty.get(j);
+					final TreeNode<T> otherChild = otherChildrenByProperty
+							.get(j);
+
+					if (!otherChild.getData().equals(thisChild.getData())) {
+						return false;
+					}
+
+					stack.push(new NodePair<T>(thisChild, otherChild));
+				}
+			}
+		}
+		return true;
 	}
 
 	public boolean isLeaf() {
@@ -660,9 +699,10 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 			for (final TreeNode<T> child : childrenProperties.get(i)) {
 				immutableChildren.add(child.toImmutable());
 			}
-			immutableProperties.add(immutableChildren);
+			immutableProperties.add(ImmutableList.copyOf(immutableChildren));
 		}
-		return new TreeNode<T>(nodeData, immutableProperties);
+		return new TreeNode<T>(nodeData,
+				ImmutableList.copyOf(immutableProperties));
 	}
 
 	@Override

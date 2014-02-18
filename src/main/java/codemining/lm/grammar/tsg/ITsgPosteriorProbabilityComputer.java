@@ -23,6 +23,6 @@ public interface ITsgPosteriorProbabilityComputer<T extends Serializable>
 	 * @param remove TODO
 	 * @return
 	 */
-	double computeLog2PosteriorProbability(final TreeNode<T> tree, boolean remove);
+	double computeLog2PosteriorProbabilityOfRule(final TreeNode<T> tree, boolean remove);
 
 }

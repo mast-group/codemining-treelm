@@ -29,7 +29,16 @@ public interface ITreeSubstitutionGrammar<T extends Serializable> extends
 	 * @param tree
 	 * @return
 	 */
-	public double computeTreePosteriorLog2Probability(TreeNode<T> tree);
+	public double computeRulePosteriorLog2Probability(TreeNode<T> tree);
+
+	/**
+	 * Compute the posterior probability for this tree, given the TSG.
+	 * 
+	 * @param tree
+	 * @return
+	 */
+	public double computeRulePosteriorLog2Probability(TreeNode<T> tree,
+			boolean remove);
 
 	/**
 	 * Return the number of occurrences of the subtree given the root.
@@ -59,8 +68,17 @@ public interface ITreeSubstitutionGrammar<T extends Serializable> extends
 	 * Remove a tree production.
 	 * 
 	 * @param subTree
-	 * @return
+	 * @return true if a tree of this type was indeed removed
 	 */
 	public boolean removeTree(TreeNode<T> subTree);
+
+	/**
+	 * Remove a tree production.
+	 * 
+	 * @param subTree
+	 * @param occurences
+	 * @return the number of trees that were removed
+	 */
+	public int removeTree(TreeNode<T> subTree, int occurences);
 
 }

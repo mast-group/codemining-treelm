@@ -6,19 +6,16 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
+import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.CFGRule;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.ITreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
 
 public class ContextFreeGrammarTest {
 
@@ -82,12 +79,10 @@ public class ContextFreeGrammarTest {
 		final AbstractContextFreeGrammar cfg = new ContextFreeGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		testCFGRules(cfg);
-		ContextFreeGrammar.updateRules(generateSampleTree2(),
-				cfg.getInternalGrammar());
+		cfg.addRulesFrom(generateSampleTree2());
 		assertEquals(cfg.getMLProbability(1, getConsequent1()), .5, 10E-10);
 
-		ContextFreeGrammar.updateRules(generateSampleTree2(),
-				cfg.getInternalGrammar());
+		cfg.addRulesFrom(generateSampleTree2());
 		assertEquals(cfg.getMLProbability(1, getConsequent1()), 1. / 3., 10E-10);
 	}
 
@@ -95,8 +90,7 @@ public class ContextFreeGrammarTest {
 	 * @param cfg
 	 */
 	public void testCFGRules(final AbstractContextFreeGrammar cfg) {
-		ContextFreeGrammar.updateRules(generateSampleTree1(),
-				cfg.getInternalGrammar());
+		cfg.addRulesFrom(generateSampleTree1());
 		assertEquals(cfg.getMLProbability(1, getConsequent1()), 1, 10E-10);
 
 		final ContextFreeGrammar.NodeConsequent csq2 = new ContextFreeGrammar.NodeConsequent();
@@ -116,17 +110,17 @@ public class ContextFreeGrammarTest {
 
 	@Test
 	public void testRuleExtraction() {
-		final Map<Integer, Multiset<NodeConsequent>> rules = Maps
-				.newConcurrentMap();
-		ContextFreeGrammar.createCFRuleForNode(generateSampleTree1(), rules);
-
-		assertFalse(rules.isEmpty());
-		assertTrue(rules.containsKey(1));
-		assertEquals(rules.get(1).size(), 1);
+		final ContextFreeGrammar cfg = new ContextFreeGrammar(
+				mock(ITreeExtractor.class));
+		final CFGRule rule = cfg.createCFRuleForNode(generateSampleTree1());
+		cfg.addCFGRule(rule);
+		assertFalse(cfg.grammar.isEmpty());
+		assertTrue(cfg.grammar.containsKey(1));
+		assertEquals(cfg.grammar.get(1).size(), 1);
 
 		final ContextFreeGrammar.NodeConsequent csq = getConsequent1();
 
-		assertTrue(rules.get(1).contains(csq));
+		assertTrue(cfg.grammar.get(1).contains(csq));
 	}
 
 	@Test

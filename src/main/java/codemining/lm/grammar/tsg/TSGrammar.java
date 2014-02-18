@@ -133,9 +133,16 @@ public class TSGrammar<T extends Serializable> implements
 	}
 
 	@Override
-	public double computeTreePosteriorLog2Probability(final TreeNode<T> tree) {
+	public double computeRulePosteriorLog2Probability(final TreeNode<T> tree) {
 		return checkNotNull(posteriorComputer)
-				.computeLog2PosteriorProbability(tree, false);
+				.computeLog2PosteriorProbabilityOfRule(tree, false);
+	}
+
+	@Override
+	public double computeRulePosteriorLog2Probability(final TreeNode<T> tree,
+			final boolean remove) {
+		return checkNotNull(posteriorComputer)
+				.computeLog2PosteriorProbabilityOfRule(tree, remove);
 	}
 
 	/*
@@ -147,8 +154,8 @@ public class TSGrammar<T extends Serializable> implements
 	 */
 	@Override
 	public int countTreeOccurences(final TreeNode<T> root) {
-		final ConcurrentHashMultiset<TreeNode<T>> productions = grammar.get(root
-				.getData());
+		final ConcurrentHashMultiset<TreeNode<T>> productions = grammar
+				.get(root.getData());
 		if (productions == null) {
 			return 0;
 		}
@@ -260,7 +267,8 @@ public class TSGrammar<T extends Serializable> implements
 				continue;
 			}
 
-			final ArrayList<TreeNode<T>> productionsToBeRemoved = Lists.newArrayList();
+			final ArrayList<TreeNode<T>> productionsToBeRemoved = Lists
+					.newArrayList();
 			for (final TreeNode<T> rule : productions.elementSet()) {
 				if (productions.count(rule) < threshold) {
 					productionsToBeRemoved.add(rule);
@@ -298,6 +306,18 @@ public class TSGrammar<T extends Serializable> implements
 			return false;
 		} else {
 			return productions.remove(subTree);
+		}
+	}
+
+	@Override
+	public int removeTree(final TreeNode<T> subTree, final int occurences) {
+		final T rootNodeData = subTree.getData();
+		final ConcurrentHashMultiset<TreeNode<T>> productions = grammar
+				.get(rootNodeData);
+		if (productions == null) {
+			return -occurences;
+		} else {
+			return productions.remove(subTree, occurences) - occurences;
 		}
 	}
 

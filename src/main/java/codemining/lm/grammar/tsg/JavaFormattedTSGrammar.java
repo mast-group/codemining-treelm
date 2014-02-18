@@ -88,31 +88,6 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 		return treeFormat;
 	}
 
-	/**
-	 * @param buf
-	 * @param intTree
-	 */
-	public void printMultinode(final StringBuffer buf,
-			final TreeNode<Integer> intTree) {
-		if (intTree.isLeaf()) {
-			return;
-		}
-		for (int i = 0; i < intTree.getChildrenByProperty().get(0).size(); i++) {
-			buf.append(treeFormat.getASTFromTree(intTree.getChild(i, 0)));
-			buf.append(" ");
-		}
-
-		if (intTree.getChildrenByProperty().get(1).isEmpty()) {
-			return;
-		}
-		final TreeNode<Integer> next = intTree.getChild(0, 1);
-		if (treeFormat.getSymbol(next.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
-			printMultinode(buf, next);
-		} else {
-			buf.append(treeFormat.getASTFromTree(next));
-		}
-	}
-
 	@Override
 	public String toString() {
 		final StringBuffer buf = new StringBuffer();
@@ -139,7 +114,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 											.getElement().nProperties());
 							TSGNode.copyChildren(intTree, tree.getElement());
 							if (treeFormat.getSymbol(intTree.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
-								printMultinode(buf, intTree);
+								treeFormat.printMultinode(buf, intTree);
 							} else {
 								buf.append(treeFormat.getASTFromTree(intTree));
 							}

@@ -28,7 +28,7 @@ public class TreeProbabilityComputerTest {
 		}
 
 		@Override
-		public double computeLog2PosteriorProbability(
+		public double computeLog2PosteriorProbabilityOfRule(
 				final TreeNode<String> tree, final boolean remove) {
 			double nRulesCommonRoot = grammar
 					.countTreesWithRoot(tree.getData());

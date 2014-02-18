@@ -3,23 +3,21 @@
  */
 package codemining.lm.grammar.tsg.samplers;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.math.RandomUtils;
 
-import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
-import codemining.lm.grammar.cfg.ContextFreeGrammar;
-import codemining.lm.grammar.cfg.ImmutableContextFreeGrammar;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.util.SettingsLoader;
+import codemining.util.StatsUtil;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
@@ -39,21 +37,6 @@ import com.esotericsoftware.kryo.serializers.JavaSerializer;
 @DefaultSerializer(JavaSerializer.class)
 public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 		implements Serializable {
-
-	/**
-	 * A CFG rule struct.
-	 * 
-	 */
-	public static class CFGRule {
-		final int root;
-		final NodeConsequent ruleConsequent;
-
-		public CFGRule(final int from, final NodeConsequent to) {
-			root = from;
-			ruleConsequent = to;
-		}
-
-	}
 
 	protected ClassicTsgPosteriorComputer posteriorComputer;
 	protected ClassicTsgPosteriorComputer allSamplesPosteriorComputer;
@@ -95,37 +78,34 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 	}
 
 	/**
-	 * Create a single CFG rule for the given node and add it to the local CFG.
-	 * 
-	 * @param currentNode
-	 */
-	protected void addCFRuleForNode(final TreeNode<TSGNode> currentNode) {
-		final CFGRule rule = posteriorComputer.createRuleForNode(currentNode);
-		ContextFreeGrammar.addCFGRule(rule.root, rule.ruleConsequent,
-				posteriorComputer.cfg.getInternalGrammar());
-
-		final CFGRule rule2 = allSamplesPosteriorComputer
-				.createRuleForNode(currentNode);
-		ContextFreeGrammar.addCFGRule(rule2.root, rule2.ruleConsequent,
-				allSamplesPosteriorComputer.cfg.getInternalGrammar());
-
-	}
-
-	/**
 	 * Add a single tree to the corpus, updating counts where necessary.
 	 * 
 	 * @param tree
 	 */
 	@Override
-	public void addTree(final TreeNode<TSGNode> tree, final boolean forceAdd) {
+	public TreeNode<TSGNode> addTree(final TreeNode<TSGNode> tree,
+			final boolean forceAdd) {
 		final TreeNode<TSGNode> immutableTree = tree.toImmutable();
 		if (forceAdd) {
 			treeCorpus.add(immutableTree);
-			updateTSGRuleFrequencies(immutableTree);
+			addTSGRulesToSampleGrammar(immutableTree);
 		} else {
 			treesToBeAdded.add(immutableTree);
 		}
-		updateCFGRuleFrequencies(immutableTree);
+		posteriorComputer.getPrior().addCFGRulesFrom(immutableTree);
+		return immutableTree;
+	}
+
+	/**
+	 * Update the TSG rule frequencies with this tree.
+	 * 
+	 * @param node
+	 */
+	private void addTSGRulesToSampleGrammar(final TreeNode<TSGNode> node) {
+		checkNotNull(node);
+		for (final TreeNode<TSGNode> rule : TSGNode.getAllRootsOf(node)) {
+			sampleGrammar.addTree(rule);
+		}
 	}
 
 	/**
@@ -139,6 +119,8 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 				avgTreeSize, DPconcentration);
 		allSamplesPosteriorComputer = new ClassicTsgPosteriorComputer(
 				burninGrammar, avgTreeSize, DPconcentration);
+		allSamplesPosteriorComputer.getPrior().cfg = posteriorComputer
+				.getPrior().cfg;
 	}
 
 	public ClassicTsgPosteriorComputer getPosteriorComputer() {
@@ -146,25 +128,66 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 	}
 
 	/**
-	 * Return the probability for a given subtree.
-	 * 
-	 * @param subtree
-	 * @param remove
-	 *            remove the count of this subtree
-	 * @return
-	 */
-	@Override
-	public double getSamplePosteriorLog2ProbabilityForTree(
-			final TreeNode<TSGNode> subtree, final boolean remove) {
-		return posteriorComputer.computeLog2PosteriorProbability(subtree, remove);
-	}
-
-	/**
 	 * Lock the sampler data for faster sampling.
 	 */
 	public void lockSamplerData() {
-		posteriorComputer.cfg = new ImmutableContextFreeGrammar(
-				posteriorComputer.cfg);
+		posteriorComputer.getPrior().lockPrior();
+		allSamplesPosteriorComputer.getPrior().cfg = posteriorComputer
+				.getPrior().cfg;
+	}
+
+	@Override
+	public PointSampleStats probJoinAt(final TreeNode<TSGNode> node,
+			final TreeNode<TSGNode> root) {
+		// TODO: Very duplicate code...
+		checkNotNull(node);
+		checkNotNull(root);
+		checkArgument(node != root,
+				"The given node should not be the root but its parent root");
+
+		final PointSampleStats pss = new PointSampleStats();
+
+		final boolean wasRootBefore = node.getData().isRoot;
+		node.getData().isRoot = false;
+		final TreeNode<TSGNode> joinedTree = TSGNode.getSubTreeFromRoot(root);
+		pss.joinCount = sampleGrammar.countTreeOccurences(joinedTree);
+		pss.thisRootCount = sampleGrammar.countTreesWithRoot(root.getData());
+		pss.cfgPriorProbJoin = Math.pow(2,
+				posteriorComputer.getLog2PriorForTree(joinedTree));
+
+		node.getData().isRoot = true;
+		final TreeNode<TSGNode> splitTreeUp = TSGNode.getSubTreeFromRoot(root);
+		pss.splitUpCount = sampleGrammar.countTreeOccurences(splitTreeUp);
+		pss.cfgPriorProbSplitUp = Math.pow(2,
+				posteriorComputer.getLog2PriorForTree(splitTreeUp));
+		pss.thisNodeCount = sampleGrammar.countTreesWithRoot(node.getData());
+		final TreeNode<TSGNode> splitTreeDown = TSGNode
+				.getSubTreeFromRoot(node);
+		pss.splitDownCount = sampleGrammar.countTreeOccurences(splitTreeDown);
+		pss.cfgPriorProbSplitDown = Math.pow(2,
+				posteriorComputer.getLog2PriorForTree(splitTreeDown));
+
+		final double log2ProbJoined = sampleGrammar
+				.computeRulePosteriorLog2Probability(joinedTree, !wasRootBefore);
+		final double log2ProbSplit = sampleGrammar
+				.computeRulePosteriorLog2Probability(splitTreeUp, wasRootBefore)
+				+ sampleGrammar.computeRulePosteriorLog2Probability(
+						splitTreeDown, wasRootBefore);
+
+		final double joinTheshold;
+		if (!Double.isInfinite(log2ProbJoined)) {
+			final double splitLog2Prob = log2ProbJoined
+					- StatsUtil.log2SumOfExponentials(log2ProbJoined,
+							log2ProbSplit);
+			joinTheshold = Math.pow(2, splitLog2Prob);
+		} else {
+			// Split if probJoined == 0, regardless of the splitting prob.
+			joinTheshold = 0;
+		}
+		// Revert
+		node.getData().isRoot = wasRootBefore;
+		pss.joinProbability = joinTheshold;
+		return pss;
 	}
 
 	public void pruneRareTrees(final int threshold) {
@@ -189,7 +212,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 					.get(nextTreePos);
 
 			treeCorpus.add(treeToBeAdded);
-			updateTSGRuleFrequencies(treeToBeAdded);
+			addTSGRulesToSampleGrammar(treeToBeAdded);
 			treesToBeAdded.remove(nextTreePos);
 		}
 
@@ -197,65 +220,5 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 			posteriorComputer.optimizeHyperparameters(treeCorpus);
 		}
 		super.sampleAllTreesOnce(currentIteration, totalIterations, stop);
-	}
-
-	/**
-	 * Recursively update tree frequencies. I.e. when a tree is added to the
-	 * corpus, update the counts appropriately.
-	 * 
-	 * @param node
-	 */
-	protected void updateCFGRuleFrequencies(final TreeNode<TSGNode> node) {
-		checkNotNull(node);
-
-		final ArrayDeque<TreeNode<TSGNode>> nodeUpdates = new ArrayDeque<TreeNode<TSGNode>>();
-		nodeUpdates.push(node);
-
-		while (!nodeUpdates.isEmpty()) {
-			final TreeNode<TSGNode> currentNode = nodeUpdates.pop();
-			addCFRuleForNode(currentNode);
-
-			for (final List<TreeNode<TSGNode>> childProperty : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<TSGNode> child : childProperty) {
-					if (!child.isLeaf()) {
-						nodeUpdates.push(child);
-					}
-				}
-			}
-
-		}
-	}
-
-	/**
-	 * Update the TSG rule frequencies with this tree.
-	 * 
-	 * @param node
-	 */
-	protected void updateTSGRuleFrequencies(final TreeNode<TSGNode> node) {
-		checkNotNull(node);
-
-		final ArrayDeque<TreeNode<TSGNode>> nodeUpdates = new ArrayDeque<TreeNode<TSGNode>>();
-		nodeUpdates.push(node);
-
-		while (!nodeUpdates.isEmpty()) {
-			final TreeNode<TSGNode> currentNode = nodeUpdates.pop();
-
-			if (currentNode.getData().isRoot) {
-				final TreeNode<TSGNode> subtree = TSGNode
-						.getSubTreeFromRoot(currentNode);
-				sampleGrammar.addTree(subtree);
-			}
-
-			for (final List<TreeNode<TSGNode>> childProperty : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<TSGNode> child : childProperty) {
-					if (!child.isLeaf()) {
-						nodeUpdates.push(child);
-					}
-				}
-			}
-
-		}
 	}
 }

@@ -1,12 +1,14 @@
 package codemining.lm.grammar.tsg.samplers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.samplers.blocked.TreeWithNodeIndex;
 
 public class TSGNodeTest {
 
@@ -100,6 +102,29 @@ public class TSGNodeTest {
 		assertTrue(tree1.equals(converted));
 
 		assertEquals(tree1, TSGNode.getSubTreeFromRoot(tree1));
+	}
+
+	@Test
+	public void testTreesMatchToRoot() {
+		final TreeWithNodeIndex tree1 = TreeWithNodeIndex.generateTree1();
+		final TreeWithNodeIndex tree2 = TreeWithNodeIndex.generateTree2();
+
+		assertFalse(TSGNode.treesMatchToRoot(tree1.tree, tree2.tree));
+
+		tree1.nodeIndex.get(3).getData().isRoot = true;
+		assertFalse(TSGNode.treesMatchToRoot(tree1.tree, tree2.tree));
+		tree2.nodeIndex.get(3).getData().isRoot = true;
+		assertTrue(TSGNode.treesMatchToRoot(tree1.tree, tree2.tree));
+
+		tree2.nodeIndex.get(4).getData().isRoot = true;
+		assertFalse(TSGNode.treesMatchToRoot(tree1.tree, tree2.tree));
+		tree1.nodeIndex.get(4).getData().isRoot = true;
+		assertTrue(TSGNode.treesMatchToRoot(tree1.tree, tree2.tree));
+
+		assertTrue(TSGNode.treesMatchToRoot(tree1.nodeIndex.get(2),
+				tree2.nodeIndex.get(2)));
+		assertTrue(TSGNode.treesMatchToRoot(tree1.nodeIndex.get(4),
+				tree2.nodeIndex.get(4)));
 	}
 
 }

@@ -57,7 +57,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 		}
 
 		@Override
-		public double computeLog2PosteriorProbability(
+		public double computeLog2PosteriorProbabilityOfRule(
 				final TreeNode<TSGNode> subtree, final boolean remove) {
 			checkNotNull(subtree);
 
@@ -79,7 +79,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 					nRulesInGrammar--;
 					nRulesCommonRoot--;
 				}
-				final double log2Probability = StatsUtil.logSumOfExponentials(
+				final double log2Probability = StatsUtil.log2SumOfExponentials(
 						DoubleMath.log2(nRulesInGrammar),
 						DoubleMath.log2(concentrationParameter) + log2prior)
 						- DoubleMath.log2(nRulesCommonRoot
@@ -240,22 +240,11 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 	 * .lm.grammar.tree.TreeNode)
 	 */
 	@Override
-	public void addTree(final TreeNode<TSGNode> tree, final boolean forceAdd) {
+	public TreeNode<TSGNode> addTree(final TreeNode<TSGNode> tree,
+			final boolean forceAdd) {
 		treeCorpus.add(tree);
 		updateProductions(tree);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see codemining.lm.grammar.tsg.AbstractCollapsedGibbsSampler#
-	 * getPosteriorProbabilityForTree(codemining.lm.grammar.tree.TreeNode,
-	 * boolean)
-	 */
-	@Override
-	public double getSamplePosteriorLog2ProbabilityForTree(
-			final TreeNode<TSGNode> subtree, final boolean remove) {
-		return posteriorComputer.computeLog2PosteriorProbability(subtree, remove);
+		return tree;
 	}
 
 	public void pruneRareTrees(final int threshold) {
