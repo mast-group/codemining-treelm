@@ -23,6 +23,7 @@ import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
@@ -135,7 +136,7 @@ public class PatternStatsCalculator {
 
 		@Override
 		public boolean apply(final NodeDataPair<Integer> nodePair) {
-			return nodePair.fromNode.equals(nodePair.toNode);
+			return Objects.equal(nodePair.fromNode, nodePair.toNode);
 		}
 
 	};

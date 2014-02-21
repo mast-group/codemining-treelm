@@ -102,7 +102,7 @@ public class FeatureExtractor {
 
 		@Override
 		public boolean apply(final NodeDataPair<Integer> nodePair) {
-			return nodePair.fromNode.equals(nodePair.toNode);
+			return Objects.equal(nodePair.fromNode, nodePair.toNode);
 		}
 
 	};

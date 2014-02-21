@@ -7,8 +7,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.ITsgPosteriorProbabilityComputer;
@@ -45,7 +45,7 @@ public class GenericCollapsedGibbsSampler extends AbstractCollapsedGibbsSampler 
 
 		private static final double AVG_NUM_CHILDREN = .5;
 
-		final Map<SymbolProperty, Multiset<Integer>> symbolProductions;
+		final HashMap<SymbolProperty, Multiset<Integer>> symbolProductions;
 
 		GenericTsgPosteriorComputer(final SequentialTSGrammar sqGrammar,
 				final double avgTreeSize, final double DPconcentration) {
