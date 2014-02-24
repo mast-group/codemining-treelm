@@ -12,6 +12,8 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Set;
 
+import codemining.util.data.Pair;
+
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.base.Function;
@@ -411,6 +413,52 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 */
 	public NodeParents<T> getNodeParents(final TreeNode<T> fromRoot) {
 		return new NodeParents<T>(fromRoot, this);
+	}
+
+	/**
+	 * Compute the identity set of the nodes that overlap with the other tree.
+	 * 
+	 * @param tree1
+	 * @param tree2
+	 * @return
+	 */
+	public Set<TreeNode<T>> getOverlappingNodesWith(final TreeNode<T> other) {
+		final ArrayDeque<Pair<TreeNode<T>, TreeNode<T>>> stack = new ArrayDeque<Pair<TreeNode<T>, TreeNode<T>>>();
+		stack.push(Pair.create(this, other));
+
+		final Set<TreeNode<T>> overlapping = Sets.newIdentityHashSet();
+		while (!stack.isEmpty()) {
+			final Pair<TreeNode<T>, TreeNode<T>> current = stack.pop();
+			final TreeNode<T> tree1Node = current.first;
+			final TreeNode<T> tree2Node = current.second;
+			if (!tree1Node.getData().equals(tree2Node.getData())) {
+				continue;
+			}
+			overlapping.add(tree1Node);
+
+			final List<List<TreeNode<T>>> tree1Children = tree1Node
+					.getChildrenByProperty();
+			final List<List<TreeNode<T>>> tree2Children = tree2Node
+					.getChildrenByProperty();
+
+			checkArgument(tree1Children.size() == tree2Children.size());
+
+			for (int i = 0, size = tree1Children.size(); i < size; i++) {
+				final List<TreeNode<T>> tree1ChildrenForProperty = tree1Children
+						.get(i);
+				final List<TreeNode<T>> tree2ChildrenForProperty = tree2Children
+						.get(i);
+
+				final int nChildren = Math.min(tree1ChildrenForProperty.size(),
+						tree2ChildrenForProperty.size());
+				for (int j = 0; j < nChildren; j++) {
+					stack.push(Pair.create(tree1ChildrenForProperty.get(j),
+							tree2ChildrenForProperty.get(j)));
+				}
+			}
+		}
+
+		return overlapping;
 	}
 
 	/**

@@ -4,6 +4,7 @@
 package codemining.lm.grammar.tsg.pattern.tui;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
@@ -17,6 +18,9 @@ import codemining.util.serialization.Serializer;
  * 
  */
 public class StatsComputer {
+
+	private static final Logger LOGGER = Logger.getLogger(StatsComputer.class
+			.getName());
 
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 4) {
@@ -32,9 +36,11 @@ public class StatsComputer {
 
 		final File directory = new File(args[1]);
 
+		LOGGER.info("Finished loading, creating core structures");
 		final PatternStatsCalculator pcc = new PatternStatsCalculator(
 				grammar.getJavaTreeExtractor(), grammar, directory);
 
+		LOGGER.info("Initiating stats computation...");
 		pcc.printStatisticsFor(minPatternSize, minPatternCount);
 
 	}

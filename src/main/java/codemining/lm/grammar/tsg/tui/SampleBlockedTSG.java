@@ -41,9 +41,9 @@ public class SampleBlockedTSG {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length != 4) {
+		if (args.length < 4) {
 			System.err
-					.println("Usage <TrainingDir> normal|binary|binaryvariables|variables block|filterblock <#iterations>");
+					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables block|filterblock <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
@@ -79,16 +79,36 @@ public class SampleBlockedTSG {
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else if (args[2].equals("filterblock")) {
-				sampler = new FilteredBlockCollapsedGibbsSampler(100, 10,
+				sampler = new FilteredBlockCollapsedGibbsSampler(100, 1,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[2]);
 			}
-			final double percentRootsInit = .9;
+
+			if (args.length > 4) {
+				LOGGER.info("Loading additional CFG prior information from "
+						+ args[4]);
+				for (final File fi : FileUtils.listFiles(new File(args[4]),
+						new RegexFileFilter(".*\\.java$"),
+						DirectoryFileFilter.DIRECTORY)) {
+					try {
+						final TreeNode<TSGNode> ast = TSGNode.convertTree(
+								format.getTree(fi), 0);
+						sampler.addDataToPrior(ast);
+					} catch (final Exception e) {
+						LOGGER.warning("Failed to get AST for Cfg Prior "
+								+ fi.getAbsolutePath() + " "
+								+ ExceptionUtils.getFullStackTrace(e));
+					}
+				}
+			}
+
+			final double percentRootsInit = .7;
 			int nFiles = 0;
 			int nNodes = 0;
+			LOGGER.info("Loading sample trees from  " + args[0]);
 			for (final File fi : FileUtils.listFiles(new File(args[0]),
 					new RegexFileFilter(".*\\.java$"),
 					DirectoryFileFilter.DIRECTORY)) {

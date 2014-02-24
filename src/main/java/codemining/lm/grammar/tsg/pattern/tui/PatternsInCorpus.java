@@ -4,7 +4,9 @@
 package codemining.lm.grammar.tsg.pattern.tui;
 
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -22,6 +24,7 @@ import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
@@ -36,6 +39,39 @@ public class PatternsInCorpus {
 
 	private static final Logger LOGGER = Logger
 			.getLogger(PatternsInCorpus.class.getName());
+
+	/**
+	 * Return the list of patterns a specific tree.
+	 */
+	public static Multiset<TreeNode<Integer>> getPatternsForTree(
+			final TreeNode<Integer> tree, final Set<TreeNode<Integer>> patterns) {
+		final Multiset<TreeNode<Integer>> treePatterns = HashMultiset.create();
+		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
+		toLook.push(tree);
+
+		// Do a pre-order visit
+		while (!toLook.isEmpty()) {
+			final TreeNode<Integer> currentNode = toLook.pop();
+			// at each node check if we have a partial match with any of the
+			// patterns
+			for (final TreeNode<Integer> pattern : patterns) {
+				if (pattern.partialMatch(currentNode,
+						PatternStatsCalculator.BASE_EQUALITY_COMPARATOR, false)) {
+					treePatterns.add(pattern);
+				}
+			}
+
+			// Proceed visiting
+			for (final List<TreeNode<Integer>> childProperties : currentNode
+					.getChildrenByProperty()) {
+				for (final TreeNode<Integer> child : childProperties) {
+					toLook.push(child);
+				}
+			}
+
+		}
+		return treePatterns;
+	}
 
 	/**
 	 * @param args
@@ -67,8 +103,8 @@ public class PatternsInCorpus {
 		for (final File f : allFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
-				final Multiset<TreeNode<Integer>> filePatterns = PatternStatsCalculator
-						.getPatternsForTree(fileAst, patterns);
+				final Multiset<TreeNode<Integer>> filePatterns = getPatternsForTree(
+						fileAst, patterns);
 				if (!filePatterns.isEmpty()) {
 					printFileMatches(f, filePatterns, format);
 				}

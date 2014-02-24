@@ -212,6 +212,13 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 	}
 
 	/**
+	 * Allows extra data to be added to the prior (i.e. the CFG)
+	 */
+	public void addDataToPrior(final TreeNode<TSGNode> tree) {
+		prior.addCFGRulesFrom(tree);
+	}
+
+	/**
 	 * Add all the rules in the current tree to the grammar.
 	 * 
 	 * @param immutableTree
