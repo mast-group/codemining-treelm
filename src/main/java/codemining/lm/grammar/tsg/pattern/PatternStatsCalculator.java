@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -22,12 +23,12 @@ import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.util.parallel.ParallelThreadPool;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -116,7 +117,9 @@ public class PatternStatsCalculator {
 	 * A table containing File,MatchedPatterns=>IdentitySet of matched nodes
 	 */
 	private final Table<File, TreeNode<Integer>, Set<TreeNode<Integer>>> filePatterns;
+	private final ReentrantLock filePatternsLock = new ReentrantLock();
 	private final Table<File, TreeNode<Integer>, Integer> filePatternsCount;
+	private final ReentrantLock filePatternsCountLock = new ReentrantLock();
 
 	public PatternStatsCalculator(final AbstractJavaTreeExtractor treeFormat,
 			final JavaFormattedTSGrammar grammar, final File directory) {
@@ -140,9 +143,10 @@ public class PatternStatsCalculator {
 				.listFiles(directory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
 
-		fileSizes = Maps.newHashMap();
+		fileSizes = Maps.newConcurrentMap();
 		filePatterns = HashBasedTable.create();
 		filePatternsCount = HashBasedTable.create();
+
 	}
 
 	/**
@@ -161,15 +165,26 @@ public class PatternStatsCalculator {
 			for (final TreeNode<Integer> pattern : patterns.elementSet()) {
 				if (pattern.partialMatch(currentNode, BASE_EQUALITY_COMPARATOR,
 						false)) {
-					filePatterns.put(f, pattern,
-							currentNode.getOverlappingNodesWith(pattern));
-					final int count;
-					if (filePatternsCount.contains(f, pattern)) {
-						count = filePatternsCount.get(f, pattern) + 1;
-					} else {
-						count = 1;
+					filePatternsLock.lock();
+					try {
+						filePatterns.put(f, pattern,
+								currentNode.getOverlappingNodesWith(pattern));
+					} finally {
+						filePatternsLock.unlock();
 					}
-					filePatternsCount.put(f, pattern, count);
+
+					filePatternsCountLock.lock();
+					try {
+						final int count;
+						if (filePatternsCount.contains(f, pattern)) {
+							count = filePatternsCount.get(f, pattern) + 1;
+						} else {
+							count = 1;
+						}
+						filePatternsCount.put(f, pattern, count);
+					} finally {
+						filePatternsCountLock.unlock();
+					}
 				}
 			}
 
@@ -210,15 +225,22 @@ public class PatternStatsCalculator {
 	 * Return a map of all the patterns that can be found in a single file.
 	 */
 	private void loadPatternsForFiles() {
+		final ParallelThreadPool ptp = new ParallelThreadPool();
 		for (final File f : allFiles) {
-			try {
-				final TreeNode<Integer> tree = treeFormat.getTree(f);
-				fileSizes.put(f, tree.getTreeSize());
-				completePatternsTable(f, tree);
-			} catch (final IOException e) {
-				LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
-			}
+			ptp.pushTask(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						final TreeNode<Integer> tree = treeFormat.getTree(f);
+						fileSizes.put(f, tree.getTreeSize());
+						completePatternsTable(f, tree);
+					} catch (final IOException e) {
+						LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
+					}
+				}
+			});
 		}
+		ptp.waitForTermination();
 	}
 
 	private void printPatternStatistics(
@@ -226,42 +248,55 @@ public class PatternStatsCalculator {
 			final int minCount, final int minSize) {
 
 		final Multiset<TreeNode<Integer>> seenPatterns = HashMultiset.create();
-		final List<FilePatternStats> allFilePatternStats = Lists.newArrayList();
+		final Map<File, FilePatternStats> allFilePatternStats = Maps
+				.newConcurrentMap();
+
+		final ParallelThreadPool ptp = new ParallelThreadPool();
 
 		for (final File file : filePatterns.rowKeySet()) {
+			ptp.pushTask(new Runnable() {
 
-			final Set<TreeNode<Integer>> patternsInFile = filePatterns
-					.row(file).keySet();
-			final Set<TreeNode<Integer>> matchedPatterns = Sets.intersection(
-					patternsInFile, prunedByCountBySize.elementSet());
-			final FilePatternStats stats = new FilePatternStats();
-			allFilePatternStats.add(stats);
-			stats.nUniqueMatched = matchedPatterns.size();
-			for (final TreeNode<Integer> pattern : matchedPatterns) {
-				final int patternSize = patternSizes.get(pattern);
-				final int nTimesPatternInFile = filePatternsCount.get(file,
-						pattern);
+				@Override
+				public void run() {
+					final Set<TreeNode<Integer>> patternsInFile = filePatterns
+							.row(file).keySet();
+					final Set<TreeNode<Integer>> matchedPatterns = Sets
+							.intersection(patternsInFile,
+									prunedByCountBySize.elementSet());
+					final FilePatternStats stats = new FilePatternStats();
+					allFilePatternStats.put(file, stats);
+					stats.nUniqueMatched = matchedPatterns.size();
+					for (final TreeNode<Integer> pattern : matchedPatterns) {
+						final int patternSize = patternSizes.get(pattern);
+						final int nTimesPatternInFile = filePatternsCount.get(
+								file, pattern);
 
-				stats.nNodesMatched += filePatterns.get(file, pattern).size();
-				stats.nSitesMatched += nTimesPatternInFile;
-				stats.nPatternMatchedSizeSum += patternSize;
-				seenPatterns.add(pattern, nTimesPatternInFile);
-			}
+						stats.nNodesMatched += filePatterns.get(file, pattern)
+								.size();
+						stats.nSitesMatched += nTimesPatternInFile;
+						stats.nPatternMatchedSizeSum += patternSize;
+						seenPatterns.add(pattern, nTimesPatternInFile);
+					}
 
-			stats.coverage = ((double) stats.nNodesMatched)
-					/ fileSizes.get(file);
-			stats.fileRecall = ((double) stats.nUniqueMatched)
-					/ prunedByCountBySize.elementSet().size();
-			stats.avgPatternSize = ((double) stats.nNodesMatched)
-					/ stats.nUniqueMatched;
+					stats.coverage = ((double) stats.nNodesMatched)
+							/ fileSizes.get(file);
+					stats.fileRecall = ((double) stats.nUniqueMatched)
+							/ prunedByCountBySize.elementSet().size();
+					stats.avgPatternSize = ((double) stats.nNodesMatched)
+							/ stats.nUniqueMatched;
+				}
+			});
+
 		}
+
+		ptp.waitForTermination();
 
 		// Compute test corpus stats
 		double avgCoverage = 0;
 		double avgFileRecall = 0;
 		double avgSitesMatched = 0;
 		double avgPatternSizePerFile = 0;
-		for (final FilePatternStats stats : allFilePatternStats) {
+		for (final FilePatternStats stats : allFilePatternStats.values()) {
 			avgCoverage += stats.coverage;
 			avgFileRecall += stats.fileRecall;
 			avgSitesMatched += stats.nSitesMatched;
