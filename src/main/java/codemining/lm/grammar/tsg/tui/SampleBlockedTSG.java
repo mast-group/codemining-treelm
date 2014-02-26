@@ -41,13 +41,14 @@ public class SampleBlockedTSG {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length < 4) {
+		if (args.length < 5) {
 			System.err
-					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables block|filterblock <#iterations> [<CfgExtraTraining>]");
+					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
-		final int nIterations = Integer.parseInt(args[3]);
+		final int nIterations = Integer.parseInt(args[4]);
+		final double concentrationParameter = Double.parseDouble(args[3]);
 		final File samplerCheckpoint = new File("tsgSampler.ser");
 		final BlockCollapsedGibbsSampler sampler;
 
@@ -75,22 +76,22 @@ public class SampleBlockedTSG {
 			}
 
 			if (args[2].equals("block")) {
-				sampler = new BlockCollapsedGibbsSampler(100, 10,
-						new JavaFormattedTSGrammar(format),
-						new JavaFormattedTSGrammar(format));
+				sampler = new BlockCollapsedGibbsSampler(100,
+						concentrationParameter, new JavaFormattedTSGrammar(
+								format), new JavaFormattedTSGrammar(format));
 			} else if (args[2].equals("filterblock")) {
-				sampler = new FilteredBlockCollapsedGibbsSampler(100, 1,
-						new JavaFormattedTSGrammar(format),
-						new JavaFormattedTSGrammar(format));
+				sampler = new FilteredBlockCollapsedGibbsSampler(100,
+						concentrationParameter, new JavaFormattedTSGrammar(
+								format), new JavaFormattedTSGrammar(format));
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[2]);
 			}
 
-			if (args.length > 4) {
+			if (args.length > 5) {
 				LOGGER.info("Loading additional CFG prior information from "
-						+ args[4]);
-				for (final File fi : FileUtils.listFiles(new File(args[4]),
+						+ args[5]);
+				for (final File fi : FileUtils.listFiles(new File(args[5]),
 						new RegexFileFilter(".*\\.java$"),
 						DirectoryFileFilter.DIRECTORY)) {
 					try {
