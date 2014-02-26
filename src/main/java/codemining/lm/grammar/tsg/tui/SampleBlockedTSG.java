@@ -43,7 +43,7 @@ public class SampleBlockedTSG {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 5) {
 			System.err
-					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
+					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
@@ -70,6 +70,9 @@ public class SampleBlockedTSG {
 			} else if (args[1].equals("binaryvariables")) {
 				format = new BinaryEclipseASTTreeExtractor(
 						new VariableTypeJavaTreeExtractor());
+			} else if (args[1].equals("binaryvariablesNoAnnotate")) {
+				format = new BinaryEclipseASTTreeExtractor(
+						new VariableTypeJavaTreeExtractor(), false);
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[1]);
