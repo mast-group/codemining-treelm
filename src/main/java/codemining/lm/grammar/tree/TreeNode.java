@@ -371,10 +371,54 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		}
 		final TreeNode<T> other = (TreeNode<T>) obj;
 		// Check equalities here, for speedup
-		if (!Objects.equal(nodeData, other.nodeData)) {
+		if (!nodeData.equals(other.nodeData)) {
 			return false;
 		}
-		return isIdenticalTo(other);
+
+		final ArrayDeque<NodePair<T>> stack = new ArrayDeque<NodePair<T>>();
+		stack.push(new NodePair<T>(this, other));
+
+		while (!stack.isEmpty()) {
+			final NodePair<T> pair = stack.pop();
+			final TreeNode<T> currentThis = pair.fromNode;
+			final TreeNode<T> currentOther = pair.toNode;
+
+			final List<List<TreeNode<T>>> thisChildren = currentThis
+					.getChildrenByProperty();
+			final List<List<TreeNode<T>>> otherChildren = currentOther
+					.getChildrenByProperty();
+
+			final int thisChildrenSize = thisChildren.size();
+			if (thisChildrenSize != otherChildren.size()) {
+				return false;
+			}
+
+			for (int i = 0; i < thisChildrenSize; i++) {
+				final List<TreeNode<T>> thisChildrenByProperty = thisChildren
+						.get(i);
+				final List<TreeNode<T>> otherChildrenByProperty = otherChildren
+						.get(i);
+
+				final int thisChildByPropertySize = thisChildrenByProperty
+						.size();
+				if (thisChildByPropertySize != otherChildrenByProperty.size()) {
+					return false;
+				}
+
+				for (int j = 0; j < thisChildByPropertySize; j++) {
+					final TreeNode<T> thisChild = thisChildrenByProperty.get(j);
+					final TreeNode<T> otherChild = otherChildrenByProperty
+							.get(j);
+
+					if (!otherChild.getData().equals(thisChild.getData())) {
+						return false;
+					}
+
+					stack.push(new NodePair<T>(thisChild, otherChild));
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -473,60 +517,11 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	@Override
 	public int hashCode() {
 		if (childrenProperties.size() > 0) {
-			return Objects.hashCode(nodeData, childrenProperties.get(0));
+			return Objects.hashCode(nodeData, childrenProperties.get(0)
+					.hashCode());
 		} else {
 			return Objects.hashCode(nodeData);
 		}
-	}
-
-	/**
-	 * Non-recursive equality function, for speed.
-	 */
-	private boolean isIdenticalTo(final TreeNode<T> other) {
-		final ArrayDeque<NodePair<T>> stack = new ArrayDeque<NodePair<T>>();
-		stack.push(new NodePair<T>(this, other));
-
-		while (!stack.isEmpty()) {
-			final NodePair<T> pair = stack.pop();
-			final TreeNode<T> currentThis = pair.fromNode;
-			final TreeNode<T> currentOther = pair.toNode;
-
-			final List<List<TreeNode<T>>> thisChildren = currentThis
-					.getChildrenByProperty();
-			final List<List<TreeNode<T>>> otherChildren = currentOther
-					.getChildrenByProperty();
-
-			final int thisChildrenSize = thisChildren.size();
-			if (thisChildrenSize != otherChildren.size()) {
-				return false;
-			}
-
-			for (int i = 0; i < thisChildrenSize; i++) {
-				final List<TreeNode<T>> thisChildrenByProperty = thisChildren
-						.get(i);
-				final List<TreeNode<T>> otherChildrenByProperty = otherChildren
-						.get(i);
-
-				final int thisChildByPropertySize = thisChildrenByProperty
-						.size();
-				if (thisChildByPropertySize != otherChildrenByProperty.size()) {
-					return false;
-				}
-
-				for (int j = 0; j < thisChildByPropertySize; j++) {
-					final TreeNode<T> thisChild = thisChildrenByProperty.get(j);
-					final TreeNode<T> otherChild = otherChildrenByProperty
-							.get(j);
-
-					if (!otherChild.getData().equals(thisChild.getData())) {
-						return false;
-					}
-
-					stack.push(new NodePair<T>(thisChild, otherChild));
-				}
-			}
-		}
-		return true;
 	}
 
 	public boolean isLeaf() {
@@ -692,45 +687,58 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	public boolean partialMatch(final TreeNode<T> other,
 			final Predicate<NodeDataPair<T>> equalityComparator,
 			final boolean requireAllChildren) {
-		if (!equalityComparator.apply(new NodeDataPair<T>(this.getData(), other
-				.getData()))) {
+		if (!equalityComparator.apply(new NodeDataPair<T>(nodeData,
+				other.nodeData))) {
 			return false;
 		}
 
-		if (nProperties() != other.nProperties()) {
-			return false;
-		}
+		final ArrayDeque<NodePair<T>> stack = new ArrayDeque<NodePair<T>>();
 
-		boolean hasChildren = false;
-		boolean sizesSame = true;
-		for (int i = 0; i < childrenProperties.size(); i++) {
-			final List<TreeNode<T>> children = childrenProperties.get(i);
-			final List<TreeNode<T>> otherChildren = other.childrenProperties
-					.get(i);
+		stack.push(new NodePair<T>(this, other));
+		while (!stack.isEmpty()) {
+			final NodePair<T> current = stack.pop();
+			final TreeNode<T> thisNode = current.fromNode;
+			final TreeNode<T> otherNode = current.toNode;
 
-			if (children.size() != otherChildren.size()) {
-				sizesSame = false;
-			}
-
-			if (children.size() > 0) {
-				hasChildren = true;
-			}
-
-			if (children.size() > otherChildren.size() && !requireAllChildren) {
-				return false;
-			} else if (requireAllChildren && hasChildren && !sizesSame) {
+			if (!equalityComparator.apply(new NodeDataPair<T>(
+					thisNode.nodeData, otherNode.nodeData))) {
 				return false;
 			}
 
-			for (int j = 0; j < children.size(); j++) {
-				if (!children.get(j).partialMatch(otherChildren.get(j),
-						equalityComparator, requireAllChildren)) {
+			if (thisNode.nProperties() != otherNode.nProperties()) {
+				return false;
+			}
+
+			boolean hasChildren = false;
+			boolean sizesSame = true;
+			for (int i = 0, n = thisNode.childrenProperties.size(); i < n; i++) {
+				final List<TreeNode<T>> children = thisNode.childrenProperties
+						.get(i);
+				final List<TreeNode<T>> otherChildren = otherNode.childrenProperties
+						.get(i);
+
+				if (children.size() != otherChildren.size()) {
+					sizesSame = false;
+				}
+
+				if (children.size() > 0) {
+					hasChildren = true;
+				}
+
+				if (children.size() > otherChildren.size()
+						&& !requireAllChildren) {
+					return false;
+				} else if (requireAllChildren && hasChildren && !sizesSame) {
 					return false;
 				}
+
+				for (int j = 0; j < children.size(); j++) {
+					stack.push(new NodePair<T>(children.get(j), otherChildren
+							.get(j)));
+				}
+
 			}
-
 		}
-
 		return true;
 	}
 

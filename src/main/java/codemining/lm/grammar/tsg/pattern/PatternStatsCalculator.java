@@ -25,15 +25,19 @@ import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.util.parallel.ParallelThreadPool;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.collect.TreeMultiset;
 
 /**
  * Class that calculate the pattern statistics for a tsg and a corpus.
@@ -65,7 +69,7 @@ public class PatternStatsCalculator {
 
 		@Override
 		public boolean apply(final NodeDataPair<Integer> nodePair) {
-			return Objects.equal(nodePair.fromNode, nodePair.toNode);
+			return nodePair.fromNode.equals(nodePair.toNode);
 		}
 
 	};
@@ -77,11 +81,10 @@ public class PatternStatsCalculator {
 	 * @param minCount
 	 * @return
 	 */
-	private static Multiset<TreeNode<Integer>> getRulesWithMinCount(
-			final Multiset<TreeNode<Integer>> patterns, final int minCount) {
-		final Multiset<TreeNode<Integer>> prunedPatterns = HashMultiset
-				.create();
-		for (final Entry<TreeNode<Integer>> pattern : patterns.entrySet()) {
+	private static Multiset<Integer> getRulesWithMinCount(
+			final Multiset<Integer> patterns, final int minCount) {
+		final Multiset<Integer> prunedPatterns = HashMultiset.create();
+		for (final Entry<Integer> pattern : patterns.entrySet()) {
 			if (pattern.getCount() >= minCount) {
 				prunedPatterns.add(pattern.getElement(), pattern.getCount());
 			}
@@ -104,7 +107,7 @@ public class PatternStatsCalculator {
 	 * A cache containing the sizes of the trees in the grammar (this is an
 	 * identity map).
 	 */
-	final Map<TreeNode<Integer>, Integer> patternSizes;
+	final Map<Integer, Integer> patternSizes = Maps.newHashMap();
 
 	/**
 	 * The file sizes in number of nodes.
@@ -116,36 +119,43 @@ public class PatternStatsCalculator {
 	/**
 	 * A table containing File,MatchedPatterns=>IdentitySet of matched nodes
 	 */
-	private final Table<File, TreeNode<Integer>, Set<TreeNode<Integer>>> filePatterns;
+	private final Table<File, Integer, Integer> filePatterns;
 	private final ReentrantLock filePatternsLock = new ReentrantLock();
-	private final Table<File, TreeNode<Integer>, Integer> filePatternsCount;
+	private final Table<File, Integer, Integer> filePatternsCount;
 	private final ReentrantLock filePatternsCountLock = new ReentrantLock();
+	private final BiMap<TreeNode<Integer>, Integer> patternDictionary = HashBiMap
+			.create();
 
 	public PatternStatsCalculator(final AbstractJavaTreeExtractor treeFormat,
 			final JavaFormattedTSGrammar grammar, final File directory) {
 		this.treeFormat = treeFormat;
 		patterns = HashMultiset.create();
+		int currentIdx = 0;
 		for (final Multiset<TreeNode<TSGNode>> production : grammar
 				.getInternalGrammar().values()) {
 			for (final com.google.common.collect.Multiset.Entry<TreeNode<TSGNode>> rule : production
 					.entrySet()) {
-				patterns.add(TSGNode.tsgTreeToInt(rule.getElement()),
-						rule.getCount());
-			}
-		}
+				final TreeNode<Integer> intTree = TSGNode.tsgTreeToInt(rule
+						.getElement());
+				patterns.add(intTree, rule.getCount());
+				patternDictionary.put(intTree, currentIdx);
+				patternSizes.put(currentIdx, intTree.getTreeSize());
 
-		patternSizes = Maps.newHashMap();
-		for (final TreeNode<Integer> pattern : patterns.elementSet()) {
-			patternSizes.put(pattern, pattern.getTreeSize());
+				currentIdx++;
+			}
 		}
 
 		allFiles = FileUtils
 				.listFiles(directory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
 
-		fileSizes = Maps.newConcurrentMap();
-		filePatterns = HashBasedTable.create();
-		filePatternsCount = HashBasedTable.create();
+		fileSizes = new MapMaker()
+				.concurrencyLevel(ParallelThreadPool.NUM_THREADS)
+				.initialCapacity(allFiles.size()).makeMap();
+		filePatterns = HashBasedTable.create(allFiles.size(),
+				patterns.size() / 10);
+		filePatternsCount = HashBasedTable.create(allFiles.size(),
+				patterns.size() / 1);
 
 	}
 
@@ -154,46 +164,48 @@ public class PatternStatsCalculator {
 	 */
 	private void completePatternsTable(final File f,
 			final TreeNode<Integer> fileTree) {
-		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
-		toLook.push(fileTree);
+		for (final TreeNode<Integer> pattern : patterns.elementSet()) {
+			final int patternId = patternDictionary.get(pattern);
+			final Set<TreeNode<Integer>> overlappingNodes = Sets
+					.newIdentityHashSet();
+			int count = 0;
 
-		// Do a pre-order visit
-		while (!toLook.isEmpty()) {
-			final TreeNode<Integer> currentNode = toLook.pop();
-			// at each node check if we have a partial match with any of the
-			// patterns
-			for (final TreeNode<Integer> pattern : patterns.elementSet()) {
+			final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
+			toLook.push(fileTree);
+
+			// Do a pre-order visit
+			while (!toLook.isEmpty()) {
+				final TreeNode<Integer> currentNode = toLook.pop();
+				// at each node check if we have a partial match with the
+				// current patterns
+
 				if (pattern.partialMatch(currentNode, BASE_EQUALITY_COMPARATOR,
 						false)) {
-					filePatternsLock.lock();
-					try {
-						filePatterns.put(f, pattern,
-								currentNode.getOverlappingNodesWith(pattern));
-					} finally {
-						filePatternsLock.unlock();
-					}
-
-					filePatternsCountLock.lock();
-					try {
-						final int count;
-						if (filePatternsCount.contains(f, pattern)) {
-							count = filePatternsCount.get(f, pattern) + 1;
-						} else {
-							count = 1;
-						}
-						filePatternsCount.put(f, pattern, count);
-					} finally {
-						filePatternsCountLock.unlock();
+					overlappingNodes.addAll(currentNode
+							.getOverlappingNodesWith(pattern));
+					count++;
+				}
+				// Proceed visiting
+				for (final List<TreeNode<Integer>> childProperties : currentNode
+						.getChildrenByProperty()) {
+					for (final TreeNode<Integer> child : childProperties) {
+						toLook.push(child);
 					}
 				}
 			}
 
-			// Proceed visiting
-			for (final List<TreeNode<Integer>> childProperties : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<Integer> child : childProperties) {
-					toLook.push(child);
-				}
+			filePatternsCountLock.lock();
+			try {
+				filePatternsCount.put(f, patternId, count);
+			} finally {
+				filePatternsCountLock.unlock();
+			}
+
+			filePatternsLock.lock();
+			try {
+				filePatterns.put(f, patternId, overlappingNodes.size());
+			} finally {
+				filePatternsLock.unlock();
 			}
 
 		}
@@ -206,17 +218,14 @@ public class PatternStatsCalculator {
 	 * @param i
 	 * @return
 	 */
-	private Multiset<TreeNode<Integer>> getRulesWithMinSize(
-			final Multiset<TreeNode<Integer>> prunedByCountBySize,
-			final int minSize) {
-		final Multiset<TreeNode<Integer>> prunedPatterns = HashMultiset
-				.create();
-		for (final Entry<TreeNode<Integer>> pattern : prunedByCountBySize
-				.entrySet()) {
-			if (checkNotNull(patternSizes.get(pattern.getElement())) < minSize) {
+	private Multiset<Integer> getRulesWithMinSize(
+			final Multiset<Integer> prunedByCountBySize, final int minSize) {
+		final Multiset<Integer> prunedPatterns = HashMultiset.create();
+		for (final Entry<Integer> patternId : prunedByCountBySize.entrySet()) {
+			if (patternSizes.get(patternId.getElement()) < minSize) {
 				continue;
 			}
-			prunedPatterns.add(pattern.getElement(), pattern.getCount());
+			prunedPatterns.add(patternId.getElement(), patternId.getCount());
 		}
 		return prunedPatterns;
 	}
@@ -243,13 +252,21 @@ public class PatternStatsCalculator {
 		ptp.waitForTermination();
 	}
 
+	/**
+	 * 
+	 * @param prunedByCountBySize
+	 *            the pattern ids.
+	 * @param minCount
+	 * @param minSize
+	 */
 	private void printPatternStatistics(
-			final Multiset<TreeNode<Integer>> prunedByCountBySize,
-			final int minCount, final int minSize) {
+			final Multiset<Integer> prunedByCountBySize, final int minCount,
+			final int minSize) {
 
-		final Multiset<TreeNode<Integer>> seenPatterns = HashMultiset.create();
-		final Map<File, FilePatternStats> allFilePatternStats = Maps
-				.newConcurrentMap();
+		final Multiset<Integer> seenPatterns = ConcurrentHashMultiset.create();
+		final Map<File, FilePatternStats> allFilePatternStats = new MapMaker()
+				.concurrencyLevel(ParallelThreadPool.NUM_THREADS)
+				.initialCapacity(filePatterns.rowKeySet().size()).makeMap();
 
 		final ParallelThreadPool ptp = new ParallelThreadPool();
 
@@ -258,24 +275,23 @@ public class PatternStatsCalculator {
 
 				@Override
 				public void run() {
-					final Set<TreeNode<Integer>> patternsInFile = filePatterns
-							.row(file).keySet();
-					final Set<TreeNode<Integer>> matchedPatterns = Sets
-							.intersection(patternsInFile,
-									prunedByCountBySize.elementSet());
+					final Set<Integer> patternsInFile = filePatterns.row(file)
+							.keySet();
+					final Set<Integer> matchedPatterns = Sets.intersection(
+							patternsInFile, prunedByCountBySize.elementSet());
 					final FilePatternStats stats = new FilePatternStats();
 					allFilePatternStats.put(file, stats);
 					stats.nUniqueMatched = matchedPatterns.size();
-					for (final TreeNode<Integer> pattern : matchedPatterns) {
-						final int patternSize = patternSizes.get(pattern);
+					for (final int patternId : matchedPatterns) {
+						final int patternSize = patternSizes.get(patternId);
 						final int nTimesPatternInFile = filePatternsCount.get(
-								file, pattern);
+								file, patternId);
 
-						stats.nNodesMatched += filePatterns.get(file, pattern)
-								.size();
+						stats.nNodesMatched += filePatterns
+								.get(file, patternId);
 						stats.nSitesMatched += nTimesPatternInFile;
 						stats.nPatternMatchedSizeSum += patternSize;
-						seenPatterns.add(pattern, nTimesPatternInFile);
+						seenPatterns.add(patternId, nTimesPatternInFile);
 					}
 
 					stats.coverage = ((double) stats.nNodesMatched)
@@ -314,9 +330,9 @@ public class PatternStatsCalculator {
 		final double patternRecall = ((double) seenPatterns.elementSet().size())
 				/ prunedByCountBySize.elementSet().size();
 		double avgPatternSizeSeen = 0;
-		for (final Entry<TreeNode<Integer>> pattern : seenPatterns.entrySet()) {
-			avgPatternSizeSeen += pattern.getCount()
-					* checkNotNull(patternSizes.get(pattern.getElement()));
+		for (final Entry<Integer> patternId : seenPatterns.entrySet()) {
+			avgPatternSizeSeen += patternId.getCount()
+					* checkNotNull(patternSizes.get(patternId.getElement()));
 		}
 		avgPatternSizeSeen /= seenPatterns.size();
 
@@ -336,7 +352,11 @@ public class PatternStatsCalculator {
 
 		loadPatternsForFiles();
 
-		Multiset<TreeNode<Integer>> prunedByCount = patterns;
+		Multiset<Integer> prunedByCount = TreeMultiset.create();
+		for (final Entry<TreeNode<Integer>> pattern : patterns.entrySet()) {
+			prunedByCount.add(patternDictionary.get(pattern.getElement()),
+					pattern.getCount());
+		}
 		System.out
 				.println("minCount,minSize,nSeenPatterns,patternRecall,avgPatternSizeSeen,avgCoverage,avgFileRecall,avgSitesMatched,avgPatternSizePerFile");
 
@@ -344,7 +364,7 @@ public class PatternStatsCalculator {
 			prunedByCount = getRulesWithMinCount(prunedByCount,
 					minPatternCounts[i]);
 
-			Multiset<TreeNode<Integer>> prunedByCountBySize = prunedByCount;
+			Multiset<Integer> prunedByCountBySize = prunedByCount;
 			for (int j = 0; j < minPatternSizes.length; j++) {
 				prunedByCountBySize = getRulesWithMinSize(prunedByCountBySize,
 						minPatternSizes[j]);
