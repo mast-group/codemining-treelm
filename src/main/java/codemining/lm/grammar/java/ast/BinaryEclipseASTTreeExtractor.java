@@ -45,6 +45,10 @@ public class BinaryEclipseASTTreeExtractor extends AbstractJavaTreeExtractor {
 		return base.getASTFromTree(debinarized);
 	}
 
+	public AbstractJavaTreeExtractor getBaseExtractor() {
+		return base;
+	}
+
 	public TreeBinarizer getBinarizer() {
 		return binarizer;
 	}
