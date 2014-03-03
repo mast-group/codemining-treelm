@@ -17,6 +17,7 @@ import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -422,6 +423,78 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	}
 
 	/**
+	 * Return the maximal subtree that is common for both trees. Note that if
+	 * some nodes contain more that one children, then the maximal tree will
+	 * only contain the first (in order) children that actually match, ignoring
+	 * any children after the first non-matching point.
+	 * 
+	 * @param other
+	 * @return
+	 */
+	public Optional<TreeNode<T>> getMaximalOverlappingTree(
+			final TreeNode<T> other) {
+		if (!this.nodeData.equals(other.nodeData)) {
+			return Optional.absent();
+		}
+
+		final ArrayDeque<Pair<TreeNode<T>, TreeNode<T>>> stack = new ArrayDeque<Pair<TreeNode<T>, TreeNode<T>>>();
+		stack.push(Pair.create(this, other));
+
+		final TreeNode<T> root = TreeNode.create(this);
+		final ArrayDeque<TreeNode<T>> newTreeStack = new ArrayDeque<TreeNode<T>>();
+		newTreeStack.push(root);
+
+		while (!stack.isEmpty()) {
+			final Pair<TreeNode<T>, TreeNode<T>> current = stack.pop();
+			final TreeNode<T> tree1Node = current.first;
+			final TreeNode<T> tree2Node = current.second;
+
+			final TreeNode<T> newNode = newTreeStack.pop();
+
+			if (!tree1Node.getData().equals(tree2Node.getData())) {
+				continue;
+			}
+
+			final List<List<TreeNode<T>>> tree1Children = tree1Node
+					.getChildrenByProperty();
+			final List<List<TreeNode<T>>> tree2Children = tree2Node
+					.getChildrenByProperty();
+
+			checkArgument(tree1Children.size() == tree2Children.size());
+
+			for (int i = 0, size = tree1Children.size(); i < size; i++) {
+				final List<TreeNode<T>> tree1ChildrenForProperty = tree1Children
+						.get(i);
+				final List<TreeNode<T>> tree2ChildrenForProperty = tree2Children
+						.get(i);
+
+				final int nChildren = Math.min(tree1ChildrenForProperty.size(),
+						tree2ChildrenForProperty.size());
+
+				for (int j = 0; j < nChildren; j++) {
+					final TreeNode<T> tree1child = tree1ChildrenForProperty
+							.get(j);
+					final TreeNode<T> tree2child = tree2ChildrenForProperty
+							.get(j);
+
+					if (!tree1child.nodeData.equals(tree2child.nodeData)) {
+						break;
+					} else {
+						final TreeNode<T> newChild = TreeNode
+								.create(tree1child);
+						newNode.addChildNode(newChild, i);
+
+						stack.push(Pair.create(tree1child, tree2child));
+						newTreeStack.push(newChild);
+					}
+				}
+			}
+		}
+
+		return Optional.of(root);
+	}
+
+	/**
 	 * Return the parents of this node from a root node.
 	 * 
 	 * @param fromRoot
@@ -434,9 +507,9 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Compute the identity set of the nodes that overlap with the other tree.
 	 * 
-	 * @param tree1
-	 * @param tree2
-	 * @return
+	 * @param other
+	 *            the other tree
+	 * @return an identity set of the overlapping nodes
 	 */
 	public Set<TreeNode<T>> getOverlappingNodesWith(final TreeNode<T> other) {
 		final ArrayDeque<Pair<TreeNode<T>, TreeNode<T>>> stack = new ArrayDeque<Pair<TreeNode<T>, TreeNode<T>>>();
@@ -510,6 +583,11 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		}
 	}
 
+	/**
+	 * Return true if this node is a leaf.
+	 * 
+	 * @return
+	 */
 	public boolean isLeaf() {
 		for (final List<TreeNode<T>> childProperty : childrenProperties) {
 			if (!childProperty.isEmpty()) {
@@ -636,6 +714,9 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		return true;
 	}
 
+	/**
+	 * @return the number of properties of this node.
+	 */
 	public int nProperties() {
 		return childrenProperties.size();
 	}

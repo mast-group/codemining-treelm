@@ -55,6 +55,52 @@ public class TreeNodeTest {
 	}
 
 	@Test
+	public void testMaximalOverlappingTree() {
+		// Construct a tree
+		final TreeNode<Integer> root1 = TreeNode.create(1, 2); // 1
+		final TreeNode<Integer> node2 = TreeNode.create(2, 2); // -2
+		final TreeNode<Integer> node3 = TreeNode.create(3, 2); // --3
+		final TreeNode<Integer> node4 = TreeNode.create(4, 2); // --4
+		final TreeNode<Integer> node5 = TreeNode.create(5, 2); // ---5
+		final TreeNode<Integer> node6 = TreeNode.create(6, 2); // -6
+		final TreeNode<Integer> node7 = TreeNode.create(7, 2); // --7
+
+		root1.addChildNode(node2, 0);
+		root1.addChildNode(node6, 1);
+		node2.addChildNode(node3, 0);
+		node2.addChildNode(node4, 0);
+		node4.addChildNode(node5, 1);
+		node6.addChildNode(node7, 1);
+
+		final TreeNode<Integer> root2 = TreeNode.create(1, 2);
+		assertEquals(root2.getMaximalOverlappingTree(root1).get(), root2);
+		assertEquals(root1.getMaximalOverlappingTree(root2).get(), root2);
+
+		final TreeNode<Integer> node2v2 = TreeNode.create(2, 2); // -2
+		root2.addChildNode(node2v2, 0);
+		assertEquals(root2.getMaximalOverlappingTree(root1).get(), root2);
+		assertEquals(root1.getMaximalOverlappingTree(root2).get(), root2);
+
+		final TreeNode<Integer> copyof2 = root2.deepCopy();
+
+		final TreeNode<Integer> node3v2 = TreeNode.create(3, 2); // -3
+		root2.addChildNode(node3v2, 0);
+		assertEquals(root2.getMaximalOverlappingTree(root1).get(), copyof2);
+		assertEquals(root1.getMaximalOverlappingTree(root2).get(), copyof2);
+
+		final TreeNode<Integer> node4v2 = TreeNode.create(3, 2); // -5
+		root2.addChildNode(node4v2, 1);
+		assertEquals(root2.getMaximalOverlappingTree(root1).get(), copyof2);
+		assertEquals(root1.getMaximalOverlappingTree(root2).get(), copyof2);
+
+		final TreeNode<Integer> node5v2 = TreeNode.create(3, 2);
+		node2v2.addChildNode(node5v2, 0);
+		copyof2.getChild(0, 0).addChildNode(TreeNode.create(3, 2), 0);
+		assertEquals(root2.getMaximalOverlappingTree(root1).get(), copyof2);
+		assertEquals(root1.getMaximalOverlappingTree(root2).get(), copyof2);
+	}
+
+	@Test
 	public void testParents() {
 		// Construct a tree
 		final TreeNode<Integer> node1 = TreeNode.create(1, 2); // 1
