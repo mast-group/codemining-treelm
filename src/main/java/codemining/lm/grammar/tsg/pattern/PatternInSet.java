@@ -82,8 +82,9 @@ public class PatternInSet {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length != 3) {
-			System.err.println("Usage <tsg> <filterCorpusDir> <snippetDir>");
+		if (args.length != 4) {
+			System.err
+					.println("Usage <tsg> <filterCorpusDir> <snippetDir> <minPatternCount>");
 			System.exit(-1);
 		}
 
@@ -93,9 +94,10 @@ public class PatternInSet {
 				.getJavaTreeExtractor();
 		final VariableTypeJavaTreeExtractor typeExtractor = (VariableTypeJavaTreeExtractor) format
 				.getBaseExtractor();
+		final int minPatternCount = Integer.parseInt(args[3]);
 
 		final Set<TreeNode<TSGNode>> tsgPatterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, 0, 0);
+				.getTSGPatternsFrom(grammar, minPatternCount, 0);
 		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
 
 		for (final TreeNode<TSGNode> tsgPattern : tsgPatterns) {
