@@ -29,18 +29,16 @@ public class TempletizedTSGrammarTest {
 
 	private void assertReparametrizationUnaffected(final String code,
 			final ParseType parseType, final boolean useComments) {
-		final JavaASTExtractor ex = new JavaASTExtractor(false,
-				useComments);
+		final JavaASTExtractor ex = new JavaASTExtractor(false, useComments);
 		final ASTNode cu = ex.getAST(code, parseType);
 		final TempletizedJavaTreeExtractor converter = new TempletizedJavaTreeExtractor();
 		final TempletizedTSGrammar grammar = new TempletizedTSGrammar(converter);
 		final TreeNode<Integer> treeCu = converter.getTree(cu, useComments);
 		final TreeNode<TSGNode> treeCu2 = TSGNode.convertTree(treeCu, 0);
 
-		assertEquals(TreeNode.getTreeSize(treeCu),
-				TreeNode.getTreeSize(treeCu2));
-		assertEquals(TreeNode.getTreeSize(treeCu),
-				TreeNode.getTreeSize(grammar.reparametrizeTree(treeCu2)));
+		assertEquals(treeCu.getTreeSize(), treeCu2.getTreeSize());
+		assertEquals(treeCu.getTreeSize(), grammar.reparametrizeTree(treeCu2)
+				.getTreeSize());
 
 		assertEquals(
 				grammar.reparametrizeTree(grammar.reparametrizeTree(treeCu2)),

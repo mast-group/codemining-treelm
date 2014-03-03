@@ -99,7 +99,7 @@ public class SampleTSG {
 				try {
 					final TreeNode<TSGNode> ast = TSGNode.convertTree(
 							format.getTree(fi), percentRootsInit);
-					nNodes += TreeNode.getTreeSize(ast);
+					nNodes += ast.getTreeSize();
 					nFiles++;
 					sampler.addTree(ast);
 				} catch (final Exception e) {

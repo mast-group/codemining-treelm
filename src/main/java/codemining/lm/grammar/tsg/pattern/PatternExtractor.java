@@ -96,7 +96,7 @@ public class PatternExtractor {
 			final Entry<TreeNode<TSGNode>> ruleEntry,
 			final int minPatternCount, final int minPatternSize) {
 		return ruleEntry.getCount() >= minPatternCount
-				&& TreeNode.getTreeSize(ruleEntry.getElement()) >= minPatternSize;
+				&& ruleEntry.getElement().getTreeSize() >= minPatternSize;
 	}
 
 	private PatternExtractor() {

@@ -5,7 +5,6 @@ package codemining.lm.grammar.tree;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkElementIndex;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -254,33 +253,6 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	}
 
 	/**
-	 * Return the total number of nodes in the subtree.
-	 * 
-	 * @param subtree
-	 * @return
-	 */
-	public static <T extends Serializable> int getTreeSize(
-			final TreeNode<T> subtree) {
-		checkNotNull(subtree);
-
-		final ArrayDeque<TreeNode<T>> toLook = new ArrayDeque<TreeNode<T>>();
-		int size = 1;
-		toLook.push(subtree);
-		while (!toLook.isEmpty()) {
-			final TreeNode<T> currentNode = toLook.pop();
-
-			for (final List<TreeNode<T>> childProperties : currentNode
-					.getChildrenByProperty()) {
-				size += childProperties.size();
-				for (final TreeNode<T> child : childProperties) {
-					toLook.push(child);
-				}
-			}
-		}
-		return size;
-	}
-
-	/**
 	 * The children of this node. This is a list of lists. One list for each
 	 * property.
 	 */
@@ -511,7 +483,21 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @return
 	 */
 	public int getTreeSize() {
-		return getTreeSize(this);
+		final ArrayDeque<TreeNode<T>> toLook = new ArrayDeque<TreeNode<T>>();
+		int size = 1;
+		toLook.push(this);
+		while (!toLook.isEmpty()) {
+			final TreeNode<T> currentNode = toLook.pop();
+
+			for (final List<TreeNode<T>> childProperties : currentNode
+					.getChildrenByProperty()) {
+				size += childProperties.size();
+				for (final TreeNode<T> child : childProperties) {
+					toLook.push(child);
+				}
+			}
+		}
+		return size;
 	}
 
 	@Override

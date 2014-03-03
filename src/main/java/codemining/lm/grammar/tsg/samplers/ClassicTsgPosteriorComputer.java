@@ -115,7 +115,7 @@ class ClassicTsgPosteriorComputer implements
 							checkArgument(nRulesCommonRoot >= nRulesInGrammar,
 									"Counts are not correct");
 
-							final int treeSize = TreeNode.getTreeSize(subTree);
+							final int treeSize = subTree.getTreeSize();
 							final double logRuleMLE = prior
 									.getTreeCFLog2Probability(subTree);
 
@@ -279,7 +279,7 @@ class ClassicTsgPosteriorComputer implements
 	 */
 	public double getLog2PriorForTree(final TreeNode<TSGNode> subtree) {
 		checkNotNull(subtree);
-		final int treeSize = TreeNode.getTreeSize(subtree);
+		final int treeSize = subtree.getTreeSize();
 		final double logRuleMLE = prior.getTreeCFLog2Probability(subtree);
 
 		final double geometricLogProb = GeometricDistribution.getLog2Prob(

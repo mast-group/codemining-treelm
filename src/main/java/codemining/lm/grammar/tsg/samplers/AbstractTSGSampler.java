@@ -150,7 +150,7 @@ public abstract class AbstractTSGSampler implements Serializable {
 				public void run() {
 					logProbSum
 							.addAndGet(computePosteriorLog2ProbabilityForTree(tree));
-					nNodes.addAndGet(TreeNode.getTreeSize(tree));
+					nNodes.addAndGet(tree.getTreeSize());
 				}
 
 			});
@@ -160,7 +160,8 @@ public abstract class AbstractTSGSampler implements Serializable {
 		return new SampleStats(logProbSum.get(), nNodes.get());
 	}
 
-	public double computePosteriorLog2ProbabilityForTree(TreeNode<TSGNode> tree) {
+	public double computePosteriorLog2ProbabilityForTree(
+			final TreeNode<TSGNode> tree) {
 		double log2Prob = 0;
 		for (final TreeNode<TSGNode> rule : TSGNode.getAllRootsOf(tree)) {
 			log2Prob += sampleGrammar.computeRulePosteriorLog2Probability(rule);

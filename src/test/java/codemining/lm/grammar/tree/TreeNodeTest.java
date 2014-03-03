@@ -43,7 +43,7 @@ public class TreeNodeTest {
 		assertEquals(node.getChild(1, 0).getData(), (Integer) 1);
 		assertEquals(node.getChild(0, 1).getData(), (Integer) 2);
 
-		assertEquals(TreeNode.getTreeSize(node), 4);
+		assertEquals(node.getTreeSize(), 4);
 	}
 
 	@Test
@@ -51,7 +51,7 @@ public class TreeNodeTest {
 		final TreeNode<Integer> node = TreeNode.create(1, 10);
 		assertTrue(node.isLeaf());
 		assertEquals(node.nProperties(), 10);
-		assertEquals(TreeNode.getTreeSize(node), 1);
+		assertEquals(node.getTreeSize(), 1);
 	}
 
 	@Test

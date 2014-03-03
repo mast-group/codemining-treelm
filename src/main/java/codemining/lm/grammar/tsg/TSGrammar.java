@@ -125,8 +125,7 @@ public class TSGrammar<T extends Serializable> implements
 				.entrySet()) {
 			for (final com.google.common.collect.Multiset.Entry<TreeNode<T>> rule : entry
 					.getValue().entrySet()) {
-				treeSizes.add(TreeNode.getTreeSize(rule.getElement()),
-						rule.getCount());
+				treeSizes.add(rule.getElement().getTreeSize(), rule.getCount());
 			}
 		}
 		return treeSizes;
