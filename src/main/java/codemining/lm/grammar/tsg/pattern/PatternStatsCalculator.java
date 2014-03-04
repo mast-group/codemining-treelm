@@ -159,6 +159,31 @@ public class PatternStatsCalculator {
 
 	}
 
+	public PatternStatsCalculator(final AbstractJavaTreeExtractor treeFormat,
+			final Set<TreeNode<Integer>> patterns, final File directory) {
+		this.treeFormat = treeFormat;
+		this.patterns = HashMultiset.create(patterns);
+		int currentIdx = 0;
+		for (final com.google.common.collect.Multiset.Entry<TreeNode<Integer>> rule : this.patterns
+				.entrySet()) {
+			patternDictionary.put(rule.getElement(), currentIdx);
+			patternSizes.put(currentIdx, rule.getElement().getTreeSize());
+			currentIdx++;
+		}
+
+		allFiles = FileUtils
+				.listFiles(directory, JavaTokenizer.javaCodeFileFilter,
+						DirectoryFileFilter.DIRECTORY);
+
+		fileSizes = new MapMaker()
+				.concurrencyLevel(ParallelThreadPool.NUM_THREADS)
+				.initialCapacity(allFiles.size()).makeMap();
+		filePatterns = HashBasedTable.create(allFiles.size(),
+				patterns.size() / 10);
+		filePatternsCount = HashBasedTable.create(allFiles.size(),
+				patterns.size() / 1);
+	}
+
 	/**
 	 * Return the list of patterns a specific tree.
 	 */
