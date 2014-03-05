@@ -24,9 +24,10 @@ import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
 
 /**
@@ -39,6 +40,24 @@ public class PatternsInCorpus {
 
 	private static final Logger LOGGER = Logger
 			.getLogger(PatternsInCorpus.class.getName());
+
+	/**
+	 * @param grammar
+	 * @param minPatternCount
+	 * @param minPatternSize
+	 * @return
+	 */
+	protected static Set<TreeNode<Integer>> getPatterns(
+			final JavaFormattedTSGrammar grammar, final int minPatternCount,
+			final int minPatternSize) {
+		final Set<TreeNode<TSGNode>> tsgPatterns = PatternExtractor
+				.getTSGPatternsFrom(grammar, minPatternCount, minPatternSize);
+		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
+		for (final TreeNode<TSGNode> tsgPattern : tsgPatterns) {
+			patterns.add(TSGNode.tsgTreeToInt(tsgPattern));
+		}
+		return patterns;
+	}
 
 	/**
 	 * Return the list of patterns a specific tree.
@@ -84,46 +103,60 @@ public class PatternsInCorpus {
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
 		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
-		final Set<TreeNode<TSGNode>> tsgPatterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, minPatternCount, minPatternSize);
-		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
-		for (final TreeNode<TSGNode> tsgPattern : tsgPatterns) {
-			patterns.add(TSGNode.tsgTreeToInt(tsgPattern));
-		}
+		final Set<TreeNode<Integer>> patterns = getPatterns(grammar,
+				minPatternCount, minPatternSize);
+
+		grammar = null; // Tell the GC that we don't need the grammar anymore.
 
 		final File directory = new File(args[3]);
 		final Collection<File> allFiles = FileUtils
 				.listFiles(directory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
+		final Multimap<File, TreeNode<Integer>> filePatterns = ArrayListMultimap
+				.create();
 		for (final File f : allFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
-				final Multiset<TreeNode<Integer>> filePatterns = getPatternsForTree(
-						fileAst, patterns);
-				if (!filePatterns.isEmpty()) {
-					printFileMatches(f, filePatterns, format);
-				}
+				filePatterns.putAll(f, getPatternsForTree(fileAst, patterns));
 			} catch (final Exception e) {
 				LOGGER.warning("Error in file " + f + " "
 						+ ExceptionUtils.getFullStackTrace(e));
 			}
 		}
+		printFileMatches(filePatterns, format);
 	}
 
-	private static void printFileMatches(final File file,
-			final Multiset<TreeNode<Integer>> filePatterns,
+	private static void printFileMatches(
+			final Multimap<File, TreeNode<Integer>> filePatterns,
 			final AbstractJavaTreeExtractor format) {
-		System.out.println("----------------------------------------------");
-		System.out.println("File " + file + " matches: ");
-		for (final Entry<TreeNode<Integer>> pattern : filePatterns.entrySet()) {
-			PrintPatternsFromTsg.printIntTree(format, pattern.getElement());
-			System.out.println(pattern.getCount() + " times");
-			System.out.println("__________________________________________");
+		// Build reverse
+		final Multimap<TreeNode<Integer>, File> patternsPerFile = ArrayListMultimap
+				.create();
+		for (final java.util.Map.Entry<File, TreeNode<Integer>> entry : filePatterns
+				.entries()) {
+			patternsPerFile.put(entry.getValue(), entry.getKey());
+		}
+
+		// now print
+		for (final TreeNode<Integer> pattern : patternsPerFile.keySet()) {
+			System.out
+					.println("----------------------------------------------");
+			try {
+				PrintPatternsFromTsg.printIntTree(format, pattern);
+			} catch (final Throwable e) {
+				System.out.println("Could not print pattern.");
+			}
+			final Collection<File> files = patternsPerFile.get(pattern);
+			System.out.println(files.size() + " times in:");
+
+			for (final File f : files) {
+				System.out.println(f);
+			}
 		}
 
 	}
