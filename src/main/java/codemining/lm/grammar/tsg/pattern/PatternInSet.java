@@ -44,11 +44,12 @@ public class PatternInSet {
 	/**
 	 * Return the list of patterns a specific tree.
 	 */
-	public static void getPatternsForTree(final TreeNode<Integer> tree,
+	public static boolean getPatternsForTree(final TreeNode<Integer> tree,
 			final Set<TreeNode<Integer>> patterns,
 			final Set<TreeNode<Integer>> patternSeen) {
 		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
 		toLook.push(tree);
+		boolean matchedAtLeastOne = false;
 
 		// Do a pre-order visit
 		while (!toLook.isEmpty()) {
@@ -63,6 +64,7 @@ public class PatternInSet {
 										PatternStatsCalculator.BASE_EQUALITY_COMPARATOR,
 										false)) {
 					patternSeen.add(pattern);
+					matchedAtLeastOne = true;
 				}
 			}
 
@@ -73,8 +75,8 @@ public class PatternInSet {
 					toLook.push(child);
 				}
 			}
-
 		}
+		return matchedAtLeastOne;
 	}
 
 	/**
@@ -97,7 +99,7 @@ public class PatternInSet {
 		final int minPatternCount = Integer.parseInt(args[3]);
 
 		final Set<TreeNode<TSGNode>> tsgPatterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, minPatternCount, 0);
+				.getTSGPatternsFrom(grammar, minPatternCount, 5);
 		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
 
 		for (final TreeNode<TSGNode> tsgPattern : tsgPatterns) {
@@ -115,6 +117,7 @@ public class PatternInSet {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
 				getPatternsForTree(fileAst, patterns, patternSeenInCorpus);
+
 			} catch (final IOException e) {
 				LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
 			}
@@ -132,14 +135,20 @@ public class PatternInSet {
 				.newIdentityHashSet();
 		final JavaASTExtractor astExtractor = new JavaASTExtractor(false);
 
+		int countSnippetsMatchedAtLeastOnce = 0;
 		for (final String snippet : snippets) {
 			final ASTNode node = astExtractor.getAST(snippet);
 			final TreeNode<Integer> snippetTree = format.getTree(node);
 			final TreeNode<Integer> detempletizedTree = typeExtractor
 					.detempletize(snippetTree);
-			getPatternsForTree(detempletizedTree, convertedPatterns,
-					snippetPatterns);
+			final boolean matched = getPatternsForTree(detempletizedTree,
+					convertedPatterns, snippetPatterns);
+			if (matched) {
+				countSnippetsMatchedAtLeastOnce++;
+			}
 		}
+		System.out.println("Snippets matched at least one:"
+				+ countSnippetsMatchedAtLeastOnce);
 
 		final SortedMap<Integer, Set<TreeNode<Integer>>> nodeSizes = Maps
 				.newTreeMap();
@@ -156,7 +165,7 @@ public class PatternInSet {
 			nodesForSize.add(pattern);
 		}
 
-		final int[] testSizes = { 2, 5, 8, 10, 12, 15, 20, 30 };
+		final int[] testSizes = { 5, 8, 10, 12, 15, 20, 30 };
 		for (final int size : testSizes) {
 			final SortedMap<Integer, Set<TreeNode<Integer>>> nodesOfThisSize = nodeSizes
 					.subMap(size, Integer.MAX_VALUE);

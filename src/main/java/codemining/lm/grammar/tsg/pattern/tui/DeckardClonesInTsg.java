@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
 public class DeckardClonesInTsg {
 
 	public static Pattern decardClone = Pattern
-			.compile("[0-9]{9}\\tdist:0\\.0\\tFILE\\s(\\S+\\.java)\\sLINE:([0-9]+)\\:([0-9]+)");
+			.compile("[0-9]{9}\\tdist:[0-9]\\.[0-9]\\tFILE\\s(\\S+\\.java)\\sLINE:([0-9]+)\\:([0-9]+)");
 
 	/**
 	 * Convert the ASTNodes in the collection to our format.
@@ -78,7 +78,9 @@ public class DeckardClonesInTsg {
 			while (nodeIterator.hasNext()) {
 				final Optional<TreeNode<Integer>> maximalOverlappingTree = maximumOverlappingNode
 						.getMaximalOverlappingTree(nodeIterator.next());
-				if (maximalOverlappingTree.isPresent()) {
+				if (maximalOverlappingTree.isPresent()
+						&& maximalOverlappingTree.get().getTreeSize() >= .9 * maximumOverlappingNode
+								.getTreeSize()) {
 					maximumOverlappingNode = maximalOverlappingTree.get();
 				}
 			}
@@ -148,6 +150,9 @@ public class DeckardClonesInTsg {
 		final Set<TreeNode<Integer>> decardCloneTrees = getClonePatterns(
 				decardClones, grammar.getJavaTreeExtractor());
 
+		Serializer.getSerializer().serialize(decardCloneTrees,
+				"decardPatterns.ser");
+
 		// Now check how many of them we have in our TSG
 		final Set<TreeNode<TSGNode>> patterns = PatternExtractor
 				.getTSGPatternsFrom(grammar, 0, 0);
@@ -168,6 +173,13 @@ public class DeckardClonesInTsg {
 
 		final int[] zeroArray = { 0 };
 		psc.printStatisticsFor(zeroArray, zeroArray);
+
+		System.out.println("Deckard Patterns");
+		System.out.println("--------------------------------");
+		for (final TreeNode<Integer> decardPattern : decardCloneTrees) {
+			PrintPatternsFromTsg.printIntTree(grammar.getJavaTreeExtractor(),
+					decardPattern);
+		}
 
 	}
 
