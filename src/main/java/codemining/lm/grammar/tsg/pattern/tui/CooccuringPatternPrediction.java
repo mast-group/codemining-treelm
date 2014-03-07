@@ -80,8 +80,6 @@ public class CooccuringPatternPrediction {
 
 	}
 
-	public static final int LIKELYHOOD_THRESHOLD = 10;
-
 	private static final Logger LOGGER = Logger
 			.getLogger(CooccuringPatternPrediction.class.getName());
 
@@ -90,9 +88,9 @@ public class CooccuringPatternPrediction {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length != 5) {
+		if (args.length != 6) {
 			System.err
-					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath>");
+					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath> <threshold>");
 			System.exit(-1);
 		}
 
@@ -106,15 +104,19 @@ public class CooccuringPatternPrediction {
 				grammar, minPatternCount, minPatternSize);
 
 		final File trainDirectory = new File(args[3]);
-		CooccuringPatternPrediction cpp = new CooccuringPatternPrediction(
+		final File testDirectory = new File(args[4]);
+		final double threshold = Double.parseDouble(args[5]);
+
+		final CooccuringPatternPrediction cpp = new CooccuringPatternPrediction(
 				patterns);
+		cpp.removePatternsNotInTest(format, testDirectory);
 		final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements = cpp
-				.loadData(format, trainDirectory);
+				.loadData(format, trainDirectory, threshold);
 
 		cpp.printPatterns(likelyCoappearingElements, format);
 
 		// Test
-		cpp.test(new File(args[4]), likelyCoappearingElements, format);
+		cpp.test(testDirectory, likelyCoappearingElements, format);
 	}
 
 	final PatternCooccurence<Integer> cooccurenceData = new PatternCooccurence<Integer>();
@@ -134,14 +136,14 @@ public class CooccuringPatternPrediction {
 	 * Filter the set of co-appearing patterns to remove trees that imply each
 	 * other.
 	 * 
-	 * @param patterns
+	 * @param coappearingPatterns
 	 */
 	public void filterCoappearingPatterns(
-			final SortedSet<LikelihoodRatio<Integer>> patterns) {
+			final SortedSet<LikelihoodRatio<Integer>> coappearingPatterns) {
 		final Set<LikelihoodRatio<Integer>> toBeRemoved = Sets
 				.newIdentityHashSet();
 
-		for (final LikelihoodRatio<Integer> lr : patterns) {
+		for (final LikelihoodRatio<Integer> lr : coappearingPatterns) {
 			final int tree1id = lr.pair.first;
 			final int tree2id = lr.pair.second;
 			final TreeNode<Integer> tree1 = patternDictionary.get(tree1id);
@@ -157,17 +159,19 @@ public class CooccuringPatternPrediction {
 			}
 		}
 
-		patterns.removeAll(toBeRemoved);
+		coappearingPatterns.removeAll(toBeRemoved);
 	}
 
 	/**
 	 * @param format
 	 * @param patterns
 	 * @param trainDirectory
+	 * @param likelihoodThreshold
 	 * @return
 	 */
 	private SortedSet<LikelihoodRatio<Integer>> loadData(
-			final AbstractJavaTreeExtractor format, final File trainDirectory) {
+			final AbstractJavaTreeExtractor format, final File trainDirectory,
+			final double likelihoodThreshold) {
 		final Collection<File> trainFiles = FileUtils
 				.listFiles(trainDirectory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
@@ -185,7 +189,7 @@ public class CooccuringPatternPrediction {
 		LOGGER.info("Patterns Loaded, building co-appearing sets...");
 		// Create co-occuring set
 		final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements = cooccurenceData
-				.likelyCoappearingElements(LIKELYHOOD_THRESHOLD);
+				.likelyCoappearingElements(likelihoodThreshold);
 		LOGGER.info("Patterns Built, filtering...");
 		filterCoappearingPatterns(likelyCoappearingElements);
 		return likelyCoappearingElements;
@@ -211,23 +215,59 @@ public class CooccuringPatternPrediction {
 			final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
 			final AbstractJavaTreeExtractor format) {
 		for (final LikelihoodRatio<Integer> lr : likelyCoappearingElements) {
-			System.out
-					.println("----------------------------------------------");
-			PrintPatternsFromTsg.printIntTree(format,
-					patternDictionary.get(lr.pair.first));
-			System.out.println("and");
-			PrintPatternsFromTsg.printIntTree(format,
-					patternDictionary.get(lr.pair.second));
-			System.out.println("ll:"
-					+ String.format("%.2f", lr.likelihoodRatio));
-			System.out
-					.println("----------------------------------------------");
+			try {
+				System.out
+						.println("----------------------------------------------");
+				PrintPatternsFromTsg.printIntTree(format,
+						patternDictionary.get(lr.pair.first));
+				System.out.println("and");
+				PrintPatternsFromTsg.printIntTree(format,
+						patternDictionary.get(lr.pair.second));
+				System.out.println("ll:"
+						+ String.format("%.2f", lr.likelihoodRatio));
+			} catch (final Throwable e) {
+				System.out.println("Failed to print pattern.");
+			} finally {
+				System.out
+						.println("----------------------------------------------");
+			}
+
 		}
 
 	}
 
-	private void test(File testDirectory,
-			SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
+	/**
+	 * Retain only the patterns that appear in the test set.
+	 * 
+	 * @param format
+	 * @param testDirectory
+	 */
+	private void removePatternsNotInTest(
+			final AbstractJavaTreeExtractor format, final File testDirectory) {
+		final Collection<File> testFiles = FileUtils
+				.listFiles(testDirectory, JavaTokenizer.javaCodeFileFilter,
+						DirectoryFileFilter.DIRECTORY);
+		final Set<Integer> seen = Sets.newHashSet();
+		for (final File f : testFiles) {
+			try {
+				final TreeNode<Integer> fileAst = format.getTree(f);
+				final Set<Integer> patternsIdsInFile = patternInFileId(fileAst);
+				seen.addAll(patternsIdsInFile);
+			} catch (final Exception e) {
+				LOGGER.warning("Error in file " + f + " "
+						+ ExceptionUtils.getFullStackTrace(e));
+			}
+		}
+		final Set<Integer> toRemove = Sets.difference(
+				patternDictionary.keySet(), seen).immutableCopy();
+		for (final int keyToRemove : toRemove) {
+			patternDictionary.remove(keyToRemove);
+		}
+	}
+
+	private void test(
+			final File testDirectory,
+			final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
 			final AbstractJavaTreeExtractor format) {
 		final Map<UnorderedPair<Integer>, OccurenceStats> pairStats = Maps
 				.newHashMap();

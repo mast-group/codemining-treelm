@@ -3,6 +3,8 @@
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -79,6 +81,10 @@ public class PatternCooccurence<T> {
 			return Objects.hashCode(pair, likelihoodRatio);
 		}
 
+		@Override
+		public String toString() {
+			return pair + ":" + String.format("%.2f", likelihoodRatio);
+		}
 	}
 
 	/**
@@ -110,6 +116,7 @@ public class PatternCooccurence<T> {
 		}
 
 		for (final Entry<UnorderedPair<T>> pair : pairs.entrySet()) {
+			checkArgument(pair.getCount() / 2 > 0);
 			cooccurenceCount.add(pair.getElement(), pair.getCount() / 2);
 		}
 	}
@@ -125,7 +132,7 @@ public class PatternCooccurence<T> {
 		final SortedSet<LikelihoodRatio<T>> likelihoods = Sets.newTreeSet();
 
 		for (final UnorderedPair<T> pair : cooccurenceCount.elementSet()) {
-			T element1 = pair.first;
+			final T element1 = pair.first;
 			final T element2 = pair.second;
 			final int nElementCount = elementCount.size();
 			final double pOccurenceElement1 = ((double) elementCount
