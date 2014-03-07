@@ -224,7 +224,7 @@ public class CooccuringPatternPrediction {
 				PrintPatternsFromTsg.printIntTree(format,
 						patternDictionary.get(lr.pair.second));
 				System.out.println("ll:"
-						+ String.format("%.2f", lr.likelihoodRatio));
+						+ String.format("%.2E", lr.likelihoodRatio));
 			} catch (final Throwable e) {
 				System.out.println("Failed to print pattern.");
 			} finally {

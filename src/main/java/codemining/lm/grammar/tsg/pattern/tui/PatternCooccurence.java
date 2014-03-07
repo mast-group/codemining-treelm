@@ -46,7 +46,7 @@ public class PatternCooccurence<T> {
 		@Override
 		public int compareTo(final LikelihoodRatio<T> other) {
 			return ComparisonChain.start()
-					.compare(likelihoodRatio, other.likelihoodRatio)
+					.compare(other.likelihoodRatio, likelihoodRatio)
 					.compare(pair.hashCode(), other.pair.hashCode()).result();
 		}
 
@@ -83,7 +83,7 @@ public class PatternCooccurence<T> {
 
 		@Override
 		public String toString() {
-			return pair + ":" + String.format("%.2f", likelihoodRatio);
+			return pair + ":" + String.format("%.2E", likelihoodRatio);
 		}
 	}
 
@@ -144,9 +144,10 @@ public class PatternCooccurence<T> {
 			final double pOccuringTogether = ((double) cooccurenceCount
 					.count(pair)) / cooccurenceCount.size();
 
-			final double logRatio = Math.log(pOccuringTogether)
-					- Math.log(pOccurenceElement1)
-					- Math.log(pOccurenceElement2);
+			final double logRatio = pOccuringTogether
+					* (Math.log(pOccuringTogether)
+							- Math.log(pOccurenceElement1) - Math
+								.log(pOccurenceElement2));
 			if (logRatio > minLikelihoodRatio) {
 				likelihoods.add(new LikelihoodRatio<T>(pair, logRatio));
 			}
