@@ -16,6 +16,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.NodeSetTreeDistance;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.tui.PatternCooccurence.LikelihoodRatio;
@@ -23,7 +24,6 @@ import codemining.util.data.UnorderedPair;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
@@ -79,6 +79,8 @@ public class CooccuringPatternPrediction {
 		}
 
 	}
+
+	private static final double DISTANCE_THRESHOLD = 0.8;
 
 	private static final Logger LOGGER = Logger
 			.getLogger(CooccuringPatternPrediction.class.getName());
@@ -148,13 +150,9 @@ public class CooccuringPatternPrediction {
 			final int tree2id = lr.pair.second;
 			final TreeNode<Integer> tree1 = patternDictionary.get(tree1id);
 			final TreeNode<Integer> tree2 = patternDictionary.get(tree2id);
-			final Optional<TreeNode<Integer>> common = tree1
-					.getMaximalOverlappingTree(tree2);
-			if (!common.isPresent()) {
-				continue;
-			}
-			final TreeNode<Integer> commonTree = common.get();
-			if (commonTree.equals(tree1) || commonTree.equals(tree2)) {
+			double treeDistance = NodeSetTreeDistance.distanceBetween(tree1,
+					tree2);
+			if (treeDistance > DISTANCE_THRESHOLD) {
 				toBeRemoved.add(lr);
 			}
 		}
@@ -224,7 +222,7 @@ public class CooccuringPatternPrediction {
 				PrintPatternsFromTsg.printIntTree(format,
 						patternDictionary.get(lr.pair.second));
 				System.out.println("ll:"
-						+ String.format("%.2f", lr.likelihoodRatio));
+						+ String.format("%.2E", lr.likelihoodRatio));
 			} catch (final Throwable e) {
 				System.out.println("Failed to print pattern.");
 			} finally {
