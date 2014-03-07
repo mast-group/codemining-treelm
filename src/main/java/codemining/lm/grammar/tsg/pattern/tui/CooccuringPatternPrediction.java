@@ -23,10 +23,13 @@ import codemining.util.data.UnorderedPair;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 
 /**
  * Evaluate the cooccuring elements recall.
@@ -35,6 +38,7 @@ import com.google.common.collect.Multiset;
  * 
  */
 public class CooccuringPatternPrediction {
+
 	/**
 	 * Struct to contain statistics.
 	 * 
@@ -76,6 +80,8 @@ public class CooccuringPatternPrediction {
 
 	}
 
+	public static final int LIKELYHOOD_THRESHOLD = 10;
+
 	private static final Logger LOGGER = Logger
 			.getLogger(CooccuringPatternPrediction.class.getName());
 
@@ -99,17 +105,77 @@ public class CooccuringPatternPrediction {
 		final Set<TreeNode<Integer>> patterns = PatternsInCorpus.getPatterns(
 				grammar, minPatternCount, minPatternSize);
 
-		final PatternCooccurence cooccurenceData = new PatternCooccurence();
-
 		final File trainDirectory = new File(args[3]);
+		CooccuringPatternPrediction cpp = new CooccuringPatternPrediction(
+				patterns);
+		final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements = cpp
+				.loadData(format, trainDirectory);
+
+		cpp.printPatterns(likelyCoappearingElements, format);
+
+		// Test
+		cpp.test(new File(args[4]), likelyCoappearingElements, format);
+	}
+
+	final PatternCooccurence<Integer> cooccurenceData = new PatternCooccurence<Integer>();
+
+	private final BiMap<Integer, TreeNode<Integer>> patternDictionary = HashBiMap
+			.create();
+
+	public CooccuringPatternPrediction(final Set<TreeNode<Integer>> patterns) {
+		int i = 0;
+		for (final TreeNode<Integer> pattern : patterns) {
+			patternDictionary.put(i, pattern);
+			i++;
+		}
+	}
+
+	/**
+	 * Filter the set of co-appearing patterns to remove trees that imply each
+	 * other.
+	 * 
+	 * @param patterns
+	 */
+	public void filterCoappearingPatterns(
+			final SortedSet<LikelihoodRatio<Integer>> patterns) {
+		final Set<LikelihoodRatio<Integer>> toBeRemoved = Sets
+				.newIdentityHashSet();
+
+		for (final LikelihoodRatio<Integer> lr : patterns) {
+			final int tree1id = lr.pair.first;
+			final int tree2id = lr.pair.second;
+			final TreeNode<Integer> tree1 = patternDictionary.get(tree1id);
+			final TreeNode<Integer> tree2 = patternDictionary.get(tree2id);
+			final Optional<TreeNode<Integer>> common = tree1
+					.getMaximalOverlappingTree(tree2);
+			if (!common.isPresent()) {
+				continue;
+			}
+			final TreeNode<Integer> commonTree = common.get();
+			if (commonTree.equals(tree1) || commonTree.equals(tree2)) {
+				toBeRemoved.add(lr);
+			}
+		}
+
+		patterns.removeAll(toBeRemoved);
+	}
+
+	/**
+	 * @param format
+	 * @param patterns
+	 * @param trainDirectory
+	 * @return
+	 */
+	private SortedSet<LikelihoodRatio<Integer>> loadData(
+			final AbstractJavaTreeExtractor format, final File trainDirectory) {
 		final Collection<File> trainFiles = FileUtils
 				.listFiles(trainDirectory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
 		for (final File f : trainFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
-				cooccurenceData.add(PatternsInCorpus.getPatternsForTree(
-						fileAst, patterns).elementSet());
+				final Set<Integer> patternsIdsInFile = patternInFileId(fileAst);
+				cooccurenceData.add(patternsIdsInFile);
 			} catch (final Exception e) {
 				LOGGER.warning("Error in file " + f + " "
 						+ ExceptionUtils.getFullStackTrace(e));
@@ -118,37 +184,71 @@ public class CooccuringPatternPrediction {
 
 		LOGGER.info("Patterns Loaded, building co-appearing sets...");
 		// Create co-occuring set
-		final SortedSet<LikelihoodRatio> likelyCoappearingElements = cooccurenceData
-				.likelyCoappearingElements(10);
+		final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements = cooccurenceData
+				.likelyCoappearingElements(LIKELYHOOD_THRESHOLD);
 		LOGGER.info("Patterns Built, filtering...");
-		PatternCooccurence.filterCoappearingPatterns(likelyCoappearingElements);
+		filterCoappearingPatterns(likelyCoappearingElements);
+		return likelyCoappearingElements;
+	}
 
-		printPatterns(likelyCoappearingElements, format);
+	/**
+	 * @param fileAst
+	 * @return
+	 */
+	private Set<Integer> patternInFileId(final TreeNode<Integer> fileAst) {
+		final Set<TreeNode<Integer>> patternsInFile = PatternsInCorpus
+				.getPatternsForTree(fileAst, patternDictionary.values())
+				.elementSet();
 
-		// Test
+		final Set<Integer> patternsIdsInFile = Sets.newHashSet();
+		for (final TreeNode<Integer> pattern : patternsInFile) {
+			patternsIdsInFile.add(patternDictionary.inverse().get(pattern));
+		}
+		return patternsIdsInFile;
+	}
 
-		final Map<UnorderedPair<TreeNode<Integer>>, OccurenceStats> pairStats = Maps
+	public void printPatterns(
+			final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
+			final AbstractJavaTreeExtractor format) {
+		for (final LikelihoodRatio<Integer> lr : likelyCoappearingElements) {
+			System.out
+					.println("----------------------------------------------");
+			PrintPatternsFromTsg.printIntTree(format,
+					patternDictionary.get(lr.pair.first));
+			System.out.println("and");
+			PrintPatternsFromTsg.printIntTree(format,
+					patternDictionary.get(lr.pair.second));
+			System.out.println("ll:"
+					+ String.format("%.2f", lr.likelihoodRatio));
+			System.out
+					.println("----------------------------------------------");
+		}
+
+	}
+
+	private void test(File testDirectory,
+			SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
+			final AbstractJavaTreeExtractor format) {
+		final Map<UnorderedPair<Integer>, OccurenceStats> pairStats = Maps
 				.newHashMap();
-		final Multimap<TreeNode<Integer>, TreeNode<Integer>> reverseFrequentPatternMap = HashMultimap
+		final Multimap<Integer, Integer> reverseFrequentPatternMap = HashMultimap
 				.create();
 
-		for (final LikelihoodRatio lr : likelyCoappearingElements) {
+		for (final LikelihoodRatio<Integer> lr : likelyCoappearingElements) {
 			pairStats.put(lr.pair, new OccurenceStats());
 			reverseFrequentPatternMap.put(lr.pair.first, lr.pair.second);
 			reverseFrequentPatternMap.put(lr.pair.second, lr.pair.first);
 		}
 
-		final File testDirectory = new File(args[4]);
 		final Collection<File> testFiles = FileUtils
 				.listFiles(testDirectory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
 		for (final File f : testFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
-				final Multiset<TreeNode<Integer>> testFilePatterns = PatternsInCorpus
-						.getPatternsForTree(fileAst, patterns);
-				for (final TreeNode<Integer> pattern : testFilePatterns) {
-					for (final TreeNode<Integer> frequentlyCooccuringPattern : reverseFrequentPatternMap
+				final Set<Integer> testFilePatterns = patternInFileId(fileAst);
+				for (final int pattern : testFilePatterns) {
+					for (final int frequentlyCooccuringPattern : reverseFrequentPatternMap
 							.get(pattern)) {
 						final OccurenceStats stats = pairStats
 								.get(UnorderedPair.createUnordered(pattern,
@@ -170,23 +270,6 @@ public class CooccuringPatternPrediction {
 		// Now get accuracy and print
 		final OccurenceStats aggregate = new OccurenceStats(pairStats.values());
 		System.out.println("Co-occurent set accuracy " + aggregate);
-	}
-
-	private static void printPatterns(
-			final SortedSet<LikelihoodRatio> likelyCoappearingElements,
-			final AbstractJavaTreeExtractor format) {
-		for (final LikelihoodRatio lr : likelyCoappearingElements) {
-			System.out
-					.println("----------------------------------------------");
-			PrintPatternsFromTsg.printIntTree(format, lr.pair.first);
-			System.out.println("and");
-			PrintPatternsFromTsg.printIntTree(format, lr.pair.second);
-			System.out.println("ll:"
-					+ String.format("%.2f", lr.likelihoodRatio));
-			System.out
-					.println("----------------------------------------------");
-		}
 
 	}
-
 }

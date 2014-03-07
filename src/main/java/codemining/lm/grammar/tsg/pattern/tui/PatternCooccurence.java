@@ -6,11 +6,9 @@ package codemining.lm.grammar.tsg.pattern.tui;
 import java.util.Set;
 import java.util.SortedSet;
 
-import codemining.lm.grammar.tree.TreeNode;
 import codemining.util.data.UnorderedPair;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.HashMultiset;
@@ -23,27 +21,28 @@ import com.google.common.collect.Sets;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class PatternCooccurence {
+public class PatternCooccurence<T> {
 
 	/**
 	 * A struct class containing the likelihood ratios of a single element
 	 * 
 	 * @param <T>
 	 */
-	public static class LikelihoodRatio implements Comparable<LikelihoodRatio> {
+	public static class LikelihoodRatio<T> implements
+			Comparable<LikelihoodRatio<T>> {
 
-		public final UnorderedPair<TreeNode<Integer>> pair;
+		public final UnorderedPair<T> pair;
 
 		public final double likelihoodRatio;
 
-		public LikelihoodRatio(final UnorderedPair<TreeNode<Integer>> pair,
+		public LikelihoodRatio(final UnorderedPair<T> pair,
 				final double likelihoodRatio) {
 			this.pair = pair;
 			this.likelihoodRatio = likelihoodRatio;
 		}
 
 		@Override
-		public int compareTo(final LikelihoodRatio other) {
+		public int compareTo(final LikelihoodRatio<T> other) {
 			return ComparisonChain.start()
 					.compare(likelihoodRatio, other.likelihoodRatio)
 					.compare(pair.hashCode(), other.pair.hashCode()).result();
@@ -60,7 +59,7 @@ public class PatternCooccurence {
 			if (getClass() != obj.getClass()) {
 				return false;
 			}
-			final LikelihoodRatio other = (LikelihoodRatio) obj;
+			final LikelihoodRatio<T> other = (LikelihoodRatio<T>) obj;
 			if (Double.doubleToLongBits(likelihoodRatio) != Double
 					.doubleToLongBits(other.likelihoodRatio)) {
 				return false;
@@ -83,42 +82,14 @@ public class PatternCooccurence {
 	}
 
 	/**
-	 * Filter the set of co-appearing patterns to remove trees that imply each
-	 * other.
-	 * 
-	 * @param patterns
-	 */
-	public static void filterCoappearingPatterns(
-			final SortedSet<LikelihoodRatio> patterns) {
-		final Set<LikelihoodRatio> toBeRemoved = Sets.newIdentityHashSet();
-
-		for (final LikelihoodRatio lr : patterns) {
-			final TreeNode<Integer> tree1 = lr.pair.first;
-			final TreeNode<Integer> tree2 = lr.pair.second;
-			final Optional<TreeNode<Integer>> common = tree1
-					.getMaximalOverlappingTree(tree2);
-			if (!common.isPresent()) {
-				continue;
-			}
-			final TreeNode<Integer> commonTree = common.get();
-			if (commonTree.equals(tree1) || commonTree.equals(tree2)) {
-				toBeRemoved.add(lr);
-			}
-		}
-
-		patterns.removeAll(toBeRemoved);
-	}
-
-	/**
 	 * Contains the counts of all elements.
 	 */
-	private final Multiset<TreeNode<Integer>> elementCount = ConcurrentHashMultiset
-			.create();
+	private final Multiset<T> elementCount = ConcurrentHashMultiset.create();
 
 	/**
-	 * The co-ocurrence counts.
+	 * The co-occurrence counts.
 	 */
-	private final Multiset<UnorderedPair<TreeNode<Integer>>> cooccurenceCount = ConcurrentHashMultiset
+	private final Multiset<UnorderedPair<T>> cooccurenceCount = ConcurrentHashMultiset
 			.create();
 
 	/**
@@ -126,21 +97,19 @@ public class PatternCooccurence {
 	 * 
 	 * @param elements
 	 */
-	final public void add(final Set<TreeNode<Integer>> elements) {
+	final public void add(final Set<T> elements) {
 		elementCount.addAll(elements);
 
-		final Multiset<UnorderedPair<TreeNode<Integer>>> pairs = HashMultiset
-				.create();
-		for (final TreeNode<Integer> element1 : elements) {
-			for (final TreeNode<Integer> element2 : elements) {
+		final Multiset<UnorderedPair<T>> pairs = HashMultiset.create();
+		for (final T element1 : elements) {
+			for (final T element2 : elements) {
 				if (element1 != element2) {
 					pairs.add(UnorderedPair.createUnordered(element1, element2));
 				}
 			}
 		}
 
-		for (final Entry<UnorderedPair<TreeNode<Integer>>> pair : pairs
-				.entrySet()) {
+		for (final Entry<UnorderedPair<T>> pair : pairs.entrySet()) {
 			cooccurenceCount.add(pair.getElement(), pair.getCount() / 2);
 		}
 	}
@@ -151,39 +120,28 @@ public class PatternCooccurence {
 	 * @param element
 	 * @return
 	 */
-	public final SortedSet<LikelihoodRatio> likelyCoappearingElements(
+	public final SortedSet<LikelihoodRatio<T>> likelyCoappearingElements(
 			final double minLikelihoodRatio) {
-		final Set<UnorderedPair<TreeNode<Integer>>> computed = Sets
-				.newHashSet();
-		final SortedSet<LikelihoodRatio> likelihoods = Sets.newTreeSet();
+		final SortedSet<LikelihoodRatio<T>> likelihoods = Sets.newTreeSet();
 
-		for (final TreeNode<Integer> element1 : elementCount.elementSet()) {
+		for (final UnorderedPair<T> pair : cooccurenceCount.elementSet()) {
+			T element1 = pair.first;
+			final T element2 = pair.second;
+			final int nElementCount = elementCount.size();
 			final double pOccurenceElement1 = ((double) elementCount
-					.count(element1)) / elementCount.size();
-			for (final TreeNode<Integer> element2 : elementCount.elementSet()) {
-				if (element1 == element2) {
-					continue;
-				}
-				final UnorderedPair<TreeNode<Integer>> pair = UnorderedPair
-						.createUnordered(element1, element2);
-				if (computed.contains(pair)) {
-					continue;
-				} else {
-					computed.add(pair);
-				}
+					.count(element1)) / nElementCount;
 
-				final double pOccurenceElement2 = ((double) elementCount
-						.count(element2)) / elementCount.size();
+			final double pOccurenceElement2 = ((double) elementCount
+					.count(element2)) / elementCount.size();
 
-				final double pOccuringTogether = ((double) cooccurenceCount
-						.count(pair)) / cooccurenceCount.size();
+			final double pOccuringTogether = ((double) cooccurenceCount
+					.count(pair)) / cooccurenceCount.size();
 
-				final double logRatio = Math.log(pOccuringTogether)
-						- Math.log(pOccurenceElement1)
-						- Math.log(pOccurenceElement2);
-				if (logRatio > minLikelihoodRatio) {
-					likelihoods.add(new LikelihoodRatio(pair, logRatio));
-				}
+			final double logRatio = Math.log(pOccuringTogether)
+					- Math.log(pOccurenceElement1)
+					- Math.log(pOccurenceElement2);
+			if (logRatio > minLikelihoodRatio) {
+				likelihoods.add(new LikelihoodRatio<T>(pair, logRatio));
 			}
 		}
 
