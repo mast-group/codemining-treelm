@@ -88,6 +88,12 @@ public class PatternCooccurence<T> {
 	}
 
 	/**
+	 * The minimum count of times a pair has to be seen before it is actually
+	 * considered a co-appearing pattern.
+	 */
+	public static final int MIN_COUNT_FOR_COAPPEARING = 2;
+
+	/**
 	 * Contains the counts of all elements.
 	 */
 	private final Multiset<T> elementCount = ConcurrentHashMultiset.create();
@@ -131,7 +137,13 @@ public class PatternCooccurence<T> {
 			final double minLikelihoodRatio) {
 		final SortedSet<LikelihoodRatio<T>> likelihoods = Sets.newTreeSet();
 
-		for (final UnorderedPair<T> pair : cooccurenceCount.elementSet()) {
+		for (final Entry<UnorderedPair<T>> pairEntry : cooccurenceCount
+				.entrySet()) {
+			if (pairEntry.getCount() <= MIN_COUNT_FOR_COAPPEARING) {
+				continue;
+			}
+
+			final UnorderedPair<T> pair = pairEntry.getElement();
 			final T element1 = pair.first;
 			final T element2 = pair.second;
 			final int nElementCount = elementCount.size();
