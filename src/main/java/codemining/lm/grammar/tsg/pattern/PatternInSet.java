@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Logger;
@@ -44,12 +45,12 @@ public class PatternInSet {
 	/**
 	 * Return the list of patterns a specific tree.
 	 */
-	public static boolean getPatternsForTree(final TreeNode<Integer> tree,
+	public static double getPatternsForTree(final TreeNode<Integer> tree,
 			final Set<TreeNode<Integer>> patterns,
 			final Set<TreeNode<Integer>> patternSeen) {
 		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
 		toLook.push(tree);
-		boolean matchedAtLeastOne = false;
+		final Map<TreeNode<Integer>, Long> matches = Maps.newIdentityHashMap();
 
 		// Do a pre-order visit
 		while (!toLook.isEmpty()) {
@@ -57,14 +58,17 @@ public class PatternInSet {
 			// at each node check if we have a partial match with any of the
 			// patterns
 			for (final TreeNode<Integer> pattern : patterns) {
-				if (!patternSeen.contains(pattern)
-						&& pattern
-								.partialMatch(
-										currentNode,
-										PatternStatsCalculator.BASE_EQUALITY_COMPARATOR,
-										false)) {
+				if (pattern.partialMatch(currentNode,
+						PatternStatsCalculator.BASE_EQUALITY_COMPARATOR, false)) {
 					patternSeen.add(pattern);
-					matchedAtLeastOne = true;
+					for (final TreeNode<Integer> node : currentNode
+							.getOverlappingNodesWith(pattern)) {
+						if (matches.containsKey(node)) {
+							matches.put(node, matches.get(node) + 1L);
+						} else {
+							matches.put(node, 1L);
+						}
+					}
 				}
 			}
 
@@ -76,7 +80,13 @@ public class PatternInSet {
 				}
 			}
 		}
-		return matchedAtLeastOne;
+
+		long sumOfMatches = 0;
+		for (final long count : matches.values()) {
+			sumOfMatches += count;
+		}
+
+		return ((double) sumOfMatches) / matches.size();
 	}
 
 	/**
@@ -136,19 +146,23 @@ public class PatternInSet {
 		final JavaASTExtractor astExtractor = new JavaASTExtractor(false);
 
 		int countSnippetsMatchedAtLeastOnce = 0;
+		double sumAvgMatchesPerNode = 0;
 		for (final String snippet : snippets) {
 			final ASTNode node = astExtractor.getAST(snippet);
 			final TreeNode<Integer> snippetTree = format.getTree(node);
 			final TreeNode<Integer> detempletizedTree = typeExtractor
 					.detempletize(snippetTree);
-			final boolean matched = getPatternsForTree(detempletizedTree,
-					convertedPatterns, snippetPatterns);
-			if (matched) {
+			final double avgMatchesPerNode = getPatternsForTree(
+					detempletizedTree, convertedPatterns, snippetPatterns);
+			if (!Double.isNaN(avgMatchesPerNode)) {
 				countSnippetsMatchedAtLeastOnce++;
+				sumAvgMatchesPerNode += avgMatchesPerNode;
 			}
 		}
 		System.out.println("Snippets matched at least one:"
 				+ countSnippetsMatchedAtLeastOnce);
+		System.out.println("Duplication Ratio:" + sumAvgMatchesPerNode
+				/ countSnippetsMatchedAtLeastOnce);
 
 		final SortedMap<Integer, Set<TreeNode<Integer>>> nodeSizes = Maps
 				.newTreeMap();

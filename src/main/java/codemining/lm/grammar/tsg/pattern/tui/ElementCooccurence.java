@@ -3,6 +3,7 @@
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,7 +29,7 @@ import com.google.common.collect.Table.Cell;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class ElementCooccurence<TRow, TColumn> {
+public class ElementCooccurence<TRow, TColumn> implements Serializable {
 
 	/**
 	 * Struct class containing lift data.
@@ -38,7 +39,8 @@ public class ElementCooccurence<TRow, TColumn> {
 	 * @param <TRow>
 	 * @param <TColumn>
 	 */
-	public static class Lift<TRow, TColumn> implements Comparable<Lift> {
+	public static class Lift<TRow, TColumn> implements
+			Comparable<Lift<TRow, TColumn>> {
 		public final double lift;
 		public final TRow row;
 		public final TColumn column;
@@ -53,7 +55,7 @@ public class ElementCooccurence<TRow, TColumn> {
 		}
 
 		@Override
-		public int compareTo(final Lift other) {
+		public int compareTo(final Lift<TRow, TColumn> other) {
 			return ComparisonChain.start().compare(other.lift, lift)
 					.compare(row.hashCode(), other.row.hashCode())
 					.compare(column.hashCode(), row.hashCode()).result();
@@ -83,6 +85,8 @@ public class ElementCooccurence<TRow, TColumn> {
 			return row + "," + column + ":" + String.format("%.2f", lift);
 		}
 	}
+
+	private static final long serialVersionUID = 3649581428917226080L;
 
 	/**
 	 * Contains the counts of all elements.

@@ -6,11 +6,10 @@ package codemining.lm.grammar.tsg.pattern.tui;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -24,29 +23,30 @@ import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
-import codemining.lm.grammar.tsg.pattern.tui.ElementCooccurence.Lift;
+import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multiset.Entry;
-import com.google.common.collect.Multisets;
 import com.google.common.collect.Sets;
 
 /**
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class PatternImportCovariance {
+@DefaultSerializer(JavaSerializer.class)
+public class PatternImportCovariance implements Serializable {
+
+	public static final int cooccuringPairsThreshold = (int) SettingsLoader
+			.getNumericSetting("cooccuringPairsThreshold", 5);
+
+	private static final long serialVersionUID = 4891455549393829732L;
 
 	private static final Logger LOGGER = Logger
 			.getLogger(PatternImportCovariance.class.getName());
-
-	private static int nTopImports = 500;
-
-	private static int nTopPatterns = 500;
 
 	/**
 	 * @param args
@@ -55,7 +55,7 @@ public class PatternImportCovariance {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 5) {
 			System.err
-					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath>");
+					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <filterPath>");
 			System.exit(-1);
 		}
 
@@ -69,14 +69,14 @@ public class PatternImportCovariance {
 				grammar, minPatternCount, minPatternSize);
 
 		final File trainDirectory = new File(args[3]);
-		final File testDirectory = new File(args[4]);
+		final File filterDirectory = new File(args[4]);
 
 		final PatternImportCovariance pic = new PatternImportCovariance(
 				patterns, format);
-		pic.removePatternsNotInTest(testDirectory);
+		pic.removePatternsNotIn(filterDirectory);
 		pic.train(trainDirectory);
 
-		pic.printTargetVectors();
+		Serializer.getSerializer().serialize(pic, "importCooccurence.ser");
 
 	}
 
@@ -97,6 +97,24 @@ public class PatternImportCovariance {
 		}
 	}
 
+	public ElementCooccurence<String, Integer> getElementCooccurence() {
+		return patternImportCooccurence;
+	}
+
+	public AbstractJavaTreeExtractor getFormat() {
+		return format;
+	}
+
+	public BiMap<Integer, TreeNode<Integer>> getPatternDictionary() {
+		return patternDictionary;
+	}
+
+	/**
+	 * Get the package where each class belongs in
+	 * 
+	 * @param qualifiedName
+	 * @return
+	 */
 	private String getSuperPackage(final String qualifiedName) {
 		final String[] pieces = qualifiedName.split("\\.");
 		final String packageName = qualifiedName
@@ -107,6 +125,12 @@ public class PatternImportCovariance {
 		return packageName;
 	}
 
+	/**
+	 * Parse all the imports to get the package that is "imported".
+	 * 
+	 * @param imports
+	 * @return
+	 */
 	private Set<String> parseImports(final List<String> imports) {
 		final Set<String> importPackages = Sets.newHashSet();
 		for (int i = 0; i < imports.size(); i++) {
@@ -117,6 +141,8 @@ public class PatternImportCovariance {
 	}
 
 	/**
+	 * Return the ids of the patterns that are in this file.
+	 * 
 	 * @param fileAst
 	 * @return
 	 */
@@ -132,78 +158,18 @@ public class PatternImportCovariance {
 		return patternsIdsInFile;
 	}
 
-	private void printTargetVectors() {
-		final List<String> topImports = Lists.newArrayList();
-
-		int i = 0;
-		System.out.println("Top imports");
-		for (final Entry<String> packageNameEntry : Multisets
-				.copyHighestCountFirst(
-						patternImportCooccurence.getRowMultiset()).entrySet()) {
-			if (i > nTopImports || packageNameEntry.getCount() < 5) {
-				break;
-			}
-			topImports.add(packageNameEntry.getElement());
-
-			System.out.println(packageNameEntry.getElement() + ":"
-					+ packageNameEntry.getCount());
-			i++;
-		}
-		Collections.sort(topImports);
-
-		final SortedSet<Lift<String, Integer>> topPatternsByLift = Sets
-				.newTreeSet();
-		for (final String packageName : topImports) {
-			topPatternsByLift.addAll(patternImportCooccurence
-					.getCooccuringElementsForRow(packageName));
-		}
-
-		final Set<Integer> topPatterns = Sets.newHashSet();
-		for (final Lift<String, Integer> lift : topPatternsByLift) {
-			if (topPatterns.size() > nTopPatterns) {
-				break;
-			}
-			topPatterns.add(lift.column);
-		}
-
-		System.out.println("Top patterns");
-		for (final int patternId : topPatterns) {
-			try {
-				PrintPatternsFromTsg.printIntTree(format,
-						patternDictionary.get(patternId));
-			} catch (final Throwable e) {
-				System.out.println("Could not print pattern");
-			}
-			System.out.println("------------------------------------------");
-		}
-
-		for (final int patternId : topPatterns) {
-			final List<Double> values = Lists.newArrayList();
-			for (final String packageId : topImports) {
-				values.add(Math.exp(patternImportCooccurence.getElementLogLift(
-						packageId, patternId)));
-			}
-
-			for (int j = 0; j < values.size(); j++) {
-				System.out.print(String.format("%.5E", values.get(j)) + ",");
-			}
-			System.out.println();
-		}
-
-	}
-
 	/**
-	 * Retain only the patterns that appear in the test set.
+	 * Retain only the patterns that appear in the filter set.
 	 * 
 	 * @param format
-	 * @param testDirectory
+	 * @param filterDirectory
 	 */
-	private void removePatternsNotInTest(final File testDirectory) {
-		final Collection<File> testFiles = FileUtils
-				.listFiles(testDirectory, JavaTokenizer.javaCodeFileFilter,
-						DirectoryFileFilter.DIRECTORY);
+	private void removePatternsNotIn(final File filterDirectory) {
+		final Collection<File> filterFiles = FileUtils.listFiles(
+				filterDirectory, JavaTokenizer.javaCodeFileFilter,
+				DirectoryFileFilter.DIRECTORY);
 		final Set<Integer> seen = Sets.newHashSet();
-		for (final File f : testFiles) {
+		for (final File f : filterFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
 				final Set<Integer> patternsIdsInFile = patternInFileId(fileAst);
@@ -220,6 +186,11 @@ public class PatternImportCovariance {
 		}
 	}
 
+	/**
+	 * Use the files in the trainset to train the co-occurence weights.
+	 * 
+	 * @param trainDirectory
+	 */
 	private void train(final File trainDirectory) {
 		final Collection<File> testFiles = FileUtils
 				.listFiles(trainDirectory, JavaTokenizer.javaCodeFileFilter,
@@ -239,6 +210,6 @@ public class PatternImportCovariance {
 						+ ExceptionUtils.getFullStackTrace(e));
 			}
 		}
-		patternImportCooccurence.prune(5);
+		patternImportCooccurence.prune(cooccuringPairsThreshold);
 	}
 }
