@@ -150,13 +150,12 @@ public class CooccuringPatternPrediction {
 			final int tree2id = lr.pair.second;
 			final TreeNode<Integer> tree1 = patternDictionary.get(tree1id);
 			final TreeNode<Integer> tree2 = patternDictionary.get(tree2id);
-			double treeDistance = NodeSetTreeDistance.distanceBetween(tree1,
-					tree2);
+			final double treeDistance = NodeSetTreeDistance.distanceBetween(
+					tree1, tree2);
 			if (treeDistance > DISTANCE_THRESHOLD) {
 				toBeRemoved.add(lr);
 			}
 		}
-
 		coappearingPatterns.removeAll(toBeRemoved);
 	}
 

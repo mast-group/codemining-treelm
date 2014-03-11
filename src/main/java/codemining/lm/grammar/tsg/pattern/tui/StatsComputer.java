@@ -31,8 +31,8 @@ public class StatsComputer {
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final int[] minPatternCount = parseInt(args[2].split(","));
-		final int[] minPatternSize = parseInt(args[3].split(","));
+		final int[] minPatternCount = parseIntList(args[2].split(","));
+		final int[] minPatternSize = parseIntList(args[3].split(","));
 
 		final File directory = new File(args[1]);
 
@@ -45,7 +45,7 @@ public class StatsComputer {
 
 	}
 
-	static int[] parseInt(final String[] strVals) {
+	static int[] parseIntList(final String[] strVals) {
 		final int[] vals = new int[strVals.length];
 		for (int i = 0; i < strVals.length; i++) {
 			vals[i] = Integer.parseInt(strVals[i]);
