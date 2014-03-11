@@ -15,6 +15,7 @@ import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodePair;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.util.parallel.ParallelThreadPool;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -84,17 +85,26 @@ public class TsgMerger {
 
 		checkArgument(format1.getClass().equals(format2.getClass()));
 
+		final ParallelThreadPool ptp = new ParallelThreadPool();
 		for (final Entry<TSGNode, ? extends Multiset<TreeNode<TSGNode>>> treeProd : tsg2
 				.getInternalGrammar().entrySet()) {
-			for (final com.google.common.collect.Multiset.Entry<TreeNode<TSGNode>> tree : treeProd
-					.getValue().entrySet()) {
-				final TreeNode<Integer> intTree = TSGNode.tsgTreeToInt(tree
-						.getElement());
-				final TreeNode<Integer> converted = convert(intTree, format2,
-						format1);
-				tsg1.addTree(TSGNode.convertTree(converted, 0));
-			}
+			ptp.pushTask(new Runnable() {
+				@Override
+				public void run() {
+					for (final com.google.common.collect.Multiset.Entry<TreeNode<TSGNode>> tree : treeProd
+							.getValue().entrySet()) {
+						final TreeNode<Integer> intTree = TSGNode
+								.tsgTreeToInt(tree.getElement());
+						final TreeNode<Integer> converted = convert(intTree,
+								format2, format1);
+						tsg1.addTree(TSGNode.convertTree(converted, 0),
+								tree.getCount());
+					}
+				}
+			});
+
 		}
+		ptp.waitForTermination();
 
 		Serializer.getSerializer().serialize(tsg1, args[2]);
 
