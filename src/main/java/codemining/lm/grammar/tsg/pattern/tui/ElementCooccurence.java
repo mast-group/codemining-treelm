@@ -39,11 +39,11 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 	 * 
 	 * @param <T>
 	 */
-	public static final class ElementProbability<T> {
+	public static final class ElementMutualInformation<T> {
 		public final double logProb;
 		public final T element;
 
-		public ElementProbability(final T element, final double logProb) {
+		public ElementMutualInformation(final T element, final double logProb) {
 			this.element = element;
 			checkArgument(!Double.isNaN(logProb));
 			this.logProb = logProb;
@@ -60,7 +60,7 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 			if (getClass() != obj.getClass()) {
 				return false;
 			}
-			final ElementProbability other = (ElementProbability) obj;
+			final ElementMutualInformation other = (ElementMutualInformation) obj;
 			if (element == null) {
 				if (other.element != null) {
 					return false;
@@ -188,9 +188,9 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 	 * @param column
 	 * @return
 	 */
-	public List<ElementProbability<TColumn>> getColumnProbabilityGiven(
+	public List<ElementMutualInformation<TColumn>> getColumnMutualInformationFor(
 			final TRow row) {
-		final List<ElementProbability<TColumn>> probabilities = Lists
+		final List<ElementMutualInformation<TColumn>> probabilities = Lists
 				.newArrayList();
 		checkArgument(tRowCount.contains(row));
 
@@ -206,9 +206,12 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 				.get(row).entrySet()) {
 			final double logProbability = Math.log(columnElement.getValue())
 					- LOG_N_COOCCURENCE_ELEMENTS;
+			final double rowLogProb = Math.log(tColumnCount.count(columnElement
+					.getKey())) - Math.log(tColumnCount.size());
 
-			probabilities.add(new ElementProbability<TColumn>(columnElement
-					.getKey(), logProbability - columnLogProb));
+			probabilities.add(new ElementMutualInformation<TColumn>(
+					columnElement.getKey(), logProbability - columnLogProb
+							- rowLogProb));
 		}
 
 		return probabilities;
@@ -321,9 +324,9 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 	 * @param column
 	 * @return
 	 */
-	public List<ElementProbability<TRow>> getRowProbabilityGiven(
+	public List<ElementMutualInformation<TRow>> getRowMutualInformationFor(
 			final TColumn column) {
-		final List<ElementProbability<TRow>> probabilities = Lists
+		final List<ElementMutualInformation<TRow>> probabilities = Lists
 				.newArrayList();
 		checkArgument(tColumnCount.contains(column));
 
@@ -335,9 +338,11 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 				.get(column).entrySet()) {
 			final double logProbability = Math.log(rowElement.getValue())
 					- LOG_N_COOCCURENCE_ELEMENTS;
+			final double rowLogProb = Math.log(tRowCount.count(column))
+					- Math.log(tRowCount.size());
 
-			probabilities.add(new ElementProbability<TRow>(rowElement.getKey(),
-					logProbability - columnLogProb));
+			probabilities.add(new ElementMutualInformation<TRow>(rowElement
+					.getKey(), logProbability - columnLogProb - rowLogProb));
 		}
 
 		return probabilities;

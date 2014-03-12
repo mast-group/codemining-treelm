@@ -24,7 +24,7 @@ import codemining.java.codedata.PackageInfoExtractor;
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.pattern.tui.ElementCooccurence.ElementProbability;
+import codemining.lm.grammar.tsg.pattern.tui.ElementCooccurence.ElementMutualInformation;
 import codemining.util.SettingsLoader;
 import codemining.util.parallel.ParallelThreadPool;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -283,10 +283,10 @@ public class SuggestIdiomsGivenImports {
 					.contains(packageName)) {
 				continue;
 			}
-			final List<ElementProbability<Integer>> patternScoresForPackage = importCovariance
-					.getElementCooccurence().getColumnProbabilityGiven(
+			final List<ElementMutualInformation<Integer>> patternScoresForPackage = importCovariance
+					.getElementCooccurence().getColumnMutualInformationFor(
 							packageName);
-			for (final ElementProbability<Integer> prb : patternScoresForPackage) {
+			for (final ElementMutualInformation<Integer> prb : patternScoresForPackage) {
 				if (patternScores.containsKey(prb.element)) {
 					final Double previous = patternScores.get(prb.element);
 					checkArgument(!Double.isNaN(previous));
