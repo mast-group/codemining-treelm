@@ -49,6 +49,22 @@ public class PatternImportCovariance implements Serializable {
 			.getLogger(PatternImportCovariance.class.getName());
 
 	/**
+	 * Get the package where each class belongs in
+	 * 
+	 * @param qualifiedName
+	 * @return
+	 */
+	private static String getSuperPackage(final String qualifiedName) {
+		final String[] pieces = qualifiedName.split("\\.");
+		final String packageName = qualifiedName
+				.substring(0, qualifiedName.length()
+						- pieces[pieces.length - 1].length() - 1);
+		checkArgument(qualifiedName.length() > 0,
+				"Qualified name of %s not %s", qualifiedName, packageName);
+		return packageName;
+	}
+
+	/**
 	 * @param args
 	 * @throws SerializationException
 	 */
@@ -77,6 +93,21 @@ public class PatternImportCovariance implements Serializable {
 		pic.train(trainDirectory);
 
 		Serializer.getSerializer().serialize(pic, "importCooccurence.ser");
+
+	}
+
+	/**
+	 * Parse all the imports to get the package that is "imported".
+	 * 
+	 * @param imports
+	 * @return
+	 */
+	static Set<String> parseImports(final List<String> imports) {
+		final Set<String> importPackages = Sets.newHashSet();
+		for (int i = 0; i < imports.size(); i++) {
+			importPackages.add(getSuperPackage(imports.get(i)));
+		}
+		return importPackages;
 
 	}
 
@@ -110,43 +141,12 @@ public class PatternImportCovariance implements Serializable {
 	}
 
 	/**
-	 * Get the package where each class belongs in
-	 * 
-	 * @param qualifiedName
-	 * @return
-	 */
-	private String getSuperPackage(final String qualifiedName) {
-		final String[] pieces = qualifiedName.split("\\.");
-		final String packageName = qualifiedName
-				.substring(0, qualifiedName.length()
-						- pieces[pieces.length - 1].length() - 1);
-		checkArgument(qualifiedName.length() > 0,
-				"Qualified name of %s not %s", qualifiedName, packageName);
-		return packageName;
-	}
-
-	/**
-	 * Parse all the imports to get the package that is "imported".
-	 * 
-	 * @param imports
-	 * @return
-	 */
-	private Set<String> parseImports(final List<String> imports) {
-		final Set<String> importPackages = Sets.newHashSet();
-		for (int i = 0; i < imports.size(); i++) {
-			importPackages.add(getSuperPackage(imports.get(i)));
-		}
-		return importPackages;
-
-	}
-
-	/**
 	 * Return the ids of the patterns that are in this file.
 	 * 
 	 * @param fileAst
 	 * @return
 	 */
-	private Set<Integer> patternInFileId(final TreeNode<Integer> fileAst) {
+	public Set<Integer> patternInFileId(final TreeNode<Integer> fileAst) {
 		final Set<TreeNode<Integer>> patternsInFile = PatternsInCorpus
 				.getPatternsForTree(fileAst, patternDictionary.values())
 				.elementSet();

@@ -46,7 +46,9 @@ public class PrintImportPatternCovariance {
 
 		final PatternImportCovariance pic = (PatternImportCovariance) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-
+		final PrintImportPatternCovariance printer = new PrintImportPatternCovariance(
+				pic);
+		printer.printTargetVectors();
 	}
 
 	private final PatternImportCovariance covariance;

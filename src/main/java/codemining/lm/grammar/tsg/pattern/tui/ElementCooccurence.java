@@ -3,7 +3,10 @@
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +33,54 @@ import com.google.common.collect.Table.Cell;
  * 
  */
 public class ElementCooccurence<TRow, TColumn> implements Serializable {
+
+	/**
+	 * Struct class containing the log-probability of an element.
+	 * 
+	 * @param <T>
+	 */
+	public static final class ElementProbability<T> {
+		public final double logProb;
+		public final T element;
+
+		public ElementProbability(final T element, final double logProb) {
+			this.element = element;
+			checkArgument(!Double.isNaN(logProb));
+			this.logProb = logProb;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final ElementProbability other = (ElementProbability) obj;
+			if (element == null) {
+				if (other.element != null) {
+					return false;
+				}
+			} else if (!element.equals(other.element)) {
+				return false;
+			}
+			if (Double.doubleToLongBits(logProb) != Double
+					.doubleToLongBits(other.logProb)) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(element, logProb);
+		}
+
+	}
 
 	/**
 	 * Struct class containing lift data.
@@ -87,18 +138,18 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 	}
 
 	private static final long serialVersionUID = 3649581428917226080L;
-
 	/**
 	 * Contains the counts of all elements.
 	 */
 	private final Multiset<TRow> tRowCount = HashMultiset.create();
-	private final Multiset<TColumn> tColumnCount = HashMultiset.create();
 
+	private final Multiset<TColumn> tColumnCount = HashMultiset.create();
 	/**
 	 * Co-occuring elements.
 	 */
 	private final Table<TRow, TColumn, Long> coocurenceMx = HashBasedTable
 			.create();
+
 	private long totalCooccurences = 0;
 
 	/**
@@ -128,6 +179,39 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 
 	public Multiset<TColumn> getColumnMultiset() {
 		return tColumnCount;
+	}
+
+	/**
+	 * Return a list of element probabilities for the given column. Any TRow
+	 * element not in the list should be assumed to have zero probability.
+	 * 
+	 * @param column
+	 * @return
+	 */
+	public List<ElementProbability<TColumn>> getColumnProbabilityGiven(
+			final TRow row) {
+		final List<ElementProbability<TColumn>> probabilities = Lists
+				.newArrayList();
+		checkArgument(tRowCount.contains(row));
+
+		final double columnLogProb = Math.log(tRowCount.count(row))
+				- Math.log(tRowCount.size());
+
+		if (!coocurenceMx.rowMap().containsKey(row)) {
+			return Collections.emptyList();
+		}
+
+		final double LOG_N_COOCCURENCE_ELEMENTS = Math.log(totalCooccurences);
+		for (final Entry<TColumn, Long> columnElement : coocurenceMx.rowMap()
+				.get(row).entrySet()) {
+			final double logProbability = Math.log(columnElement.getValue())
+					- LOG_N_COOCCURENCE_ELEMENTS;
+
+			probabilities.add(new ElementProbability<TColumn>(columnElement
+					.getKey(), logProbability - columnLogProb));
+		}
+
+		return probabilities;
 	}
 
 	public Set<TColumn> getColumnValues() {
@@ -228,6 +312,35 @@ public class ElementCooccurence<TRow, TColumn> implements Serializable {
 
 	public Multiset<TRow> getRowMultiset() {
 		return tRowCount;
+	}
+
+	/**
+	 * Return a list of element probabilities for the given column. Any TRow
+	 * element not in the list should be assumed to have zero probability.
+	 * 
+	 * @param column
+	 * @return
+	 */
+	public List<ElementProbability<TRow>> getRowProbabilityGiven(
+			final TColumn column) {
+		final List<ElementProbability<TRow>> probabilities = Lists
+				.newArrayList();
+		checkArgument(tColumnCount.contains(column));
+
+		final double columnLogProb = Math.log(tColumnCount.count(column))
+				- Math.log(tColumnCount.size());
+
+		final double LOG_N_COOCCURENCE_ELEMENTS = Math.log(totalCooccurences);
+		for (final Entry<TRow, Long> rowElement : coocurenceMx.columnMap()
+				.get(column).entrySet()) {
+			final double logProbability = Math.log(rowElement.getValue())
+					- LOG_N_COOCCURENCE_ELEMENTS;
+
+			probabilities.add(new ElementProbability<TRow>(rowElement.getKey(),
+					logProbability - columnLogProb));
+		}
+
+		return probabilities;
 	}
 
 	public Set<TRow> getRowValues() {
