@@ -26,6 +26,7 @@ import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.pattern.tui.ElementCooccurence.ElementMutualInformation;
 import codemining.util.SettingsLoader;
+import codemining.util.data.Pair;
 import codemining.util.parallel.ParallelThreadPool;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -33,6 +34,8 @@ import codemining.util.serialization.Serializer;
 import com.google.common.base.Objects;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
@@ -47,11 +50,10 @@ import com.google.common.collect.TreeMultiset;
  */
 public class SuggestIdiomsGivenImports {
 
-	public static class RecallStats {
-		public final int[] RECALL_AT_RANK_K_VALUES = { 1, 2, 3, 4, 5, 10, 15,
-				20 };
-		public final double[] SUGGESTION_FREQUENCY_VALUES = { .01, .05, .1,
-				.15, .2, .3, .4, .5, .6, .7, .8, .9, 1 };
+	public static class PrecisionRecallStats {
+		public static final int[] RANK_K_VALUES = { 1, 2, 3, 4, 5, 10, 15, 20 };
+		public static final double[] SUGGESTION_FREQUENCY_VALUES = { .01, .05,
+				.1, .15, .2, .3, .4, .5, .6, .7, .8, .9, 1 };
 
 		/**
 		 * For each recall value get the decision values.
@@ -62,14 +64,49 @@ public class SuggestIdiomsGivenImports {
 		final Map<Integer, SortedMultiset<Double>> correctSuggestionsValuesAtRank = Maps
 				.newTreeMap();
 
-		public RecallStats() {
+		/**
+		 * Contains pairs of the suggestions vs those that are actually correct.
+		 */
+		final List<Pair<SortedMultiset<Double>, SortedMultiset<Double>>> suggestionPrecision = Lists
+				.newArrayList();
+		final SortedMultiset<Double> allSuggestionsScores = TreeMultiset
+				.create();
+
+		public static double[] SPLIT_POSITIONS = { .001, .005, .01, .02, .03,
+				.04, .05, .08, .1, .15, .2, .25, .3, .35, .4, .5, .6, .7, .8,
+				.9 };
+
+		public PrecisionRecallStats() {
 			// Initialize
-			for (int i = 0; i < RECALL_AT_RANK_K_VALUES.length; i++) {
-				suggestionsValuesAtRank.put(RECALL_AT_RANK_K_VALUES[i],
+			for (int i = 0; i < RANK_K_VALUES.length; i++) {
+				suggestionsValuesAtRank.put(RANK_K_VALUES[i],
 						TreeMultiset.<Double> create());
-				correctSuggestionsValuesAtRank.put(RECALL_AT_RANK_K_VALUES[i],
+				correctSuggestionsValuesAtRank.put(RANK_K_VALUES[i],
 						TreeMultiset.<Double> create());
 			}
+		}
+
+		/**
+		 * Find the threshold values for each split position. Note that the
+		 * sorted set is sorted in descending order and thus we need the inverse
+		 * proportions.
+		 * 
+		 * @param elements
+		 * @param nElements
+		 * @return
+		 */
+		private double[] findThreshold() {
+			final int[] positions = new int[SPLIT_POSITIONS.length];
+			for (int i = 0; i < SPLIT_POSITIONS.length; i++) {
+				positions[i] = (int) (allSuggestionsScores.size() * SPLIT_POSITIONS[i]);
+			}
+
+			final double[] thresholds = new double[SPLIT_POSITIONS.length];
+			for (int i = 0; i < SPLIT_POSITIONS.length; i++) {
+				thresholds[i] = Iterators.get(allSuggestionsScores
+						.descendingMultiset().iterator(), positions[i]);
+			}
+			return thresholds;
 		}
 
 		/**
@@ -97,9 +134,46 @@ public class SuggestIdiomsGivenImports {
 			return threshold;
 		}
 
-		public void printStats() {
+		public void printPrecisionStats() {
+			// Find actual thresholds for split positions
+			final double[] thresholds = findThreshold();
+
+			for (final double threshold : thresholds) {
+				// Get the pruned lists
+				final List<Pair<SortedMultiset<Double>, SortedMultiset<Double>>> pruned = pruneToThreshold(threshold);
+				// Count stats
+				long sizeSum = 0;
+				double precisionSum = 0;
+				int nGivenSuggestion = 0;
+				for (final Pair<SortedMultiset<Double>, SortedMultiset<Double>> suggestionList : pruned) {
+					sizeSum += suggestionList.first.size();
+					final double precision = ((double) suggestionList.second
+							.size()) / suggestionList.first.size();
+					if (!Double.isNaN(precision)) {
+						nGivenSuggestion++;
+						precisionSum += precision;
+					}
+				}
+
+				final double avgSize = ((double) sizeSum) / pruned.size();
+				final double avgPrecision = precisionSum / nGivenSuggestion;
+				final double pctFilesSuggestionGiven = ((double) nGivenSuggestion)
+						/ pruned.size();
+
+				// Print stats
+				System.out.println(String.format("%.2E",
+						pctFilesSuggestionGiven)
+						+ ","
+						+ String.format("%.2E", avgSize)
+						+ ","
+						+ String.format("%.2E", avgPrecision));
+			}
+
+		}
+
+		public void printRecallStats() {
 			System.out.println(Arrays.toString(SUGGESTION_FREQUENCY_VALUES));
-			for (final int k : RECALL_AT_RANK_K_VALUES) {
+			for (final int k : RANK_K_VALUES) {
 				System.out.print(k);
 				final SortedMultiset<Double> suggestionValues = suggestionsValuesAtRank
 						.get(k);
@@ -131,6 +205,28 @@ public class SuggestIdiomsGivenImports {
 		}
 
 		/**
+		 * Prune the list to the given threshold.
+		 */
+		private List<Pair<SortedMultiset<Double>, SortedMultiset<Double>>> pruneToThreshold(
+				final double threshold) {
+			final List<Pair<SortedMultiset<Double>, SortedMultiset<Double>>> filtered = Lists
+					.newArrayList();
+
+			for (final Pair<SortedMultiset<Double>, SortedMultiset<Double>> suggestion : suggestionPrecision) {
+				final SortedMultiset<Double> allFilteredSuggestions = suggestion.first
+						.tailMultiset(threshold, BoundType.CLOSED);
+				final SortedMultiset<Double> correctFilteredSuggestions = suggestion.second
+						.tailMultiset(threshold, BoundType.CLOSED);
+				final Pair<SortedMultiset<Double>, SortedMultiset<Double>> filteredPair = Pair
+						.create(allFilteredSuggestions,
+								correctFilteredSuggestions);
+				filtered.add(filteredPair);
+			}
+
+			return filtered;
+		}
+
+		/**
 		 * Push results.
 		 * 
 		 * @param realPatternIds
@@ -142,17 +238,20 @@ public class SuggestIdiomsGivenImports {
 			int currentRankIdx = 0;
 			boolean foundPattern = false;
 			double scoreFound = Double.NEGATIVE_INFINITY;
+			final Pair<SortedMultiset<Double>, SortedMultiset<Double>> fileSuggestions = Pair
+					.<SortedMultiset<Double>, SortedMultiset<Double>> create(
+							TreeMultiset.<Double> create(),
+							TreeMultiset.<Double> create());
 			for (final Suggestion suggestion : suggestions) {
 				if (realPatternIds.contains(suggestion.id) && !foundPattern) {
 					foundPattern = true;
 					scoreFound = suggestion.score;
 				}
-				checkArgument(
-						currentK <= RECALL_AT_RANK_K_VALUES[currentRankIdx],
+				checkArgument(currentK <= RANK_K_VALUES[currentRankIdx],
 						"CurrentK is %s but we still haven't evaluated idx %s",
 						currentK, currentRankIdx);
 
-				if (RECALL_AT_RANK_K_VALUES[currentRankIdx] == currentK) {
+				if (RANK_K_VALUES[currentRankIdx] == currentK) {
 					// Push the results so far.
 					if (foundPattern) {
 						suggestionsValuesAtRank.get(currentK).add(scoreFound);
@@ -168,13 +267,20 @@ public class SuggestIdiomsGivenImports {
 					currentRankIdx++;
 				}
 
+				// Precision Stats
+				allSuggestionsScores.add(suggestion.score);
+				fileSuggestions.first.add(suggestion.score);
+				if (realPatternIds.contains(suggestion.id)) {
+					fileSuggestions.second.add(suggestion.score);
+				}
+
 				currentK++;
-				if (currentRankIdx >= RECALL_AT_RANK_K_VALUES.length) {
+				if (currentRankIdx >= RANK_K_VALUES.length) {
 					break;
 				}
 			}
+			suggestionPrecision.add(fileSuggestions);
 		}
-
 	}
 
 	public static class Suggestion implements Comparable<Suggestion> {
@@ -247,10 +353,11 @@ public class SuggestIdiomsGivenImports {
 				pic);
 		final File testDirectory = new File(args[1]);
 		sigi.evaluateOnTest(testDirectory);
-		sigi.printResults();
+		sigi.printRecallResults();
+		sigi.printPrecisionStats();
 	}
 
-	private final RecallStats stats = new RecallStats();
+	private final PrecisionRecallStats stats = new PrecisionRecallStats();
 
 	private final PatternImportCovariance importCovariance;
 
@@ -339,8 +446,12 @@ public class SuggestIdiomsGivenImports {
 		ptp.waitForTermination();
 	}
 
-	private void printResults() {
-		stats.printStats();
+	private void printPrecisionStats() {
+		stats.printPrecisionStats();
+	}
+
+	private void printRecallResults() {
+		stats.printRecallStats();
 	}
 
 	/**
