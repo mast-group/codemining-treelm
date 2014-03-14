@@ -4,22 +4,16 @@
 package codemining.lm.grammar.tsg.pattern;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -38,7 +32,7 @@ import com.google.common.collect.Sets;
  */
 public class PatternInSet {
 
-	private static final Logger LOGGER = Logger.getLogger(PatternInSet.class
+	static final Logger LOGGER = Logger.getLogger(PatternInSet.class
 			.getName());
 
 	/**
@@ -112,20 +106,8 @@ public class PatternInSet {
 
 		// Find the patterns seen in the text corpus
 		final File directory = new File(args[1]);
-		final Collection<File> allFiles = FileUtils
-				.listFiles(directory, JavaTokenizer.javaCodeFileFilter,
-						DirectoryFileFilter.DIRECTORY);
-		final Set<TreeNode<Integer>> patternSeenInCorpus = Sets
-				.newIdentityHashSet();
-		for (final File f : allFiles) {
-			try {
-				final TreeNode<Integer> fileAst = format.getTree(f);
-				getPatternsForTree(fileAst, patterns, patternSeenInCorpus);
-
-			} catch (final IOException e) {
-				LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
-			}
-		}
+		final Set<TreeNode<Integer>> patternSeenInCorpus = PatternCorpus.patternsSeenInCorpus(
+				format, patterns, directory);
 
 		final Set<TreeNode<Integer>> convertedPatterns = Sets
 				.newIdentityHashSet();
