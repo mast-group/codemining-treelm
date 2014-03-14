@@ -18,7 +18,7 @@ import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.pattern.PatternExtractor;
+import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.SettingsLoader;
 
 import com.google.common.base.Objects;
@@ -140,7 +140,7 @@ public class FeatureExtractor {
 	 * @param grammar
 	 */
 	public void addTreePatterns() {
-		for (final TreeNode<Integer> pattern : PatternExtractor
+		for (final TreeNode<Integer> pattern : PatternCorpus
 				.getPatternsFrom(tsGrammar)) {
 			tsgPatterns.put(pattern, nextId);
 			nextId++;

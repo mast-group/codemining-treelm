@@ -19,6 +19,7 @@ import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.NodeSetTreeDistance;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.lm.grammar.tsg.pattern.tui.PatternCooccurence.LikelihoodRatio;
 import codemining.util.data.UnorderedPair;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -102,7 +103,7 @@ public class CooccuringPatternPrediction {
 
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
-		final Set<TreeNode<Integer>> patterns = PatternsInCorpus.getPatterns(
+		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
 				grammar, minPatternCount, minPatternSize);
 
 		final File trainDirectory = new File(args[3]);
@@ -197,7 +198,7 @@ public class CooccuringPatternPrediction {
 	 * @return
 	 */
 	private Set<Integer> patternInFileId(final TreeNode<Integer> fileAst) {
-		final Set<TreeNode<Integer>> patternsInFile = PatternsInCorpus
+		final Set<TreeNode<Integer>> patternsInFile = PatternCorpus
 				.getPatternsForTree(fileAst, patternDictionary.values())
 				.elementSet();
 

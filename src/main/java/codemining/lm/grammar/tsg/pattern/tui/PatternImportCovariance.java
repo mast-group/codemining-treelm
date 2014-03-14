@@ -23,6 +23,7 @@ import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -81,7 +82,7 @@ public class PatternImportCovariance implements Serializable {
 
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
-		final Set<TreeNode<Integer>> patterns = PatternsInCorpus.getPatterns(
+		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
 				grammar, minPatternCount, minPatternSize);
 
 		final File trainDirectory = new File(args[3]);
@@ -147,7 +148,7 @@ public class PatternImportCovariance implements Serializable {
 	 * @return
 	 */
 	public Set<Integer> patternInFileId(final TreeNode<Integer> fileAst) {
-		final Set<TreeNode<Integer>> patternsInFile = PatternsInCorpus
+		final Set<TreeNode<Integer>> patternsInFile = PatternCorpus
 				.getPatternsForTree(fileAst, patternDictionary.values())
 				.elementSet();
 

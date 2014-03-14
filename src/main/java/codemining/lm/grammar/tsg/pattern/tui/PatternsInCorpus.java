@@ -4,9 +4,7 @@
 package codemining.lm.grammar.tsg.pattern.tui;
 
 import java.io.File;
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -18,20 +16,15 @@ import codemining.java.codeutils.JavaTokenizer;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
-import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.pattern.PatternExtractor;
-import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
+import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
 
 /**
- * Track the patterns in a corpus.
+ * Track down the patterns in a corpus.
  * 
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
@@ -40,57 +33,6 @@ public class PatternsInCorpus {
 
 	private static final Logger LOGGER = Logger
 			.getLogger(PatternsInCorpus.class.getName());
-
-	/**
-	 * @param grammar
-	 * @param minPatternCount
-	 * @param minPatternSize
-	 * @return
-	 */
-	protected static Set<TreeNode<Integer>> getPatterns(
-			final JavaFormattedTSGrammar grammar, final int minPatternCount,
-			final int minPatternSize) {
-		final Set<TreeNode<TSGNode>> tsgPatterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, minPatternCount, minPatternSize);
-		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
-		for (final TreeNode<TSGNode> tsgPattern : tsgPatterns) {
-			patterns.add(TSGNode.tsgTreeToInt(tsgPattern));
-		}
-		return patterns;
-	}
-
-	/**
-	 * Return the list of patterns a specific tree.
-	 */
-	public static Multiset<TreeNode<Integer>> getPatternsForTree(
-			final TreeNode<Integer> tree, final Set<TreeNode<Integer>> patterns) {
-		final Multiset<TreeNode<Integer>> treePatterns = HashMultiset.create();
-		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
-		toLook.push(tree);
-
-		// Do a pre-order visit
-		while (!toLook.isEmpty()) {
-			final TreeNode<Integer> currentNode = toLook.pop();
-			// at each node check if we have a partial match with any of the
-			// patterns
-			for (final TreeNode<Integer> pattern : patterns) {
-				if (pattern.partialMatch(currentNode,
-						PatternStatsCalculator.BASE_EQUALITY_COMPARATOR, false)) {
-					treePatterns.add(pattern);
-				}
-			}
-
-			// Proceed visiting
-			for (final List<TreeNode<Integer>> childProperties : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<Integer> child : childProperties) {
-					toLook.push(child);
-				}
-			}
-
-		}
-		return treePatterns;
-	}
 
 	/**
 	 * @param args
@@ -108,8 +50,8 @@ public class PatternsInCorpus {
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
 		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
-		final Set<TreeNode<Integer>> patterns = getPatterns(grammar,
-				minPatternCount, minPatternSize);
+		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
+				grammar, minPatternCount, minPatternSize);
 
 		grammar = null; // Tell the GC that we don't need the grammar anymore.
 
@@ -122,7 +64,8 @@ public class PatternsInCorpus {
 		for (final File f : allFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
-				filePatterns.putAll(f, getPatternsForTree(fileAst, patterns));
+				filePatterns.putAll(f,
+						PatternCorpus.getPatternsForTree(fileAst, patterns));
 			} catch (final Exception e) {
 				LOGGER.warning("Error in file " + f + " "
 						+ ExceptionUtils.getFullStackTrace(e));

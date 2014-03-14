@@ -24,7 +24,6 @@ import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
-import codemining.lm.grammar.tsg.TSGNode;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -108,13 +107,8 @@ public class PatternInSet {
 				.getBaseExtractor();
 		final int minPatternCount = Integer.parseInt(args[3]);
 
-		final Set<TreeNode<TSGNode>> tsgPatterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, minPatternCount, 5);
-		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
-
-		for (final TreeNode<TSGNode> tsgPattern : tsgPatterns) {
-			patterns.add(TSGNode.tsgTreeToInt(tsgPattern));
-		}
+		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
+				grammar, minPatternCount, 5);
 
 		// Find the patterns seen in the text corpus
 		final File directory = new File(args[1]);

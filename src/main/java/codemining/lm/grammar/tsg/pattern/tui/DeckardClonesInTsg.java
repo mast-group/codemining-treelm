@@ -23,8 +23,7 @@ import codemining.java.codeutils.JavaASTExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
-import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.pattern.PatternExtractor;
+import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -154,15 +153,11 @@ public class DeckardClonesInTsg {
 				"decardPatterns.ser");
 
 		// Now check how many of them we have in our TSG
-		final Set<TreeNode<TSGNode>> patterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, 0, 0);
-		final Set<TreeNode<Integer>> intPatterns = Sets.newHashSet();
-		for (final TreeNode<TSGNode> tree : patterns) {
-			intPatterns.add(TSGNode.tsgTreeToInt(tree));
-		}
+		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
+				grammar, 0, 0);
 
 		final Set<TreeNode<Integer>> common = Sets.intersection(
-				decardCloneTrees, intPatterns).immutableCopy();
+				decardCloneTrees, patterns).immutableCopy();
 		System.out.println("Common:" + common.size());
 		final double pct = ((double) common.size()) / patterns.size();
 		System.out.println("PctCommon:" + pct);

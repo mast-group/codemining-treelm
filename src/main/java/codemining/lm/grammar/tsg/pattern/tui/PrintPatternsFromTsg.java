@@ -10,7 +10,7 @@ import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
-import codemining.lm.grammar.tsg.pattern.PatternExtractor;
+import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -37,10 +37,10 @@ public class PrintPatternsFromTsg {
 				.getSerializer().deserializeFrom(args[0]);
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
-		final Set<TreeNode<TSGNode>> patterns = PatternExtractor
-				.getTSGPatternsFrom(grammar, minPatternCount, minPatternSize);
+		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
+				grammar, minPatternCount, minPatternSize);
 
-		for (final TreeNode<TSGNode> pattern : patterns) {
+		for (final TreeNode<Integer> pattern : patterns) {
 			try {
 				System.out
 						.println("------------------------------------------------------");
@@ -78,18 +78,17 @@ public class PrintPatternsFromTsg {
 	 * @param pattern
 	 */
 	public static void printPattern(final JavaFormattedTSGrammar grammar,
-			final TreeNode<TSGNode> pattern) {
+			final TreeNode<Integer> intTree) {
 		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
 
-		final TreeNode<Integer> intTree = TSGNode.tsgTreeToInt(pattern);
 		printIntTree(format, intTree);
 
-		final TreeNode<TSGNode> tsgTree = pattern;
+		final TreeNode<TSGNode> tsgTree = TSGNode.convertTree(intTree, 0);
 		final int count = grammar.countTreeOccurences(tsgTree);
 		final int totalProductions = grammar.countTreesWithRoot(tsgTree
 				.getData());
 		final double probability = ((double) count) / totalProductions;
-		final int size = pattern.getTreeSize();
+		final int size = intTree.getTreeSize();
 		System.out.println("Count: " + count + " Size:" + size + " Prob:"
 				+ String.format("%.4f", probability));
 		System.out
