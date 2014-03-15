@@ -470,7 +470,7 @@ public class SuggestIdiomsGivenImports {
 			}
 			i++;
 			try {
-				PrintPatternsFromTsg.printIntTree(
+				PrintPatterns.printIntTree(
 						importCovariance.getFormat(),
 						importCovariance.getPatternDictionary().get(
 								suggestion.id));

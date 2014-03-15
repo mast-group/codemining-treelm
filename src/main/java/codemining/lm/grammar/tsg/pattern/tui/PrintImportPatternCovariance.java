@@ -151,7 +151,7 @@ public class PrintImportPatternCovariance {
 		System.out.println("Top patterns");
 		for (final int patternId : topPatterns) {
 			try {
-				PrintPatternsFromTsg.printIntTree(covariance.getFormat(),
+				PrintPatterns.printIntTree(covariance.getFormat(),
 						covariance.getPatternDictionary().get(patternId));
 			} catch (final Throwable e) {
 				System.out.println("Could not print pattern");

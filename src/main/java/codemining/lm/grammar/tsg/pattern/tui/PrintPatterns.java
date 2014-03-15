@@ -3,13 +3,9 @@
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
-import java.util.Set;
-
 import codemining.lm.grammar.tree.ASTNodeSymbol;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
-import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -20,31 +16,26 @@ import codemining.util.serialization.Serializer;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class PrintPatternsFromTsg {
+public class PrintPatterns {
 
 	/**
 	 * @param args
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws SerializationException {
-		if (args.length != 3) {
-			System.err
-					.println("Usage <tsg> <minPatternCount> <minPatternSize>");
+		if (args.length != 1) {
+			System.err.println("Usage <patternCorpus.ser>");
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final PatternCorpus patterns = (PatternCorpus) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final int minPatternCount = Integer.parseInt(args[1]);
-		final int minPatternSize = Integer.parseInt(args[2]);
-		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
-				grammar, minPatternCount, minPatternSize);
 
-		for (final TreeNode<Integer> pattern : patterns) {
+		for (final TreeNode<Integer> pattern : patterns.getPatterns()) {
 			try {
 				System.out
 						.println("------------------------------------------------------");
-				printPattern(grammar, pattern);
+				printPattern(patterns.getFormat(), pattern);
 			} catch (final Throwable e) {
 				System.out.println("Error printing.");
 			}
@@ -77,20 +68,9 @@ public class PrintPatternsFromTsg {
 	 * @param format
 	 * @param pattern
 	 */
-	public static void printPattern(final JavaFormattedTSGrammar grammar,
+	public static void printPattern(final AbstractJavaTreeExtractor format,
 			final TreeNode<Integer> intTree) {
-		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
-
 		printIntTree(format, intTree);
-
-		final TreeNode<TSGNode> tsgTree = TSGNode.convertTree(intTree, 0);
-		final int count = grammar.countTreeOccurences(tsgTree);
-		final int totalProductions = grammar.countTreesWithRoot(tsgTree
-				.getData());
-		final double probability = ((double) count) / totalProductions;
-		final int size = intTree.getTreeSize();
-		System.out.println("Count: " + count + " Size:" + size + " Prob:"
-				+ String.format("%.4f", probability));
 		System.out
 				.println("______________________________________________________");
 	}

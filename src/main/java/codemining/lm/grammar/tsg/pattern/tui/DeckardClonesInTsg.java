@@ -172,7 +172,7 @@ public class DeckardClonesInTsg {
 		System.out.println("Deckard Patterns");
 		System.out.println("--------------------------------");
 		for (final TreeNode<Integer> decardPattern : decardCloneTrees) {
-			PrintPatternsFromTsg.printIntTree(grammar.getJavaTreeExtractor(),
+			PrintPatterns.printIntTree(grammar.getJavaTreeExtractor(),
 					decardPattern);
 		}
 

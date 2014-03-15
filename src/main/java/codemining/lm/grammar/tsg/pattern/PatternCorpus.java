@@ -9,7 +9,9 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -21,6 +23,7 @@ import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.util.CollectionUtil;
 import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -29,6 +32,7 @@ import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
@@ -55,6 +59,9 @@ public class PatternCorpus implements Serializable {
 	 */
 	public static final int MIN_PATTERN_COUNT = (int) SettingsLoader
 			.getNumericSetting("minPatternCount", 10);
+
+	static final Logger LOGGER = Logger
+			.getLogger(PatternCorpus.class.getName());
 
 	/**
 	 * Return the list of patterns of a specific tree.
@@ -87,6 +94,53 @@ public class PatternCorpus implements Serializable {
 
 		}
 		return treePatterns;
+	}
+
+	/**
+	 * Return the list of patterns a specific tree.
+	 */
+	public static double getPatternsForTree(final TreeNode<Integer> tree,
+			final Set<TreeNode<Integer>> patterns,
+			final Set<TreeNode<Integer>> patternSeen) {
+		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
+		toLook.push(tree);
+		final Map<TreeNode<Integer>, Long> matches = Maps.newIdentityHashMap();
+
+		// Do a pre-order visit
+		while (!toLook.isEmpty()) {
+			final TreeNode<Integer> currentNode = toLook.pop();
+			// at each node check if we have a partial match with any of the
+			// patterns
+			for (final TreeNode<Integer> pattern : patterns) {
+				if (pattern.partialMatch(currentNode,
+						PatternStatsCalculator.BASE_EQUALITY_COMPARATOR, false)) {
+					patternSeen.add(pattern);
+					for (final TreeNode<Integer> node : currentNode
+							.getOverlappingNodesWith(pattern)) {
+						if (matches.containsKey(node)) {
+							matches.put(node, matches.get(node) + 1L);
+						} else {
+							matches.put(node, 1L);
+						}
+					}
+				}
+			}
+
+			// Proceed visiting
+			for (final List<TreeNode<Integer>> childProperties : currentNode
+					.getChildrenByProperty()) {
+				for (final TreeNode<Integer> child : childProperties) {
+					toLook.push(child);
+				}
+			}
+		}
+
+		long sumOfMatches = 0;
+		for (final long count : matches.values()) {
+			sumOfMatches += count;
+		}
+
+		return ((double) sumOfMatches) / matches.size();
 	}
 
 	/**
@@ -136,7 +190,7 @@ public class PatternCorpus implements Serializable {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 3) {
 			System.err
-					.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<filterDir>...]");
+					.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
 			System.exit(-1);
 		}
 
@@ -150,12 +204,13 @@ public class PatternCorpus implements Serializable {
 				grammar.getJavaTreeExtractor());
 		corpus.addFromGrammar(grammar, minCount, minSize);
 
-		if (args.length >= 4) {
+		if (args.length >= 5) {
+			final int nTimesSeen = Integer.parseInt(args[3]);
 			final List<File> directories = Lists.newArrayList();
-			for (int i = 3; i < args.length; i++) {
+			for (int i = 4; i < args.length; i++) {
 				directories.add(new File(args[i]));
 			}
-			corpus.filterFromFiles(directories);
+			corpus.filterFromFiles(directories, nTimesSeen);
 		}
 
 		Serializer.getSerializer().serialize(corpus, "patterns.ser");
@@ -178,8 +233,7 @@ public class PatternCorpus implements Serializable {
 		for (final File f : allFiles) {
 			try {
 				final TreeNode<Integer> fileAst = format.getTree(f);
-				PatternInSet.getPatternsForTree(fileAst, patterns,
-						patternSeenInCorpus);
+				getPatternsForTree(fileAst, patterns, patternSeenInCorpus);
 
 			} catch (final IOException e) {
 				PatternInSet.LOGGER
@@ -220,15 +274,33 @@ public class PatternCorpus implements Serializable {
 	 * files.
 	 * 
 	 * @param directory
-	 * @param grammar
+	 * @param nSeenInFiles
+	 *            number of times seen in the files.
 	 */
-	public void filterFromFiles(final Collection<File> directories) {
-		final Set<TreeNode<Integer>> patternsSeen = Sets.newHashSet();
+	public void filterFromFiles(final Collection<File> directories,
+			final int nSeenInFiles) {
+		final Multiset<TreeNode<Integer>> patternsSeen = HashMultiset.create();
 		for (final File directory : directories) {
-			patternsSeen.addAll(patternsSeenInCorpus(format, patterns,
-					directory));
+			final Collection<File> directoryFiles = FileUtils.listFiles(
+					directory, JavaTokenizer.javaCodeFileFilter,
+					DirectoryFileFilter.DIRECTORY);
+			for (final File f : directoryFiles) {
+				try {
+					// We add the patterns once per file.
+					patternsSeen.addAll(getPatternsFromTree(format.getTree(f))
+							.elementSet());
+				} catch (final IOException e) {
+					LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
+				}
+			}
+
 		}
-		patterns.retainAll(patternsSeen);
+		// patternsSeen now contains the number of files that each pattern has
+		// been seen.
+
+		final Set<TreeNode<Integer>> toKeep = CollectionUtil
+				.getElementsUpToCount(nSeenInFiles, patternsSeen);
+		patterns.retainAll(toKeep);
 	}
 
 	public AbstractJavaTreeExtractor getFormat() {

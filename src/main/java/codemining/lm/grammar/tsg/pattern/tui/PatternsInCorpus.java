@@ -90,7 +90,7 @@ public class PatternsInCorpus {
 			System.out
 					.println("----------------------------------------------");
 			try {
-				PrintPatternsFromTsg.printIntTree(format, pattern);
+				PrintPatterns.printIntTree(format, pattern);
 			} catch (final Throwable e) {
 				System.out.println("Could not print pattern.");
 			}

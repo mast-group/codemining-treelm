@@ -4,9 +4,7 @@
 package codemining.lm.grammar.tsg.pattern;
 
 import java.io.File;
-import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Logger;
@@ -34,53 +32,6 @@ public class PatternInSet {
 
 	static final Logger LOGGER = Logger.getLogger(PatternInSet.class
 			.getName());
-
-	/**
-	 * Return the list of patterns a specific tree.
-	 */
-	public static double getPatternsForTree(final TreeNode<Integer> tree,
-			final Set<TreeNode<Integer>> patterns,
-			final Set<TreeNode<Integer>> patternSeen) {
-		final ArrayDeque<TreeNode<Integer>> toLook = new ArrayDeque<TreeNode<Integer>>();
-		toLook.push(tree);
-		final Map<TreeNode<Integer>, Long> matches = Maps.newIdentityHashMap();
-
-		// Do a pre-order visit
-		while (!toLook.isEmpty()) {
-			final TreeNode<Integer> currentNode = toLook.pop();
-			// at each node check if we have a partial match with any of the
-			// patterns
-			for (final TreeNode<Integer> pattern : patterns) {
-				if (pattern.partialMatch(currentNode,
-						PatternStatsCalculator.BASE_EQUALITY_COMPARATOR, false)) {
-					patternSeen.add(pattern);
-					for (final TreeNode<Integer> node : currentNode
-							.getOverlappingNodesWith(pattern)) {
-						if (matches.containsKey(node)) {
-							matches.put(node, matches.get(node) + 1L);
-						} else {
-							matches.put(node, 1L);
-						}
-					}
-				}
-			}
-
-			// Proceed visiting
-			for (final List<TreeNode<Integer>> childProperties : currentNode
-					.getChildrenByProperty()) {
-				for (final TreeNode<Integer> child : childProperties) {
-					toLook.push(child);
-				}
-			}
-		}
-
-		long sumOfMatches = 0;
-		for (final long count : matches.values()) {
-			sumOfMatches += count;
-		}
-
-		return ((double) sumOfMatches) / matches.size();
-	}
 
 	/**
 	 * @param args
@@ -128,7 +79,7 @@ public class PatternInSet {
 			final TreeNode<Integer> snippetTree = format.getTree(node);
 			final TreeNode<Integer> detempletizedTree = typeExtractor
 					.detempletize(snippetTree);
-			final double avgMatchesPerNode = getPatternsForTree(
+			final double avgMatchesPerNode = PatternCorpus.getPatternsForTree(
 					detempletizedTree, convertedPatterns, snippetPatterns);
 			if (!Double.isNaN(avgMatchesPerNode)) {
 				countSnippetsMatchedAtLeastOnce++;

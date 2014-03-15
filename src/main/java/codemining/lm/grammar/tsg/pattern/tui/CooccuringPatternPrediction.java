@@ -216,10 +216,10 @@ public class CooccuringPatternPrediction {
 			try {
 				System.out
 						.println("----------------------------------------------");
-				PrintPatternsFromTsg.printIntTree(format,
+				PrintPatterns.printIntTree(format,
 						patternDictionary.get(lr.pair.first));
 				System.out.println("and");
-				PrintPatternsFromTsg.printIntTree(format,
+				PrintPatterns.printIntTree(format,
 						patternDictionary.get(lr.pair.second));
 				System.out.println("ll:"
 						+ String.format("%.2E", lr.likelihoodRatio));

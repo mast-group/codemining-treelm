@@ -29,13 +29,13 @@ import com.google.common.collect.Multiset;
  */
 public class TsgMerger {
 
-	public static int convert(final int id,
+	private static int convert(final int id,
 			final AbstractJavaTreeExtractor fromFormat,
 			final AbstractJavaTreeExtractor toFormat) {
 		return toFormat.getOrAddSymbolId(fromFormat.getSymbol(id));
 	}
 
-	private static TreeNode<Integer> convert(final TreeNode<Integer> fromNode,
+	public static TreeNode<Integer> convert(final TreeNode<Integer> fromNode,
 			final AbstractJavaTreeExtractor fromFormat,
 			final AbstractJavaTreeExtractor toFormat) {
 		checkNotNull(fromNode);
