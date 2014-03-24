@@ -42,7 +42,7 @@ import com.google.common.collect.Sets;
  */
 public class DeckardClonesInTsg {
 
-	public static Pattern decardClone = Pattern
+	public static final Pattern decardClone = Pattern
 			.compile("[0-9]{9}\\tdist:[0-9]\\.[0-9]\\tFILE\\s(\\S+\\.java)\\sLINE:([0-9]+)\\:([0-9]+)");
 
 	/**

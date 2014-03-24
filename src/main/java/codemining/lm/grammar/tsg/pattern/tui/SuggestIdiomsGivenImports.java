@@ -72,9 +72,9 @@ public class SuggestIdiomsGivenImports {
 		final SortedMultiset<Double> allSuggestionsScores = TreeMultiset
 				.create();
 
-		public static double[] SPLIT_POSITIONS = { .001, .005, .01, .02, .03,
-				.04, .05, .08, .1, .15, .2, .25, .3, .35, .4, .5, .6, .7, .8,
-				.9 };
+		public static final double[] SPLIT_POSITIONS = { .001, .005, .01, .02,
+				.03, .04, .05, .08, .1, .15, .2, .25, .3, .35, .4, .5, .6, .7,
+				.8, .9 };
 
 		public PrecisionRecallStats() {
 			// Initialize
