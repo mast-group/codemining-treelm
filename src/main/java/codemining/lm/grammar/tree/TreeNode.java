@@ -238,8 +238,8 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * @param size
 	 * @return
 	 */
-	public static final <T extends Serializable> TreeNode<T> create(
-			final T data, final int size) {
+	public static <T extends Serializable> TreeNode<T> create(final T data,
+			final int size) {
 		return new TreeNode<T>(data, size);
 	}
 
@@ -248,7 +248,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * 
 	 * @return
 	 */
-	public static final <T extends Serializable> TreeNode<T> create(
+	public static <T extends Serializable> TreeNode<T> create(
 			final TreeNode<T> tree) {
 		return new TreeNode<T>(tree.getData(), tree.nProperties());
 	}

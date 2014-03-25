@@ -39,7 +39,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 			Function<TreeNode<TSGNode>, String> {
 
 		@Override
-		public final String apply(final TreeNode<TSGNode> node) {
+		public String apply(final TreeNode<TSGNode> node) {
 			if (node == null || node.getData() == null) {
 				return "UNK";
 			}

@@ -53,7 +53,7 @@ public class TSGrammar<T extends Serializable> implements
 	public final TreeNode<T> UNK_NODE;
 
 	public TSGrammar() {
-		grammar = (new MapMaker()).concurrencyLevel(
+		grammar = new MapMaker().concurrencyLevel(
 				ParallelThreadPool.NUM_THREADS).makeMap();
 		UNK_NODE = TreeNode.create(null, 0);
 	}
