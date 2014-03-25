@@ -407,8 +407,7 @@ public class SuggestIdiomsGivenImports {
 
 		// Normalize (i.e. pow(,1/N))
 		final SortedSet<Suggestion> suggestions = Sets.newTreeSet();
-		for (final java.util.Map.Entry<Integer, Double> entry : patternScores
-				.entrySet()) {
+		for (final Map.Entry<Integer, Double> entry : patternScores.entrySet()) {
 			final double score = entry.getValue();// / importedPackages.size();
 			checkArgument(!Double.isNaN(score),
 					"Score is NaN with value %s at the power of 1/%s",

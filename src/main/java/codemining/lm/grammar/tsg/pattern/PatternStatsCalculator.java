@@ -133,7 +133,7 @@ public class PatternStatsCalculator {
 		int currentIdx = 0;
 		for (final Multiset<TreeNode<TSGNode>> production : grammar
 				.getInternalGrammar().values()) {
-			for (final com.google.common.collect.Multiset.Entry<TreeNode<TSGNode>> rule : production
+			for (final Multiset.Entry<TreeNode<TSGNode>> rule : production
 					.entrySet()) {
 				final TreeNode<Integer> intTree = TSGNode.tsgTreeToInt(rule
 						.getElement());
@@ -164,7 +164,7 @@ public class PatternStatsCalculator {
 		this.treeFormat = treeFormat;
 		this.patterns = HashMultiset.create(patterns);
 		int currentIdx = 0;
-		for (final com.google.common.collect.Multiset.Entry<TreeNode<Integer>> rule : this.patterns
+		for (final Multiset.Entry<TreeNode<Integer>> rule : this.patterns
 				.entrySet()) {
 			patternDictionary.put(rule.getElement(), currentIdx);
 			patternSizes.put(currentIdx, rule.getElement().getTreeSize());

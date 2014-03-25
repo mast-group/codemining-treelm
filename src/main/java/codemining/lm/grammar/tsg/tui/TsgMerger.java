@@ -91,7 +91,7 @@ public class TsgMerger {
 			ptp.pushTask(new Runnable() {
 				@Override
 				public void run() {
-					for (final com.google.common.collect.Multiset.Entry<TreeNode<TSGNode>> tree : treeProd
+					for (final Multiset.Entry<TreeNode<TSGNode>> tree : treeProd
 							.getValue().entrySet()) {
 						final TreeNode<Integer> intTree = TSGNode
 								.tsgTreeToInt(tree.getElement());

@@ -237,7 +237,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 		for (final Entry<Integer, Multiset<NodeConsequent>> entry : otherCfg.grammar
 				.entrySet()) {
 			final int fromNode = entry.getKey();
-			for (final com.google.common.collect.Multiset.Entry<NodeConsequent> toNodes : entry
+			for (final Multiset.Entry<NodeConsequent> toNodes : entry
 					.getValue().entrySet()) {
 				sum += toNodes.getCount()
 						* DoubleMath.log2(getMLProbability(fromNode,

@@ -181,7 +181,7 @@ public class TreeProbabilityComputer<T extends Serializable> {
 			// nodes they terminate in (if any)
 			// sum the log probabilities for the rule and the lower nodes
 			Multiset<TreeNode<T>> productions = null;
-			for (final java.util.Map.Entry<T, ? extends Multiset<TreeNode<T>>> grammarProduction : grammar
+			for (final Map.Entry<T, ? extends Multiset<TreeNode<T>>> grammarProduction : grammar
 					.entrySet()) {
 				if (equalityComparator.apply(new NodeDataPair<T>(
 						grammarProduction.getKey(), current.getData()))) {

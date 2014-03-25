@@ -66,8 +66,7 @@ public class TSGrammar<T extends Serializable> implements
 	public void addAll(final TSGrammar<T> other) {
 		for (final ConcurrentHashMultiset<TreeNode<T>> treeSet : other.grammar
 				.values()) {
-			for (final com.google.common.collect.Multiset.Entry<TreeNode<T>> entry : treeSet
-					.entrySet()) {
+			for (final Multiset.Entry<TreeNode<T>> entry : treeSet.entrySet()) {
 				addTree(entry.getElement(), entry.getCount());
 			}
 		}
@@ -123,8 +122,8 @@ public class TSGrammar<T extends Serializable> implements
 		final SortedMultiset<Integer> treeSizes = TreeMultiset.create();
 		for (final Entry<T, ConcurrentHashMultiset<TreeNode<T>>> entry : grammar
 				.entrySet()) {
-			for (final com.google.common.collect.Multiset.Entry<TreeNode<T>> rule : entry
-					.getValue().entrySet()) {
+			for (final Multiset.Entry<TreeNode<T>> rule : entry.getValue()
+					.entrySet()) {
 				treeSizes.add(rule.getElement().getTreeSize(), rule.getCount());
 			}
 		}
