@@ -54,9 +54,8 @@ public class PatternCoverageCalculator {
 		@Override
 		public String toString() {
 			return "Coverage: "
-					+ String.format("%.2E",
-							(((double) nNodesMatched) / nNodes)) + " nTokens:"
-					+ nNodes + " nIdioms:" + nNodesMatched;
+					+ String.format("%.2E", (((double) nNodesMatched) / nNodes))
+					+ " nTokens:" + nNodes + " nIdioms:" + nNodesMatched;
 		}
 	}
 
@@ -80,10 +79,10 @@ public class PatternCoverageCalculator {
 	}
 
 	private static void computeCoverage(final String snippet,
-			final Results res, final PatternCorpus patterns) {
+			final Results res, final PatternCorpus patterns) throws Exception {
 		final JavaASTExtractor ex = new JavaASTExtractor(false);
 		final TreeNode<Integer> tree = patterns.getFormat().getTree(
-				ex.getAST(snippet));
+				ex.getBestEffortAstNode(snippet));
 		final TreeNode<Integer> debinTree = detempletizeTree(tree, patterns);
 		final Set<TreeNode<Integer>> matchedNodes = patterns
 				.getNodesCovered(debinTree);
@@ -185,7 +184,11 @@ public class PatternCoverageCalculator {
 				ptp.pushTask(new Runnable() {
 					@Override
 					public void run() {
-						computeCoverage(snippet, res, patterns);
+						try {
+							computeCoverage(snippet, res, patterns);
+						} catch (final Exception e) {
+							LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
+						}
 					}
 				});
 			}

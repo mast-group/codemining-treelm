@@ -48,7 +48,7 @@ public class SnippetTsg {
 			}
 			try {
 				final TreeNode<TSGNode> ast = TSGNode.convertTree(
-						format.getTree(ex.getAST(snippet)), .5);
+						format.getTree(ex.getBestEffortAstNode(snippet)), .5);
 				nNodes += ast.getTreeSize();
 				nSnippets++;
 				sampler.addTree(ast);

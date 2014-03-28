@@ -312,9 +312,10 @@ public class PatternCorpus implements Serializable {
 		return getNodesCovered(format.getTree(f));
 	}
 
-	public Set<TreeNode<Integer>> getNodesCovered(final String snippet) {
+	public Set<TreeNode<Integer>> getNodesCovered(final String snippet)
+			throws Exception {
 		final JavaASTExtractor ex = new JavaASTExtractor(false);
-		return getNodesCovered(format.getTree(ex.getAST(snippet)));
+		return getNodesCovered(format.getTree(ex.getBestEffortAstNode(snippet)));
 	}
 
 	/**
@@ -364,9 +365,11 @@ public class PatternCorpus implements Serializable {
 		return getPatternsFromTree(format.getTree(f));
 	}
 
-	public Multiset<TreeNode<Integer>> getPatternsFrom(final String snippet) {
+	public Multiset<TreeNode<Integer>> getPatternsFrom(final String snippet)
+			throws Exception {
 		final JavaASTExtractor ex = new JavaASTExtractor(false);
-		return getPatternsFromTree(format.getTree(ex.getAST(snippet)));
+		return getPatternsFromTree(format.getTree(ex
+				.getBestEffortAstNode(snippet)));
 	}
 
 	/**

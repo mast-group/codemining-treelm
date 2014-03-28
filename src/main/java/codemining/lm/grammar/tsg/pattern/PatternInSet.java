@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.java.codeutils.JavaASTExtractor;
@@ -30,8 +31,7 @@ import com.google.common.collect.Sets;
  */
 public class PatternInSet {
 
-	static final Logger LOGGER = Logger.getLogger(PatternInSet.class
-			.getName());
+	static final Logger LOGGER = Logger.getLogger(PatternInSet.class.getName());
 
 	/**
 	 * @param args
@@ -57,8 +57,8 @@ public class PatternInSet {
 
 		// Find the patterns seen in the text corpus
 		final File directory = new File(args[1]);
-		final Set<TreeNode<Integer>> patternSeenInCorpus = PatternCorpus.patternsSeenInCorpus(
-				format, patterns, directory);
+		final Set<TreeNode<Integer>> patternSeenInCorpus = PatternCorpus
+				.patternsSeenInCorpus(format, patterns, directory);
 
 		final Set<TreeNode<Integer>> convertedPatterns = Sets
 				.newIdentityHashSet();
@@ -75,15 +75,20 @@ public class PatternInSet {
 		int countSnippetsMatchedAtLeastOnce = 0;
 		double sumAvgMatchesPerNode = 0;
 		for (final String snippet : snippets) {
-			final ASTNode node = astExtractor.getAST(snippet);
-			final TreeNode<Integer> snippetTree = format.getTree(node);
-			final TreeNode<Integer> detempletizedTree = typeExtractor
-					.detempletize(snippetTree);
-			final double avgMatchesPerNode = PatternCorpus.getPatternsForTree(
-					detempletizedTree, convertedPatterns, snippetPatterns);
-			if (!Double.isNaN(avgMatchesPerNode)) {
-				countSnippetsMatchedAtLeastOnce++;
-				sumAvgMatchesPerNode += avgMatchesPerNode;
+			try {
+				final ASTNode node = astExtractor.getBestEffortAstNode(snippet);
+				final TreeNode<Integer> snippetTree = format.getTree(node);
+				final TreeNode<Integer> detempletizedTree = typeExtractor
+						.detempletize(snippetTree);
+				final double avgMatchesPerNode = PatternCorpus
+						.getPatternsForTree(detempletizedTree,
+								convertedPatterns, snippetPatterns);
+				if (!Double.isNaN(avgMatchesPerNode)) {
+					countSnippetsMatchedAtLeastOnce++;
+					sumAvgMatchesPerNode += avgMatchesPerNode;
+				}
+			} catch (final Exception e) {
+				LOGGER.warning(ExceptionUtils.getFullStackTrace(e));
 			}
 		}
 		System.out.println("Snippets matched at least one:"
