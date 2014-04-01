@@ -19,7 +19,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import codemining.java.codedata.PackageInfoExtractor;
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.java.codeutils.JavaTokenizer;
+import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;

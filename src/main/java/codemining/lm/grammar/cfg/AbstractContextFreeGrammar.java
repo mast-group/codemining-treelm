@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 
-import codemining.java.codeutils.JavaTokenizer;
+import codemining.java.tokenizers.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
 import codemining.lm.ILanguageModel;

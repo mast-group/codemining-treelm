@@ -17,7 +17,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.java.codeutils.JavaTokenizer;
+import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;

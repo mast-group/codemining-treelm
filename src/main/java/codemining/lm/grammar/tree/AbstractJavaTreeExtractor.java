@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.java.codeutils.JavaTokenizer;
+import codemining.java.tokenizers.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
 
