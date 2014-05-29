@@ -44,6 +44,37 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 			ruleConsequent = to;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final CFGRule other = (CFGRule) obj;
+			return Objects.equal(root, other.root)
+					&& Objects.equal(ruleConsequent, other.ruleConsequent);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(root, ruleConsequent);
+		}
+
 	}
 
 	/**

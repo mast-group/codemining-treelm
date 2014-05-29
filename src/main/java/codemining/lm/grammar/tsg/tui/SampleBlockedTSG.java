@@ -22,6 +22,8 @@ import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.FilteredBlockCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.TreeCorpusFilter;
+import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -33,6 +35,8 @@ import codemining.util.serialization.Serializer;
  */
 public class SampleBlockedTSG {
 
+	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
+			.getNumericSetting("treeSplitCfgCount", 10);
 	private static final Logger LOGGER = Logger
 			.getLogger(SampleBlockedTSG.class.getName());
 
@@ -113,6 +117,8 @@ public class SampleBlockedTSG {
 			int nFiles = 0;
 			int nNodes = 0;
 			LOGGER.info("Loading sample trees from  " + args[0]);
+			final TreeCorpusFilter filter = new TreeCorpusFilter(format,
+					TREE_SPLIT_CFG_COUNT);
 			for (final File fi : FileUtils.listFiles(new File(args[0]),
 					new RegexFileFilter(".*\\.java$"),
 					DirectoryFileFilter.DIRECTORY)) {
@@ -121,7 +127,7 @@ public class SampleBlockedTSG {
 							format.getTree(fi), percentRootsInit);
 					nNodes += ast.getTreeSize();
 					nFiles++;
-					sampler.addTree(ast);
+					filter.addTree(ast);
 				} catch (final Exception e) {
 					LOGGER.warning("Failed to get AST for "
 							+ fi.getAbsolutePath() + " "
@@ -130,6 +136,10 @@ public class SampleBlockedTSG {
 			}
 			LOGGER.info("Loaded " + nFiles + " files containing " + nNodes
 					+ " nodes");
+			for (final TreeNode<TSGNode> filteredTree : filter
+					.getFilteredTrees()) {
+				sampler.addTree(filteredTree);
+			}
 			sampler.lockSamplerData();
 		}
 

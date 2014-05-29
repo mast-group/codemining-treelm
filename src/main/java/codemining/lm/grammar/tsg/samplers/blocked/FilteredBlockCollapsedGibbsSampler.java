@@ -26,7 +26,7 @@ import com.google.common.collect.Sets;
 public class FilteredBlockCollapsedGibbsSampler extends
 		BlockCollapsedGibbsSampler {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -4108971545978001532L;
 
 	private final AbstractJavaTreeExtractor treeExtractor;
 
