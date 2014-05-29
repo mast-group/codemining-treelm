@@ -26,7 +26,7 @@ import com.google.common.collect.Multimap;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class VariableTypeJavaTreeExtractor extends JavaASTTreeExtractor {
+public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 
 	public class VariableTypeTreeExtractor extends TreeNodeExtractor {
 

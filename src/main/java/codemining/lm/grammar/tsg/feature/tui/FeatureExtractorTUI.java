@@ -15,7 +15,7 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.RandomUtils;
 
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -82,7 +82,7 @@ public class FeatureExtractorTUI {
 		}
 
 		// Train...
-		final AbstractJavaTreeExtractor format = new BinaryEclipseASTTreeExtractor(
+		final AbstractJavaTreeExtractor format = new BinaryJavaAstTreeExtractor(
 				new TempletizedJavaTreeExtractor());
 		final TempletizedCollapsedGibbsSampler sampler = new TempletizedCollapsedGibbsSampler(
 				20, 10, format);

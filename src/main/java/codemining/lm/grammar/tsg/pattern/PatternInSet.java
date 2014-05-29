@@ -13,7 +13,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
@@ -46,7 +46,7 @@ public class PatternInSet {
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final BinaryEclipseASTTreeExtractor format = (BinaryEclipseASTTreeExtractor) grammar
+		final BinaryJavaAstTreeExtractor format = (BinaryJavaAstTreeExtractor) grammar
 				.getJavaTreeExtractor();
 		final VariableTypeJavaTreeExtractor typeExtractor = (VariableTypeJavaTreeExtractor) format
 				.getBaseExtractor();

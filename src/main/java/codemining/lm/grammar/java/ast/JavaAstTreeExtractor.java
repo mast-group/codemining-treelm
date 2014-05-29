@@ -44,7 +44,7 @@ import com.google.common.collect.Maps;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
+public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	/**
 	 * Extract a TreeNode from a parsed AST
@@ -95,7 +95,7 @@ public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
 						.structuralPropertiesForType();
 
 				// Add simple properties
-				final List<SimplePropertyDescriptor> simpleDescriptors = EclipseASTPropertiesData
+				final List<SimplePropertyDescriptor> simpleDescriptors = JavaASTPropertiesData
 						.getSimpleProperties(node.getNodeType());
 				for (int i = 0; i < simpleDescriptors.size(); i++) {
 					final SimplePropertyDescriptor sp = simpleDescriptors
@@ -112,7 +112,7 @@ public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
 				}
 
 				// Add child properties to symbol
-				final List<StructuralPropertyDescriptor> descriptors = EclipseASTPropertiesData
+				final List<StructuralPropertyDescriptor> descriptors = JavaASTPropertiesData
 						.getChildProperties(node.getNodeType());
 				for (final StructuralPropertyDescriptor descriptor : descriptors) {
 					symbol.addChildProperty(descriptor.getId());
@@ -160,7 +160,7 @@ public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
 	}
 
 	private static final Logger LOGGER = Logger
-			.getLogger(JavaASTTreeExtractor.class.getName());
+			.getLogger(JavaAstTreeExtractor.class.getName());
 
 	private static final long serialVersionUID = 8839242786256127809L;
 
@@ -520,7 +520,7 @@ public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
 		final ASTNode node = createASTNodeObject(treeNode, ast, symbol);
 
 		// Set children properties
-		final List<StructuralPropertyDescriptor> descriptors = EclipseASTPropertiesData
+		final List<StructuralPropertyDescriptor> descriptors = JavaASTPropertiesData
 				.getChildProperties(symbol.nodeType);
 		checkArgument(descriptors.size() == treeNode.nProperties());
 		for (int i = 0; i < descriptors.size(); i++) {
@@ -548,7 +548,7 @@ public class JavaASTTreeExtractor extends AbstractJavaTreeExtractor {
 		}
 
 		// Set simple properties
-		for (final SimplePropertyDescriptor sp : EclipseASTPropertiesData
+		for (final SimplePropertyDescriptor sp : JavaASTPropertiesData
 				.getSimpleProperties(symbol.nodeType)) {
 			final Object simplePropertyValue = symbol.getSimpleProperty(sp
 					.getId());

@@ -12,8 +12,8 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.ParentTypeAnnotatedEclipseASTExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
+import codemining.lm.grammar.java.ast.ParentTypeAnnotatedEclipseAstExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
@@ -34,8 +34,8 @@ public class GenerateRandomCode {
 			return;
 		}
 
-		final BinaryEclipseASTTreeExtractor treeExtractor = new BinaryEclipseASTTreeExtractor(
-				new ParentTypeAnnotatedEclipseASTExtractor());
+		final BinaryJavaAstTreeExtractor treeExtractor = new BinaryJavaAstTreeExtractor(
+				new ParentTypeAnnotatedEclipseAstExtractor());
 		final ContextFreeGrammar cfg = new ContextFreeGrammar(treeExtractor);
 
 		final Collection<File> files = FileUtils.listFiles(new File(args[0]),

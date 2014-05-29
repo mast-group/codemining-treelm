@@ -18,7 +18,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -103,8 +103,8 @@ public class PatternCoverageCalculator {
 	 */
 	private static PatternCorpus detempletizeCorpus(final PatternCorpus patterns) {
 		checkArgument(patterns.getFormat().getClass()
-				.equals(BinaryEclipseASTTreeExtractor.class));
-		final BinaryEclipseASTTreeExtractor binaryFormat = (BinaryEclipseASTTreeExtractor) patterns
+				.equals(BinaryJavaAstTreeExtractor.class));
+		final BinaryJavaAstTreeExtractor binaryFormat = (BinaryJavaAstTreeExtractor) patterns
 				.getFormat();
 		final AbstractJavaTreeExtractor baseExtractor = binaryFormat
 				.getBaseExtractor();
@@ -130,8 +130,8 @@ public class PatternCoverageCalculator {
 	private static TreeNode<Integer> detempletizeTree(
 			final TreeNode<Integer> pattern, final PatternCorpus patterns) {
 		checkArgument(patterns.getFormat().getClass()
-				.equals(BinaryEclipseASTTreeExtractor.class));
-		final BinaryEclipseASTTreeExtractor binaryFormat = (BinaryEclipseASTTreeExtractor) patterns
+				.equals(BinaryJavaAstTreeExtractor.class));
+		final BinaryJavaAstTreeExtractor binaryFormat = (BinaryJavaAstTreeExtractor) patterns
 				.getFormat();
 		final AbstractJavaTreeExtractor baseExtractor = binaryFormat
 				.getBaseExtractor();

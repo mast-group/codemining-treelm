@@ -13,8 +13,8 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.ParentTypeAnnotatedEclipseASTExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
+import codemining.lm.grammar.java.ast.ParentTypeAnnotatedEclipseAstExtractor;
 import codemining.util.serialization.Serializer;
 
 /**
@@ -54,8 +54,8 @@ public final class JavaGrammarLMBuilder {
 
 		try {
 			final ContextFreeGrammar glm = new ContextFreeGrammar(
-					new BinaryEclipseASTTreeExtractor(
-							new ParentTypeAnnotatedEclipseASTExtractor()));
+					new BinaryJavaAstTreeExtractor(
+							new ParentTypeAnnotatedEclipseAstExtractor()));
 			final Collection<File> files = FileUtils.listFiles(
 					new File(args[0]), glm.modelledFilesFilter(),
 					DirectoryFileFilter.DIRECTORY);

@@ -15,7 +15,7 @@ import codemining.lm.grammar.tree.TreeNode;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class BinaryEclipseASTTreeExtractor extends AbstractJavaTreeExtractor {
+public class BinaryJavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	private static final long serialVersionUID = -2977736516409659157L;
 
@@ -23,14 +23,14 @@ public class BinaryEclipseASTTreeExtractor extends AbstractJavaTreeExtractor {
 
 	private final TreeBinarizer binarizer;
 
-	public BinaryEclipseASTTreeExtractor(
+	public BinaryJavaAstTreeExtractor(
 			final AbstractJavaTreeExtractor baseExtractor) {
 		super(null);
 		base = baseExtractor;
 		binarizer = new TreeBinarizer(baseExtractor);
 	}
 
-	public BinaryEclipseASTTreeExtractor(
+	public BinaryJavaAstTreeExtractor(
 			final AbstractJavaTreeExtractor baseExtractor,
 			final boolean annotateMultinodes) {
 		super(null);

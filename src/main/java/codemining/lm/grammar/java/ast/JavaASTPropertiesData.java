@@ -26,7 +26,7 @@ import com.google.common.collect.Maps;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class EclipseASTPropertiesData {
+public class JavaASTPropertiesData {
 
 	/**
 	 * Holds the child properties of all ASTNode types.
@@ -41,7 +41,7 @@ public class EclipseASTPropertiesData {
 			.newConcurrentMap();
 
 	private static final Logger LOGGER = Logger
-			.getLogger(EclipseASTPropertiesData.class.getName());
+			.getLogger(JavaASTPropertiesData.class.getName());
 
 	/**
 	 * Compute (via Java reflect API) the structural properties of the given
@@ -155,6 +155,6 @@ public class EclipseASTPropertiesData {
 		return descriptors;
 	}
 
-	private EclipseASTPropertiesData() {
+	private JavaASTPropertiesData() {
 	}
 }

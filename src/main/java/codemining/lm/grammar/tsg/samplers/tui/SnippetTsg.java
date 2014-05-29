@@ -8,8 +8,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.math.RandomUtils;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.JavaASTTreeExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
+import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
@@ -32,8 +32,8 @@ public class SnippetTsg {
 		final List<String> codeSnippets = (List<String>) Serializer
 				.getSerializer().deserializeFrom("soSnippets.ser");
 
-		final BinaryEclipseASTTreeExtractor format = new BinaryEclipseASTTreeExtractor(
-				new JavaASTTreeExtractor());
+		final BinaryJavaAstTreeExtractor format = new BinaryJavaAstTreeExtractor(
+				new JavaAstTreeExtractor());
 		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
 				100, 10, new JavaFormattedTSGrammar(format),
 				new JavaFormattedTSGrammar(format));

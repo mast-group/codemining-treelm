@@ -12,8 +12,8 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.JavaASTTreeExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
+import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
@@ -65,17 +65,17 @@ public class SampleBlockedTSG {
 
 			final AbstractJavaTreeExtractor format;
 			if (args[1].equals("normal")) {
-				format = new JavaASTTreeExtractor();
+				format = new JavaAstTreeExtractor();
 			} else if (args[1].equals("binary")) {
-				format = new BinaryEclipseASTTreeExtractor(
-						new JavaASTTreeExtractor());
+				format = new BinaryJavaAstTreeExtractor(
+						new JavaAstTreeExtractor());
 			} else if (args[1].equals("variables")) {
 				format = new VariableTypeJavaTreeExtractor();
 			} else if (args[1].equals("binaryvariables")) {
-				format = new BinaryEclipseASTTreeExtractor(
+				format = new BinaryJavaAstTreeExtractor(
 						new VariableTypeJavaTreeExtractor());
 			} else if (args[1].equals("binaryvariablesNoAnnotate")) {
-				format = new BinaryEclipseASTTreeExtractor(
+				format = new BinaryJavaAstTreeExtractor(
 						new VariableTypeJavaTreeExtractor(), false);
 			} else {
 				throw new IllegalArgumentException(

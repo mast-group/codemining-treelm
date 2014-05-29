@@ -35,8 +35,8 @@ public class TreeBinarizerTest {
 			final ParseType parseType) {
 		final JavaASTExtractor ex = new JavaASTExtractor(false);
 		final ASTNode cu = ex.getAST(code, parseType);
-		final BinaryEclipseASTTreeExtractor converter = new BinaryEclipseASTTreeExtractor(
-				new ParentTypeAnnotatedEclipseASTExtractor());
+		final BinaryJavaAstTreeExtractor converter = new BinaryJavaAstTreeExtractor(
+				new ParentTypeAnnotatedEclipseAstExtractor());
 		final TreeNode<Integer> binaryTreeCu = converter.getTree(cu);
 		final TreeBinarizer binarizer = converter.getBinarizer();
 
@@ -84,7 +84,7 @@ public class TreeBinarizerTest {
 
 	@Test
 	public void testBinarizationSimple() {
-		AbstractJavaTreeExtractor extractor = new JavaASTTreeExtractor();
+		AbstractJavaTreeExtractor extractor = new JavaAstTreeExtractor();
 
 		for (int i = 0; i < 10; i++) { // Create dummy symbols
 			extractor.getOrAddSymbolId(new ASTNodeSymbol(i));

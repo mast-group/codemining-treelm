@@ -13,8 +13,8 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import codemining.lm.grammar.java.ast.BinaryEclipseASTTreeExtractor;
-import codemining.lm.grammar.java.ast.JavaASTTreeExtractor;
+import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
+import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
@@ -62,20 +62,20 @@ public class SampleTSG {
 
 			final AbstractJavaTreeExtractor format;
 			if (args[1].equals("normal")) {
-				format = new JavaASTTreeExtractor();
+				format = new JavaAstTreeExtractor();
 
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binary")) {
-				format = new BinaryEclipseASTTreeExtractor(
-						new JavaASTTreeExtractor());
+				format = new BinaryJavaAstTreeExtractor(
+						new JavaAstTreeExtractor());
 
 				sampler = new CollapsedGibbsSampler(20, 10,
 						new JavaFormattedTSGrammar(format),
 						new JavaFormattedTSGrammar(format));
 			} else if (args[1].equals("binary-metavariables")) {
-				format = new BinaryEclipseASTTreeExtractor(
+				format = new BinaryJavaAstTreeExtractor(
 						new TempletizedJavaTreeExtractor());
 				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
 			} else if (args[1].equals("metavariables")) {

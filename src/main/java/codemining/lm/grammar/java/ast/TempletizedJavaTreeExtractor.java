@@ -27,7 +27,7 @@ import com.google.common.collect.Multimap;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class TempletizedJavaTreeExtractor extends JavaASTTreeExtractor {
+public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 
 	public class TempletizedTreeExtractor extends TreeNodeExtractor {
 
