@@ -12,6 +12,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
+import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
@@ -120,7 +121,7 @@ public class SampleBlockedTSG {
 			final TreeCorpusFilter filter = new TreeCorpusFilter(format,
 					TREE_SPLIT_CFG_COUNT);
 			for (final File fi : FileUtils.listFiles(new File(args[0]),
-					new RegexFileFilter(".*\\.java$"),
+					JavaTokenizer.javaCodeFileFilter,
 					DirectoryFileFilter.DIRECTORY)) {
 				try {
 					final TreeNode<TSGNode> ast = TSGNode.convertTree(
