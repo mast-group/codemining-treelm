@@ -11,7 +11,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.eclipse.jdt.core.dom.ASTNode;
 
+import codemining.java.codeutils.UsagePointExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
@@ -37,7 +39,13 @@ import codemining.util.serialization.Serializer;
 public class SampleBlockedTSG {
 
 	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
-			.getNumericSetting("treeSplitCfgCount", 10);
+			.getNumericSetting("treeSplitCfgCount", 0);
+
+	/**
+	 * Filter only the usages of a package.
+	 */
+	private static final String FILTER_ONLY_PACKAGE_USAGES = SettingsLoader
+			.getStringSetting("classFilter", null);
 	private static final Logger LOGGER = Logger
 			.getLogger(SampleBlockedTSG.class.getName());
 
@@ -124,11 +132,21 @@ public class SampleBlockedTSG {
 					JavaTokenizer.javaCodeFileFilter,
 					DirectoryFileFilter.DIRECTORY)) {
 				try {
-					final TreeNode<TSGNode> ast = TSGNode.convertTree(
-							format.getTree(fi), percentRootsInit);
-					nNodes += ast.getTreeSize();
+					if (FILTER_ONLY_PACKAGE_USAGES == null) {
+						final TreeNode<TSGNode> ast = TSGNode.convertTree(
+								format.getTree(fi), percentRootsInit);
+						nNodes += ast.getTreeSize();
+						filter.addTree(ast);
+					} else {
+						for (final ASTNode tree : UsagePointExtractor
+								.usagePoints(FILTER_ONLY_PACKAGE_USAGES, fi)) {
+							final TreeNode<TSGNode> ast = TSGNode.convertTree(
+									format.getTree(tree), percentRootsInit);
+							nNodes += ast.getTreeSize();
+							filter.addTree(ast);
+						}
+					}
 					nFiles++;
-					filter.addTree(ast);
 				} catch (final Exception e) {
 					LOGGER.warning("Failed to get AST for "
 							+ fi.getAbsolutePath() + " "
