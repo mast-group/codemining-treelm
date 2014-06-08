@@ -38,6 +38,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 		public VariableTypeTreeExtractor(final ASTNode extracted,
 				final boolean useComments) {
 			super(useComments);
+			// TODO: Use approximate type inference or bindings
 			definedVariables = VariableScopeExtractor
 					.getDefinedVarsPerNode(extracted.getRoot());
 		}
@@ -48,7 +49,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 		 * @param node
 		 * @return
 		 */
-		private TreeNode<Integer> getTempletizedSubtreeForNode(
+		protected TreeNode<Integer> getTempletizedSubtreeForNode(
 				final SimpleName node, final TreeNode<Integer> treeNode) {
 			// is it a variable?
 			final Collection<Variable> declaredVariables = definedVariables

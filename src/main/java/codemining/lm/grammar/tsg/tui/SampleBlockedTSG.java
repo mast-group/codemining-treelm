@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import codemining.java.codeutils.UsagePointExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
+import codemining.lm.grammar.java.ast.DelegatedVariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
@@ -56,7 +57,7 @@ public class SampleBlockedTSG {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 5) {
 			System.err
-					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
+					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
@@ -86,6 +87,9 @@ public class SampleBlockedTSG {
 			} else if (args[1].equals("binaryvariablesNoAnnotate")) {
 				format = new BinaryJavaAstTreeExtractor(
 						new VariableTypeJavaTreeExtractor(), false);
+			} else if (args[1].equals("delegatedVariableNoAnnotate")) {
+				format = new BinaryJavaAstTreeExtractor(
+						new DelegatedVariableTypeJavaTreeExtractor(), false);
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[1]);
