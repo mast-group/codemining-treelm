@@ -344,7 +344,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 		}
 		final TreeNode<T> other = (TreeNode<T>) obj;
 		// Check equalities here, for speedup
-		if (!nodeData.equals(other.nodeData)) {
+		if (!Objects.equal(nodeData, other.nodeData)) {
 			return false;
 		}
 
@@ -383,7 +383,8 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 					final TreeNode<T> otherChild = otherChildrenByProperty
 							.get(j);
 
-					if (!otherChild.getData().equals(thisChild.getData())) {
+					if (!Objects.equal(otherChild.getData(),
+							thisChild.getData())) {
 						return false;
 					}
 

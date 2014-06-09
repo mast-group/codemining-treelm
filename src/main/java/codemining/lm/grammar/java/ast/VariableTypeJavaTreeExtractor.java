@@ -176,7 +176,8 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 							}
 							templateChild = templateChild.getChild(0, 0);
 						}
-						if (templateChild.isLeaf()) {
+						if (templateChild.isLeaf()
+								&& getSymbol(templateChild.getData()).nodeType == ASTNodeSymbol.TEMPLATE_NODE) {
 							continue;
 						}
 						final TreeNode<Integer> untempletizedCopyChild = TreeNode
