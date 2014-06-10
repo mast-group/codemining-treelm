@@ -15,6 +15,8 @@ import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.collect.Sets;
 
 /**
@@ -23,6 +25,7 @@ import com.google.common.collect.Sets;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
+@DefaultSerializer(JavaSerializer.class)
 public class FilteredBlockCollapsedGibbsSampler extends
 		BlockCollapsedGibbsSampler {
 
@@ -30,7 +33,8 @@ public class FilteredBlockCollapsedGibbsSampler extends
 
 	private final AbstractJavaTreeExtractor treeExtractor;
 
-	Set<TreeNode<TSGNode>> unbreakableNodes = Sets.newIdentityHashSet();
+	private final Set<TreeNode<TSGNode>> unbreakableNodes = Sets
+			.newIdentityHashSet();
 
 	public FilteredBlockCollapsedGibbsSampler(final double avgTreeSize,
 			final double DPconcentration,
