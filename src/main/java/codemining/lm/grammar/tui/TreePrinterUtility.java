@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tui;
 
@@ -7,14 +7,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
  * A compact AST tree printer.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class TreePrinterUtility {
 
@@ -46,7 +46,8 @@ public class TreePrinterUtility {
 			final AbstractJavaTreeExtractor format) {
 		sb.append(prefix);
 		sb.append(currentNode.getData() + ":");
-		sb.append(format.getSymbol(currentNode.getData()));
+		sb.append(format.getSymbol(currentNode.getData()).toString(
+				AbstractJavaTreeExtractor.JAVA_NODETYPE_CONVERTER));
 		sb.append('\n');
 		for (final List<TreeNode<Integer>> childProperties : currentNode
 				.getChildrenByProperty()) {

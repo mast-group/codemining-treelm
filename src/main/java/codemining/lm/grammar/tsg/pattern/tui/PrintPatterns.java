@@ -3,8 +3,8 @@
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -54,7 +54,7 @@ public class PrintPatterns {
 		System.out.println(intTree.toString(format.getTreePrinter()));
 		System.out
 				.println("______________________________________________________");
-		if (format.getSymbol(intTree.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
+		if (format.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 			final StringBuffer sb = new StringBuffer();
 			format.printMultinode(sb, intTree);
 			System.out.println(sb.toString());

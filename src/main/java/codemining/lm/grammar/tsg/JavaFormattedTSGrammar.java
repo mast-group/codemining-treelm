@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg;
 
@@ -9,9 +9,8 @@ import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
@@ -23,9 +22,9 @@ import com.google.common.collect.Multisets;
 
 /**
  * A TSG grammar that uses a tree format and an alphabet.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
@@ -33,7 +32,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 	/**
 	 * A functional for converting a TSGNode to its string representation, given
 	 * the format.
-	 * 
+	 *
 	 */
 	public final class IntKeyToSymbol implements
 			Function<TreeNode<TSGNode>, String> {
@@ -44,7 +43,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 				return "UNK";
 			}
 			return treeFormat.getSymbol(checkNotNull(node).getData().nodeKey)
-					.toString();
+					.toString(treeFormat.JAVA_NODETYPE_CONVERTER);
 		}
 	}
 
@@ -79,12 +78,8 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 		return treeFormat.getASTFromTree(treeCopy);
 	}
 
-	public final AbstractJavaTreeExtractor getJavaTreeExtractor() {
-		return treeFormat;
-	}
-
 	@Override
-	public final ITreeExtractor<Integer> getTreeExtractor() {
+	public final AbstractJavaTreeExtractor getTreeExtractor() {
 		return treeFormat;
 	}
 
@@ -113,7 +108,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 									tree.getElement().getData().nodeKey, tree
 											.getElement().nProperties());
 							TSGNode.copyChildren(intTree, tree.getElement());
-							if (treeFormat.getSymbol(intTree.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
+							if (treeFormat.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 								treeFormat.printMultinode(buf, intTree);
 							} else {
 								buf.append(treeFormat.getASTFromTree(intTree));

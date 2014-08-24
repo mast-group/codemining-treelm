@@ -30,8 +30,7 @@ import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
 import com.google.common.collect.Lists;
@@ -89,13 +88,13 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		@Override
 		public void postVisit(final ASTNode node) {
 			try {
-				final ASTNodeSymbol symbol = new ASTNodeSymbol(
+				final AstNodeSymbol symbol = new AstNodeSymbol(
 						node.getNodeType());
 				final List<StructuralPropertyDescriptor> supportedDescriptors = node
 						.structuralPropertiesForType();
 
 				// Add simple properties
-				final List<SimplePropertyDescriptor> simpleDescriptors = JavaASTPropertiesData
+				final List<SimplePropertyDescriptor> simpleDescriptors = JavaAstPropertiesData
 						.getSimpleProperties(node.getNodeType());
 				for (int i = 0; i < simpleDescriptors.size(); i++) {
 					final SimplePropertyDescriptor sp = simpleDescriptors
@@ -112,7 +111,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 				}
 
 				// Add child properties to symbol
-				final List<StructuralPropertyDescriptor> descriptors = JavaASTPropertiesData
+				final List<StructuralPropertyDescriptor> descriptors = JavaAstPropertiesData
 						.getChildProperties(node.getNodeType());
 				for (final StructuralPropertyDescriptor descriptor : descriptors) {
 					symbol.addChildProperty(descriptor.getId());
@@ -227,7 +226,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 	 * @param sp
 	 * @param spValue
 	 */
-	protected static void addSimplePropertyToSymbol(final ASTNodeSymbol symbol,
+	protected static void addSimplePropertyToSymbol(final AstNodeSymbol symbol,
 			final StructuralPropertyDescriptor sp, final Object spValue) {
 		if (spValue instanceof Modifier.ModifierKeyword) {
 			final Modifier.ModifierKeyword mod = (Modifier.ModifierKeyword) spValue;
@@ -259,7 +258,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 	 * @param symbol
 	 * @param node
 	 */
-	public void annotateSymbol(final ASTNodeSymbol symbol, final ASTNode node) {
+	public void annotateSymbol(final AstNodeSymbol symbol, final ASTNode node) {
 		// Do nothing
 	}
 
@@ -272,7 +271,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 	 * @throws Exception
 	 */
 	private ASTNode createASTNodeObject(final TreeNode<Integer> treeNode,
-			final AST ast, final ASTNodeSymbol symbol) throws Exception {
+			final AST ast, final AstNodeSymbol symbol) throws Exception {
 		switch (symbol.nodeType) {
 		case ASTNode.ANNOTATION_TYPE_DECLARATION:
 			return ast.newAnnotationTypeDeclaration();
@@ -516,11 +515,11 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			final TreeNode<Integer> treeNode, final AST ast,
 			final Map<TreeNode<Integer>, ASTNode> createdASTNodes)
 			throws Exception {
-		final ASTNodeSymbol symbol = getSymbol(treeNode.getData());
+		final AstNodeSymbol symbol = getSymbol(treeNode.getData());
 		final ASTNode node = createASTNodeObject(treeNode, ast, symbol);
 
 		// Set children properties
-		final List<StructuralPropertyDescriptor> descriptors = JavaASTPropertiesData
+		final List<StructuralPropertyDescriptor> descriptors = JavaAstPropertiesData
 				.getChildProperties(symbol.nodeType);
 		checkArgument(descriptors.size() == treeNode.nProperties());
 		for (int i = 0; i < descriptors.size(); i++) {
@@ -548,7 +547,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		}
 
 		// Set simple properties
-		for (final SimplePropertyDescriptor sp : JavaASTPropertiesData
+		for (final SimplePropertyDescriptor sp : JavaAstPropertiesData
 				.getSimpleProperties(symbol.nodeType)) {
 			final Object simplePropertyValue = symbol.getSimpleProperty(sp
 					.getId());

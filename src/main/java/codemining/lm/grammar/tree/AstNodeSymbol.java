@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -17,11 +16,11 @@ import com.google.common.collect.Maps;
 
 /**
  * A single AST Node Symbol
- * 
+ *
  * @author Miltiadis Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
-public class ASTNodeSymbol implements Serializable {
+public class AstNodeSymbol implements Serializable {
 
 	/**
 	 * String annotation containing the node.
@@ -71,7 +70,15 @@ public class ASTNodeSymbol implements Serializable {
 	 */
 	private SortedMap<String, Object> simplePropValues = Maps.newTreeMap();
 
-	public ASTNodeSymbol(final int type) {
+	public static final Function<Integer, String> DEFAULT_NODETYPE_TO_STRING = new Function<Integer, String>() {
+
+		@Override
+		public String apply(Integer nodeType) {
+			return nodeType.toString();
+		}
+	};
+
+	public AstNodeSymbol(final int type) {
 		nodeType = type;
 	}
 
@@ -87,7 +94,7 @@ public class ASTNodeSymbol implements Serializable {
 
 	/**
 	 * Add a simple property to the symbol.
-	 * 
+	 *
 	 * @param propertyName
 	 * @param value
 	 */
@@ -103,10 +110,10 @@ public class ASTNodeSymbol implements Serializable {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ASTNodeSymbol)) {
+		if (!(obj instanceof AstNodeSymbol)) {
 			return false;
 		}
-		final ASTNodeSymbol other = (ASTNodeSymbol) obj;
+		final AstNodeSymbol other = (AstNodeSymbol) obj;
 
 		if (nodeType != other.nodeType) {
 			return false;
@@ -157,6 +164,10 @@ public class ASTNodeSymbol implements Serializable {
 
 	@Override
 	public String toString() {
+		return toString(DEFAULT_NODETYPE_TO_STRING);
+	}
+
+	public String toString(final Function<Integer, String> nodeTypeToString) {
 		final StringBuffer buf = new StringBuffer();
 		if (nodeType == MULTI_NODE) {
 			buf.append("Type : MULTI_NODE");
@@ -165,8 +176,7 @@ public class ASTNodeSymbol implements Serializable {
 		} else if (nodeType == TEMPLATE_NODE) {
 			buf.append("Type : TEMPLATE_NODE");
 		} else {
-			buf.append("Type : "
-					+ ASTNode.nodeClassForType(nodeType).getSimpleName());
+			buf.append("Type : " + nodeTypeToString.apply(nodeType));
 		}
 
 		if (simplePropValues.size() > 0) {

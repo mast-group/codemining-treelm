@@ -1,7 +1,7 @@
 /**
  * 
  */
-package codemining.lm.grammar.tsg.tui;
+package codemining.lm.grammar.tsg.tui.java;
 
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;

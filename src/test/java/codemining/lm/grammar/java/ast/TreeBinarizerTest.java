@@ -14,8 +14,8 @@ import org.junit.Test;
 
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.languagetools.ParseType;
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
+import codemining.lm.grammar.tree.TreeBinarizer;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
@@ -36,7 +36,7 @@ public class TreeBinarizerTest {
 		final JavaASTExtractor ex = new JavaASTExtractor(false);
 		final ASTNode cu = ex.getAST(code, parseType);
 		final BinaryJavaAstTreeExtractor converter = new BinaryJavaAstTreeExtractor(
-				new ParentTypeAnnotatedEclipseAstExtractor());
+				new ParentTypeAnnotatedJavaAstExtractor());
 		final TreeNode<Integer> binaryTreeCu = converter.getTree(cu);
 		final TreeBinarizer binarizer = converter.getBinarizer();
 
@@ -87,7 +87,7 @@ public class TreeBinarizerTest {
 		AbstractJavaTreeExtractor extractor = new JavaAstTreeExtractor();
 
 		for (int i = 0; i < 10; i++) { // Create dummy symbols
-			extractor.getOrAddSymbolId(new ASTNodeSymbol(i));
+			extractor.getOrAddSymbolId(new AstNodeSymbol(i));
 		}
 
 		final TreeBinarizer binarizer = new TreeBinarizer(extractor);

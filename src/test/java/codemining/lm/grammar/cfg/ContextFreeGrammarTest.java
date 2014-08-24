@@ -11,8 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.CFGRule;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -111,7 +111,7 @@ public class ContextFreeGrammarTest {
 	@Test
 	public void testRuleExtraction() {
 		final ContextFreeGrammar cfg = new ContextFreeGrammar(
-				mock(ITreeExtractor.class));
+				mock(AbstractTreeExtractor.class));
 		final CFGRule rule = cfg.createCFRuleForNode(generateSampleTree1());
 		cfg.addCFGRule(rule);
 		assertFalse(cfg.grammar.isEmpty());

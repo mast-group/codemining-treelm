@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.tui;
 
@@ -10,11 +10,11 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map.Entry;
 
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodePair;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.util.parallel.ParallelThreadPool;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -23,21 +23,21 @@ import com.google.common.collect.Multiset;
 
 /**
  * Merge two tsgs into one.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class TsgMerger {
 
 	private static int convert(final int id,
-			final AbstractJavaTreeExtractor fromFormat,
-			final AbstractJavaTreeExtractor toFormat) {
+			final AbstractTreeExtractor fromFormat,
+			final AbstractTreeExtractor toFormat) {
 		return toFormat.getOrAddSymbolId(fromFormat.getSymbol(id));
 	}
 
 	public static TreeNode<Integer> convert(final TreeNode<Integer> fromNode,
-			final AbstractJavaTreeExtractor fromFormat,
-			final AbstractJavaTreeExtractor toFormat) {
+			final AbstractTreeExtractor fromFormat,
+			final AbstractTreeExtractor toFormat) {
 		checkNotNull(fromNode);
 		final ArrayDeque<NodePair<Integer>> stack = new ArrayDeque<NodePair<Integer>>();
 		final TreeNode<Integer> toNode = TreeNode.create(
@@ -75,13 +75,13 @@ public class TsgMerger {
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar tsg1 = (JavaFormattedTSGrammar) Serializer
+		final TSGrammar<TSGNode> tsg1 = (TSGrammar<TSGNode>) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final AbstractJavaTreeExtractor format1 = tsg1.getJavaTreeExtractor();
+		final AbstractTreeExtractor format1 = tsg1.getTreeExtractor();
 
-		final JavaFormattedTSGrammar tsg2 = (JavaFormattedTSGrammar) Serializer
+		final TSGrammar<TSGNode> tsg2 = (TSGrammar<TSGNode>) Serializer
 				.getSerializer().deserializeFrom(args[1]);
-		final AbstractJavaTreeExtractor format2 = tsg2.getJavaTreeExtractor();
+		final AbstractTreeExtractor format2 = tsg2.getTreeExtractor();
 
 		checkArgument(format1.getClass().equals(format2.getClass()));
 

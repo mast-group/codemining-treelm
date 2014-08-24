@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
@@ -13,19 +13,16 @@ import codemining.util.serialization.Serializer;
 
 /**
  * TUI for computing the coverage of some TSG patterns.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class StatsComputer {
-
-	private static final Logger LOGGER = Logger.getLogger(StatsComputer.class
-			.getName());
 
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 4) {
 			System.err
-					.println("Usage <tsg> <directoryToComputeCoverage> <minPatternCountList> <minPatternSizeList>");
+			.println("Usage <tsg> <directoryToComputeCoverage> <minPatternCountList> <minPatternSizeList>");
 			System.exit(-1);
 		}
 
@@ -38,7 +35,7 @@ public class StatsComputer {
 
 		LOGGER.info("Finished loading, creating core structures");
 		final PatternStatsCalculator pcc = new PatternStatsCalculator(
-				grammar.getJavaTreeExtractor(), grammar, directory);
+				grammar.getTreeExtractor(), grammar, directory);
 
 		LOGGER.info("Initiating stats computation...");
 		pcc.printStatisticsFor(minPatternSize, minPatternCount);
@@ -52,4 +49,7 @@ public class StatsComputer {
 		}
 		return vals;
 	}
+
+	private static final Logger LOGGER = Logger.getLogger(StatsComputer.class
+			.getName());
 }

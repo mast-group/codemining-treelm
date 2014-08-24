@@ -8,9 +8,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayDeque;
 import java.util.Map;
 
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.TSGNode.CopyPair;
 
@@ -64,11 +64,11 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 
 	@Override
 	public int countTreesWithRoot(final TSGNode root) {
-		final ASTNodeSymbol originalSymbol = treeFormat.getSymbol(root.nodeKey);
-		if (originalSymbol.nodeType == ASTNodeSymbol.TEMPLATE_NODE
+		final AstNodeSymbol originalSymbol = treeFormat.getSymbol(root.nodeKey);
+		if (originalSymbol.nodeType == AstNodeSymbol.TEMPLATE_NODE
 				&& originalSymbol
 						.hasAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
-			final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
+			final AstNodeSymbol newSymbol = TempletizedJavaTreeExtractor
 					.constructTemplateSymbol(
 							0,
 							(String) originalSymbol
@@ -126,7 +126,7 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 		final Map<Integer, Integer> oldNewMapping = Maps.newTreeMap();
 
 		final TSGNode originalData = tree.getData();
-		final ASTNodeSymbol originalSymbol = treeFormat
+		final AstNodeSymbol originalSymbol = treeFormat
 				.getSymbol(originalData.nodeKey);
 
 		final TSGNode rootData;
@@ -135,7 +135,7 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 					.put((Integer) (originalSymbol
 							.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)),
 							0);
-			final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
+			final AstNodeSymbol newSymbol = TempletizedJavaTreeExtractor
 					.constructTemplateSymbol(
 							0,
 							(String) originalSymbol
@@ -161,7 +161,7 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 			for (int i = 0; i < currentFrom.getChildrenByProperty().size(); i++) {
 				for (final TreeNode<TSGNode> fromChild : currentFrom
 						.getChildrenByProperty().get(i)) {
-					final ASTNodeSymbol symbol = treeFormat.getSymbol(fromChild
+					final AstNodeSymbol symbol = treeFormat.getSymbol(fromChild
 							.getData().nodeKey);
 
 					final TSGNode toChildData;
@@ -178,7 +178,7 @@ public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
 						}
 						final String typeProperty = (String) symbol
 								.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
-						final ASTNodeSymbol sym = TempletizedJavaTreeExtractor
+						final AstNodeSymbol sym = TempletizedJavaTreeExtractor
 								.constructTemplateSymbol(newId, typeProperty);
 						toChildData = new TSGNode(
 								treeFormat.getOrAddSymbolId(sym));

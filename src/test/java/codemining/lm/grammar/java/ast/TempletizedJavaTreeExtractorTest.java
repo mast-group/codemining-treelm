@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.languagetools.ParseType;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**

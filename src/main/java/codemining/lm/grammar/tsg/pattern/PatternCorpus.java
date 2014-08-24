@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern;
 
@@ -19,7 +19,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
@@ -39,29 +39,12 @@ import com.google.common.collect.Sets;
 
 /**
  * A class that contains patterns.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public class PatternCorpus implements Serializable {
-
-	private static final long serialVersionUID = 8309734116605145468L;
-
-	/**
-	 * The minimum size of a TSG rule to be considered as a pattern.
-	 */
-	public static final int MIN_PATTERN_SIZE = (int) SettingsLoader
-			.getNumericSetting("minSizePattern", 7);
-
-	/**
-	 * The minimum count of a TSG rule to be considered a pattern.
-	 */
-	public static final int MIN_PATTERN_COUNT = (int) SettingsLoader
-			.getNumericSetting("minPatternCount", 10);
-
-	static final Logger LOGGER = Logger
-			.getLogger(PatternCorpus.class.getName());
 
 	/**
 	 * Return the list of patterns of a specific tree.
@@ -145,7 +128,7 @@ public class PatternCorpus implements Serializable {
 
 	/**
 	 * Get a set of patterns given the default min count and min size.
-	 * 
+	 *
 	 * @param grammar
 	 * @return
 	 */
@@ -156,7 +139,7 @@ public class PatternCorpus implements Serializable {
 
 	/**
 	 * Return a list of patterns in the given TSG grammar.
-	 * 
+	 *
 	 * @param grammar
 	 * @return
 	 */
@@ -190,7 +173,7 @@ public class PatternCorpus implements Serializable {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 3) {
 			System.err
-					.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
+			.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
 			System.exit(-1);
 		}
 
@@ -201,7 +184,7 @@ public class PatternCorpus implements Serializable {
 		final int minSize = Integer.parseInt(args[2]);
 
 		final PatternCorpus corpus = new PatternCorpus(
-				grammar.getJavaTreeExtractor());
+				grammar.getTreeExtractor());
 		corpus.addFromGrammar(grammar, minCount, minSize);
 
 		if (args.length >= 5) {
@@ -237,11 +220,28 @@ public class PatternCorpus implements Serializable {
 
 			} catch (final IOException e) {
 				PatternInSet.LOGGER
-						.warning(ExceptionUtils.getFullStackTrace(e));
+				.warning(ExceptionUtils.getFullStackTrace(e));
 			}
 		}
 		return patternSeenInCorpus;
 	}
+
+	private static final long serialVersionUID = 8309734116605145468L;
+
+	/**
+	 * The minimum size of a TSG rule to be considered as a pattern.
+	 */
+	public static final int MIN_PATTERN_SIZE = (int) SettingsLoader
+			.getNumericSetting("minSizePattern", 7);
+
+	/**
+	 * The minimum count of a TSG rule to be considered a pattern.
+	 */
+	public static final int MIN_PATTERN_COUNT = (int) SettingsLoader
+			.getNumericSetting("minPatternCount", 10);
+
+	static final Logger LOGGER = Logger
+			.getLogger(PatternCorpus.class.getName());
 
 	/**
 	 * The list of patterns.
@@ -256,7 +256,7 @@ public class PatternCorpus implements Serializable {
 
 	/**
 	 * Extract all rules from the grammar as patterns.
-	 * 
+	 *
 	 * @param grammar
 	 */
 	public void addFromGrammar(final JavaFormattedTSGrammar grammar,
@@ -272,7 +272,7 @@ public class PatternCorpus implements Serializable {
 	/**
 	 * Filter all patterns so that they are contained in at least one of the
 	 * files.
-	 * 
+	 *
 	 * @param directory
 	 * @param nSeenInFiles
 	 *            number of times seen in the files.
@@ -320,7 +320,7 @@ public class PatternCorpus implements Serializable {
 
 	/**
 	 * Return the set of covered nodes
-	 * 
+	 *
 	 * @param tree
 	 * @return
 	 */

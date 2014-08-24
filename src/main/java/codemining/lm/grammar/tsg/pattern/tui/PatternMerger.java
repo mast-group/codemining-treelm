@@ -3,7 +3,7 @@
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.lm.grammar.tsg.tui.TsgMerger;

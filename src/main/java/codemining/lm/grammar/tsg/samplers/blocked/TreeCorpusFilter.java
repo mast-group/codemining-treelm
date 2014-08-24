@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.samplers.blocked;
 
@@ -7,11 +7,9 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.CFGRule;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.TSGNode;
 
@@ -24,9 +22,9 @@ import com.google.common.collect.Sets;
 /**
  * A tree corpus filter, that filters rare nodes given a corpus of trees. This
  * class modifies the original trees
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public final class TreeCorpusFilter {
 
@@ -36,9 +34,9 @@ public final class TreeCorpusFilter {
 
 	private final int countLimit;
 
-	private final AbstractJavaTreeExtractor treeExtractor;
+	private final AbstractTreeExtractor treeExtractor;
 
-	public TreeCorpusFilter(final AbstractJavaTreeExtractor treeExtractor,
+	public TreeCorpusFilter(final AbstractTreeExtractor treeExtractor,
 			final int countLimit) {
 		this.countLimit = countLimit;
 		this.treeExtractor = treeExtractor;
@@ -69,7 +67,8 @@ public final class TreeCorpusFilter {
 
 	public void addTree(final TreeNode<TSGNode> tree) {
 		final TreeNode<TSGNode> currentTree;
-		if (treeExtractor.getSymbol(tree.getData().nodeKey).nodeType == ASTNode.COMPILATION_UNIT) {
+		if (treeExtractor.getSymbol(tree.getData().nodeKey).nodeType == treeExtractor
+				.getKeyForCompilationUnit().getData()) {
 			if (tree.getChildrenByProperty().get(2).isEmpty()) {
 				return;
 			}

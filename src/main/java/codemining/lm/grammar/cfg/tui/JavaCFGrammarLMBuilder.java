@@ -14,20 +14,20 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
-import codemining.lm.grammar.java.ast.ParentTypeAnnotatedEclipseAstExtractor;
+import codemining.lm.grammar.java.ast.ParentTypeAnnotatedJavaAstExtractor;
 import codemining.util.serialization.Serializer;
 
 /**
  * @author Miltos Allamanis <m.allamanis@sms.ed.ac.uk>
  * 
  */
-public final class JavaGrammarLMBuilder {
+public final class JavaCFGrammarLMBuilder {
 
 	/**
 	 * The logger.
 	 */
 	private static final Logger LOGGER = Logger
-			.getLogger(JavaGrammarLMBuilder.class.getName());
+			.getLogger(JavaCFGrammarLMBuilder.class.getName());
 
 	/**
 	 * Main to create a ruleset from a set of files.
@@ -55,7 +55,7 @@ public final class JavaGrammarLMBuilder {
 		try {
 			final ContextFreeGrammar glm = new ContextFreeGrammar(
 					new BinaryJavaAstTreeExtractor(
-							new ParentTypeAnnotatedEclipseAstExtractor()));
+							new ParentTypeAnnotatedJavaAstExtractor()));
 			final Collection<File> files = FileUtils.listFiles(
 					new File(args[0]), glm.modelledFilesFilter(),
 					DirectoryFileFilter.DIRECTORY);
@@ -69,6 +69,6 @@ public final class JavaGrammarLMBuilder {
 	/**
 	 * Default constructor. Nobody uses it.
 	 */
-	private JavaGrammarLMBuilder() {
+	private JavaCFGrammarLMBuilder() {
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern;
 
@@ -25,13 +25,11 @@ import com.google.common.collect.Sets;
 
 /**
  * Serialize an object containing only the patterns seen in a specific corpus
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class PatternInSet {
-
-	static final Logger LOGGER = Logger.getLogger(PatternInSet.class.getName());
 
 	/**
 	 * @param args
@@ -40,14 +38,14 @@ public class PatternInSet {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 4) {
 			System.err
-					.println("Usage <tsg> <filterCorpusDir> <snippetDir> <minPatternCount>");
+			.println("Usage <tsg> <filterCorpusDir> <snippetDir> <minPatternCount>");
 			System.exit(-1);
 		}
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 		final BinaryJavaAstTreeExtractor format = (BinaryJavaAstTreeExtractor) grammar
-				.getJavaTreeExtractor();
+				.getTreeExtractor();
 		final VariableTypeJavaTreeExtractor typeExtractor = (VariableTypeJavaTreeExtractor) format
 				.getBaseExtractor();
 		final int minPatternCount = Integer.parseInt(args[3]);
@@ -129,4 +127,6 @@ public class PatternInSet {
 			System.out.println(size + "," + recallForSize);
 		}
 	}
+
+	static final Logger LOGGER = Logger.getLogger(PatternInSet.class.getName());
 }

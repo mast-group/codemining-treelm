@@ -16,15 +16,15 @@ public class ASTSymbolTest {
 
 	@Test
 	public void testEquals1() {
-		final ASTNodeSymbol symbol1 = new ASTNodeSymbol(2);
+		final AstNodeSymbol symbol1 = new AstNodeSymbol(2);
 		symbol1.addSimpleProperty("test", "test1");
 
-		final ASTNodeSymbol symbol2 = new ASTNodeSymbol(2);
+		final AstNodeSymbol symbol2 = new AstNodeSymbol(2);
 		symbol2.addSimpleProperty("test", "test1");
 
-		final ASTNodeSymbol symbol3 = new ASTNodeSymbol(2);
+		final AstNodeSymbol symbol3 = new AstNodeSymbol(2);
 
-		final ASTNodeSymbol symbol4 = new ASTNodeSymbol(3);
+		final AstNodeSymbol symbol4 = new AstNodeSymbol(3);
 		symbol4.addSimpleProperty("test", "test1");
 
 		assertEquals(symbol1, symbol2);

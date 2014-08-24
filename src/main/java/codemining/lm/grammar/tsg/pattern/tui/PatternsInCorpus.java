@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
@@ -13,7 +13,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
@@ -25,14 +25,11 @@ import com.google.common.collect.Multimap;
 
 /**
  * Track down the patterns in a corpus.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class PatternsInCorpus {
-
-	private static final Logger LOGGER = Logger
-			.getLogger(PatternsInCorpus.class.getName());
 
 	/**
 	 * @param args
@@ -41,7 +38,7 @@ public class PatternsInCorpus {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 4) {
 			System.err
-					.println("Usage <tsg> <minPatternCount> <minPatternSize> <corpusDir>");
+			.println("Usage <tsg> <minPatternCount> <minPatternSize> <corpusDir>");
 			System.exit(-1);
 		}
 
@@ -49,7 +46,7 @@ public class PatternsInCorpus {
 				.getSerializer().deserializeFrom(args[0]);
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
-		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
+		final AbstractJavaTreeExtractor format = grammar.getTreeExtractor();
 		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
 				grammar, minPatternCount, minPatternSize);
 
@@ -88,7 +85,7 @@ public class PatternsInCorpus {
 		// now print
 		for (final TreeNode<Integer> pattern : patternsPerFile.keySet()) {
 			System.out
-					.println("----------------------------------------------");
+			.println("----------------------------------------------");
 			try {
 				PrintPatterns.printIntTree(format, pattern);
 			} catch (final Throwable e) {
@@ -103,4 +100,7 @@ public class PatternsInCorpus {
 		}
 
 	}
+
+	private static final Logger LOGGER = Logger
+			.getLogger(PatternsInCorpus.class.getName());
 }

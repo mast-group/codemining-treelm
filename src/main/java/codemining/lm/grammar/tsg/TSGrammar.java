@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.math.random.SampleUtils;
 import codemining.util.parallel.ParallelThreadPool;
@@ -31,12 +31,12 @@ import com.google.common.collect.TreeMultiset;
 
 /**
  * A thread safe tree substitution grammar with nodes of data-type T.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class TSGrammar<T extends Serializable> implements
-		ITreeSubstitutionGrammar<T> {
+ITreeSubstitutionGrammar<T> {
 
 	private static final long serialVersionUID = 3178243087484789075L;
 
@@ -60,7 +60,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/**
 	 * Adds all tree production of other grammar to this grammar.
-	 * 
+	 *
 	 * @param other
 	 */
 	public void addAll(final TSGrammar<T> other) {
@@ -74,7 +74,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tsg.ITreeSubstitutionGrammar#addTree(codemining
 	 * .lm.grammar.tree.TreeNode)
@@ -86,7 +86,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/**
 	 * Add a tree with the given number of times.
-	 * 
+	 *
 	 * @param subTree
 	 * @param count
 	 */
@@ -112,7 +112,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tsg.ITreeSubstitutionGrammar#computeTreeSizeStats()
 	 */
@@ -145,7 +145,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tsg.ITreeSubstitutionGrammar#countTreeOccurences
 	 * (codemining.lm.grammar.tree.TreeNode)
@@ -162,7 +162,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tsg.ITreeSubstitutionGrammar#countTreesWithRoot(T)
 	 */
@@ -177,7 +177,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tsg.ITreeSubstitutionGrammar#generateRandom(codemining
 	 * .lm.grammar.tree.TreeNode)
@@ -232,7 +232,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/**
 	 * Return an (externally) immutable view of the TSG.
-	 * 
+	 *
 	 * @return
 	 */
 	public Map<T, ? extends Multiset<TreeNode<T>>> getInternalGrammar() {
@@ -241,17 +241,17 @@ public class TSGrammar<T extends Serializable> implements
 
 	/**
 	 * Returns the tree extractor, if any.
-	 * 
+	 *
 	 * @return
 	 */
-	public ITreeExtractor<Integer> getTreeExtractor() {
+	public AbstractTreeExtractor getTreeExtractor() {
 		throw new NotImplementedException(
 				"A generic TS grammar is not associated with any tree extractor.");
 	}
 
 	/**
 	 * Prune the grammar.
-	 * 
+	 *
 	 * @param threshold
 	 */
 	public void prune(final int threshold) {
@@ -290,7 +290,7 @@ public class TSGrammar<T extends Serializable> implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tsg.ITreeSubstitutionGrammar#removeTree(codemining
 	 * .lm.grammar.tree.TreeNode)

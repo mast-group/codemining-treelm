@@ -18,9 +18,9 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.parallel.ParallelThreadPool;

@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;

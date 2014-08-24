@@ -1,7 +1,7 @@
 /**
- * 
+ *
  */
-package codemining.lm.grammar.tsg.tui;
+package codemining.lm.grammar.tsg.tui.java;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +13,11 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
@@ -29,12 +29,9 @@ import codemining.util.serialization.Serializer;
 
 /**
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class SampleTSG {
-
-	private static final Logger LOGGER = Logger.getLogger(SampleTSG.class
-			.getName());
 
 	/**
 	 * @param args
@@ -42,10 +39,10 @@ public class SampleTSG {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws IOException,
-			SerializationException {
+	SerializationException {
 		if (args.length != 3) {
 			System.err
-					.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables|variables <#iterations>");
+			.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables|variables <#iterations>");
 			return;
 		}
 		final int nIterations = Integer.parseInt(args[2]);
@@ -135,10 +132,10 @@ public class SampleTSG {
 		final JavaFormattedTSGrammar grammarToUse;
 		if (nItererationCompleted >= nIterations) {
 			LOGGER.info("Sampling complete. Outputing burnin grammar...");
-			grammarToUse = sampler.getBurnInGrammar();
+			grammarToUse = (JavaFormattedTSGrammar) sampler.getBurnInGrammar();
 		} else {
 			LOGGER.warning("Sampling not complete. Outputing sample grammar...");
-			grammarToUse = sampler.getSampleGrammar();
+			grammarToUse = (JavaFormattedTSGrammar) sampler.getSampleGrammar();
 		}
 		try {
 			Serializer.getSerializer().serialize(grammarToUse, "tsg.ser");
@@ -159,6 +156,9 @@ public class SampleTSG {
 		sampler.pruneRareTrees((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(grammarToUse.toString());
 		finished.set(true); // we have finished and thus the shutdown hook can
-							// now stop waiting for us.
+		// now stop waiting for us.
 	}
+
+	private static final Logger LOGGER = Logger.getLogger(SampleTSG.class
+			.getName());
 }

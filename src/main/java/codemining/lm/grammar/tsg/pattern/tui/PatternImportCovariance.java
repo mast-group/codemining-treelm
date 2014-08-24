@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import codemining.java.codedata.PackageInfoExtractor;
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
@@ -36,22 +36,14 @@ import com.google.common.collect.Sets;
 
 /**
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public class PatternImportCovariance implements Serializable {
 
-	public static final int cooccuringPairsThreshold = (int) SettingsLoader
-			.getNumericSetting("cooccuringPairsThreshold", 5);
-
-	private static final long serialVersionUID = 4891455549393829732L;
-
-	private static final Logger LOGGER = Logger
-			.getLogger(PatternImportCovariance.class.getName());
-
 	/**
 	 * Get the package where each class belongs in
-	 * 
+	 *
 	 * @param qualifiedName
 	 * @return
 	 */
@@ -72,13 +64,13 @@ public class PatternImportCovariance implements Serializable {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 5) {
 			System.err
-					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <filterPath>");
+			.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <filterPath>");
 			System.exit(-1);
 		}
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
+		final AbstractJavaTreeExtractor format = grammar.getTreeExtractor();
 
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
@@ -99,7 +91,7 @@ public class PatternImportCovariance implements Serializable {
 
 	/**
 	 * Parse all the imports to get the package that is "imported".
-	 * 
+	 *
 	 * @param imports
 	 * @return
 	 */
@@ -111,6 +103,14 @@ public class PatternImportCovariance implements Serializable {
 		return importPackages;
 
 	}
+
+	public static final int cooccuringPairsThreshold = (int) SettingsLoader
+			.getNumericSetting("cooccuringPairsThreshold", 5);
+
+	private static final long serialVersionUID = 4891455549393829732L;
+
+	private static final Logger LOGGER = Logger
+			.getLogger(PatternImportCovariance.class.getName());
 
 	private final BiMap<Integer, TreeNode<Integer>> patternDictionary = HashBiMap
 			.create();
@@ -143,7 +143,7 @@ public class PatternImportCovariance implements Serializable {
 
 	/**
 	 * Return the ids of the patterns that are in this file.
-	 * 
+	 *
 	 * @param fileAst
 	 * @return
 	 */
@@ -161,7 +161,7 @@ public class PatternImportCovariance implements Serializable {
 
 	/**
 	 * Retain only the patterns that appear in the filter set.
-	 * 
+	 *
 	 * @param format
 	 * @param filterDirectory
 	 */
@@ -189,7 +189,7 @@ public class PatternImportCovariance implements Serializable {
 
 	/**
 	 * Use the files in the trainset to train the co-occurence weights.
-	 * 
+	 *
 	 * @param trainDirectory
 	 */
 	private void train(final File trainDirectory) {

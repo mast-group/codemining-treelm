@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.cfg;
 
@@ -18,7 +18,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.languagetools.ParseType;
 import codemining.lm.ILanguageModel;
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.util.SettingsLoader;
 import codemining.util.parallel.ParallelThreadPool;
@@ -31,9 +31,9 @@ import com.google.common.collect.Multiset;
 
 /**
  * A context-free grammar language model.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public class ContextFreeGrammar extends AbstractContextFreeGrammar {
@@ -41,9 +41,9 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 	/**
 	 * A runnable to calculate asynchronously the ASTs and securely count them
 	 * in the grammar.
-	 * 
+	 *
 	 * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
-	 * 
+	 *
 	 */
 	private final class ASTExtractionRunnable implements Runnable {
 
@@ -54,7 +54,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param file
 		 *            the source file from which to extract the grammar.
 		 * @param rules
@@ -87,7 +87,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 
 	private static final long serialVersionUID = -7892945140311811861L;
 
-	public ContextFreeGrammar(final ITreeExtractor<Integer> treeExtractor) {
+	public ContextFreeGrammar(final AbstractTreeExtractor treeExtractor) {
 		super(treeExtractor, Maps
 				.<Integer, Multiset<NodeConsequent>> newConcurrentMap());
 	}
@@ -122,7 +122,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 
 	/**
 	 * Get the grammar rules from a file.
-	 * 
+	 *
 	 * @param sourceFile
 	 * @param grammarToAdd
 	 * @throws IOException
@@ -163,7 +163,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * uk.ac.ed.inf.languagemodels.ILanguageModel#trainIncrementalModel(java
 	 * .io.File)
@@ -177,7 +177,7 @@ public class ContextFreeGrammar extends AbstractContextFreeGrammar {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see uk.ac.ed.inf.languagemodels.ILanguageModel#trainModel(java.io.File)
 	 */
 	@Override

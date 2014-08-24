@@ -1,4 +1,4 @@
-package codemining.lm.grammar.tree;
+package codemining.lm.grammar.java.ast;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,59 +11,61 @@ import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
+import codemining.lm.grammar.tree.TreeNode;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
 
 /**
  * An abstract class representing the conversion of Eclipse's ASTNode to
  * ASTNodeSymbols and trees. It also includes the alphabet. Thread safe.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
-public abstract class AbstractJavaTreeExtractor implements Serializable,
-		ITreeExtractor<Integer> {
+public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor
+implements Serializable {
 
 	/**
 	 * A node printer using the symbols.
 	 */
-	private class NodePrinter implements Function<TreeNode<Integer>, String> {
+	private final class NodePrinter implements
+	Function<TreeNode<Integer>, String> {
 
 		@Override
 		public String apply(final TreeNode<Integer> node) {
-			return getSymbol(node.getData()).toString();
+			return getSymbol(node.getData()).toString(JAVA_NODETYPE_CONVERTER);
 		}
 
 	}
 
-	private static final long serialVersionUID = -9142080646326853618L;
+	private static final long serialVersionUID = -4515326266227881706L;
 
-	private int nextSymbolId = 0;
+	public static final Function<Integer, String> JAVA_NODETYPE_CONVERTER = new Function<Integer, String>() {
 
-	/**
-	 * The symbol map.
-	 */
-	protected final BiMap<Integer, ASTNodeSymbol> nodeAlphabet;
+		@Override
+		public String apply(Integer nodeType) {
+			return ASTNode.nodeClassForType(nodeType).getSimpleName();
+		}
+	};
 
 	public AbstractJavaTreeExtractor() {
-		final BiMap<Integer, ASTNodeSymbol> base = HashBiMap.create();
-		nodeAlphabet = Maps.synchronizedBiMap(base);
+		super();
 	}
 
 	protected AbstractJavaTreeExtractor(
-			final BiMap<Integer, ASTNodeSymbol> alphabet) {
-		nodeAlphabet = alphabet;
+			final BiMap<Integer, AstNodeSymbol> alphabet) {
+		super(alphabet);
 	}
 
 	/**
 	 * Get the ASTNode given the tree.
-	 * 
+	 *
 	 * @param tree
 	 * @return
 	 */
@@ -71,7 +73,7 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 
 	@Override
 	public TreeNode<Integer> getKeyForCompilationUnit() {
-		for (final Entry<Integer, ASTNodeSymbol> entry : nodeAlphabet
+		for (final Entry<Integer, AstNodeSymbol> entry : nodeAlphabet
 				.entrySet()) {
 			if (entry.getValue().nodeType == ASTNode.COMPILATION_UNIT) {
 				return TreeNode.create(entry.getKey(), entry.getValue()
@@ -82,43 +84,6 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 				"A compilation unit must have been here...");
 	}
 
-	public final BiMap<Integer, ASTNodeSymbol> getNodeAlphabet() {
-		return nodeAlphabet;
-	}
-
-	/**
-	 * Return the id of the symbol, or create a new one. This will lock the
-	 * symbol and thus the id will remain right.
-	 * 
-	 * @param symbol
-	 * @return
-	 */
-	@Override
-	public synchronized int getOrAddSymbolId(final ASTNodeSymbol symbol) {
-		final Integer id = nodeAlphabet.inverse().get(symbol);
-		if (id != null) {
-			return id;
-		} else {
-			symbol.lockFromChanges();
-			final int currentSymboId = nextSymbolId;
-			nextSymbolId++;
-			nodeAlphabet.put(currentSymboId, symbol);
-			return currentSymboId;
-		}
-	}
-
-	/**
-	 * Return the symbol for the given key. Null if there is no symbol for the
-	 * given key.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	@Override
-	public ASTNodeSymbol getSymbol(final Integer key) {
-		return nodeAlphabet.get(key);
-	}
-
 	@Override
 	public ITokenizer getTokenizer() {
 		return new JavaTokenizer();
@@ -126,7 +91,7 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 
 	/**
 	 * Get the tree from a given ASTNode
-	 * 
+	 *
 	 * @param node
 	 * @return
 	 */
@@ -159,7 +124,7 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 
 	/**
 	 * Return the tree printer functor for this extractor.
-	 * 
+	 *
 	 * @return
 	 */
 	public Function<TreeNode<Integer>, String> getTreePrinter() {
@@ -167,8 +132,6 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 	}
 
 	/**
-	 * @param javaFormattedTSGrammar
-	 *            TODO
 	 * @param buf
 	 * @param intTree
 	 */
@@ -186,7 +149,7 @@ public abstract class AbstractJavaTreeExtractor implements Serializable,
 			return;
 		}
 		final TreeNode<Integer> next = intTree.getChild(0, 1);
-		if (getSymbol(next.getData()).nodeType == ASTNodeSymbol.MULTI_NODE) {
+		if (getSymbol(next.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 			printMultinode(buf, next);
 		} else {
 			buf.append(getASTFromTree(next));

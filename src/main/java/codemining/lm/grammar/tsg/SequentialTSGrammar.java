@@ -7,7 +7,7 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
 import com.google.common.collect.HashMultiset;
@@ -191,8 +191,8 @@ public class SequentialTSGrammar extends JavaFormattedTSGrammar {
 	public int getMultinodeSymbolIdFor(
 			final List<TreeNode<TSGNode>> childrenForProperty,
 			final int startPos, final int endPos) {
-		final ASTNodeSymbol multinodeSymbol = new ASTNodeSymbol(
-				ASTNodeSymbol.MULTI_NODE);
+		final AstNodeSymbol multinodeSymbol = new AstNodeSymbol(
+				AstNodeSymbol.MULTI_NODE);
 		multinodeSymbol.addChildProperty("NODE");
 		multinodeSymbol.addChildProperty("NEXT");
 		if (startPos >= 0) {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.samplers.blocked;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
@@ -21,13 +21,13 @@ import com.google.common.collect.Sets;
 
 /**
  * A collapsed Gibbs sampler.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
-public class FilteredBlockCollapsedGibbsSampler extends
-		BlockCollapsedGibbsSampler {
+public class JavaFilteredBlockCollapsedGibbsSampler extends
+BlockCollapsedGibbsSampler {
 
 	private static final long serialVersionUID = -4108971545978001532L;
 
@@ -36,12 +36,12 @@ public class FilteredBlockCollapsedGibbsSampler extends
 	private final Set<TreeNode<TSGNode>> unbreakableNodes = Sets
 			.newIdentityHashSet();
 
-	public FilteredBlockCollapsedGibbsSampler(final double avgTreeSize,
+	public JavaFilteredBlockCollapsedGibbsSampler(final double avgTreeSize,
 			final double DPconcentration,
 			final JavaFormattedTSGrammar sampleGrammar,
 			final JavaFormattedTSGrammar allSamplesGrammar) {
 		super(avgTreeSize, DPconcentration, sampleGrammar, allSamplesGrammar);
-		treeExtractor = sampleGrammar.getJavaTreeExtractor();
+		treeExtractor = sampleGrammar.getTreeExtractor();
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class FilteredBlockCollapsedGibbsSampler extends
 
 	/**
 	 * Filter a tree to include the right nodes at the right states.
-	 * 
+	 *
 	 * @param tree
 	 * @return
 	 */

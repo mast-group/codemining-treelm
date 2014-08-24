@@ -1,7 +1,7 @@
 /**
- * 
+ *
  */
-package codemining.lm.grammar.java.ast;
+package codemining.lm.grammar.tree;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -9,15 +9,11 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
-import codemining.lm.grammar.tree.TreeNode;
-
 /**
  * A utility class for binarizing-debinarizing trees. Trees are also markovized.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class TreeBinarizer implements Serializable {
 
@@ -25,14 +21,14 @@ public class TreeBinarizer implements Serializable {
 
 	private final boolean annotateMultinodes;
 
-	private final AbstractJavaTreeExtractor extractor;
+	private final AbstractTreeExtractor extractor;
 
-	public TreeBinarizer(final AbstractJavaTreeExtractor ex) {
+	public TreeBinarizer(final AbstractTreeExtractor ex) {
 		extractor = ex;
 		annotateMultinodes = true;
 	}
 
-	public TreeBinarizer(final AbstractJavaTreeExtractor ex,
+	public TreeBinarizer(final AbstractTreeExtractor ex,
 			final boolean annotateMultinodes) {
 		extractor = ex;
 		this.annotateMultinodes = annotateMultinodes;
@@ -40,7 +36,7 @@ public class TreeBinarizer implements Serializable {
 
 	/**
 	 * Binarize a single tree.
-	 * 
+	 *
 	 * @param fromTree
 	 * @return
 	 */
@@ -83,7 +79,7 @@ public class TreeBinarizer implements Serializable {
 
 	/**
 	 * Create a tree of multinodes, binarizing other nodes.
-	 * 
+	 *
 	 * @param currentTo
 	 * @param currentFrom
 	 * @param toStack
@@ -124,8 +120,8 @@ public class TreeBinarizer implements Serializable {
 			final TreeNode<Integer> toChild = TreeNode.create(
 					fromChild.getData(), fromChild.nProperties());
 
-			final TreeNode<Integer> multiNode = TreeNode.create(extractor
-					.getOrAddSymbolId(createMultinodeSymbol(toChild
+			final TreeNode<Integer> multiNode = TreeNode.create(
+					extractor.getOrAddSymbolId(createMultinodeSymbol(toChild
 							.getData())), 2);
 			multiNode.addChildNode(currentTreeNode, 1); // Next nodes
 			multiNode.addChildNode(toChild, 0); // Current node
@@ -139,9 +135,9 @@ public class TreeBinarizer implements Serializable {
 		currentTo.addChildNode(currentTreeNode, propertyId);
 	}
 
-	private ASTNodeSymbol createMultinodeSymbol(final int type) {
-		final ASTNodeSymbol multinode = new ASTNodeSymbol(
-				ASTNodeSymbol.MULTI_NODE);
+	private AstNodeSymbol createMultinodeSymbol(final int type) {
+		final AstNodeSymbol multinode = new AstNodeSymbol(
+				AstNodeSymbol.MULTI_NODE);
 		multinode.addChildProperty("Current");
 		multinode.addChildProperty("Next");
 		if (annotateMultinodes) {
@@ -152,14 +148,14 @@ public class TreeBinarizer implements Serializable {
 
 	/**
 	 * Given a binary tree, debinarize it.
-	 * 
+	 *
 	 * @param fromTree
 	 * @return
 	 */
 	public TreeNode<Integer> debinarize(final TreeNode<Integer> fromTree) {
-		final ASTNodeSymbol rootSymbol = extractor
+		final AstNodeSymbol rootSymbol = extractor
 				.getSymbol(fromTree.getData());
-		checkArgument(rootSymbol.nodeType != ASTNodeSymbol.MULTI_NODE);
+		checkArgument(rootSymbol.nodeType != AstNodeSymbol.MULTI_NODE);
 
 		final TreeNode<Integer> toTree = TreeNode.create(fromTree);
 
@@ -181,14 +177,14 @@ public class TreeBinarizer implements Serializable {
 						.get(i);
 
 				for (final TreeNode<Integer> fromChild : childrenForProperty) {
-					ASTNodeSymbol symbol = extractor.getSymbol(fromChild
+					AstNodeSymbol symbol = extractor.getSymbol(fromChild
 							.getData());
 
-					if (symbol.nodeType == ASTNodeSymbol.MULTI_NODE) {
+					if (symbol.nodeType == AstNodeSymbol.MULTI_NODE) {
 						TreeNode<Integer> currentChild = fromChild;
 
 						while (currentChild != null
-								&& symbol.nodeType == ASTNodeSymbol.MULTI_NODE) {
+								&& symbol.nodeType == AstNodeSymbol.MULTI_NODE) {
 							for (final TreeNode<Integer> child : currentChild
 									.getChildrenByProperty().get(0)) {
 

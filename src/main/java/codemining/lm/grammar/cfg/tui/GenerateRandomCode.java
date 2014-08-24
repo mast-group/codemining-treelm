@@ -13,7 +13,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
-import codemining.lm.grammar.java.ast.ParentTypeAnnotatedEclipseAstExtractor;
+import codemining.lm.grammar.java.ast.ParentTypeAnnotatedJavaAstExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
@@ -35,7 +35,7 @@ public class GenerateRandomCode {
 		}
 
 		final BinaryJavaAstTreeExtractor treeExtractor = new BinaryJavaAstTreeExtractor(
-				new ParentTypeAnnotatedEclipseAstExtractor());
+				new ParentTypeAnnotatedJavaAstExtractor());
 		final ContextFreeGrammar cfg = new ContextFreeGrammar(treeExtractor);
 
 		final Collection<File> files = FileUtils.listFiles(new File(args[0]),

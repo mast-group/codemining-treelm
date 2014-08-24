@@ -14,7 +14,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 
 import codemining.java.codeutils.scopes.VariableScopeExtractor;
 import codemining.java.codeutils.scopes.VariableScopeExtractor.Variable;
-import codemining.lm.grammar.tree.ASTNodeSymbol;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
 import com.google.common.collect.Multimap;
@@ -70,7 +70,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 			}
 
 			// it is a variable.
-			final ASTNodeSymbol symbol = constructTypeSymbol(nodeVariable.type);
+			final AstNodeSymbol symbol = constructTypeSymbol(nodeVariable.type);
 			final int symbolId = getOrAddSymbolId(symbol);
 			final TreeNode<Integer> templetized = TreeNode.create(symbolId, 1);
 			templetized.addChildNode(treeNode, 0);
@@ -81,19 +81,19 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 		public TreeNode<Integer> postProcessNodeBeforeAdding(
 				final TreeNode<Integer> treeNode, final ASTNode node) {
 			if (node.getNodeType() == ASTNode.CHARACTER_LITERAL) {
-				final ASTNodeSymbol symbol = constructTypeSymbol("%CHAR_LITERAL%");
+				final AstNodeSymbol symbol = constructTypeSymbol("%CHAR_LITERAL%");
 				final TreeNode<Integer> literalTemplatedTree = TreeNode.create(
 						getOrAddSymbolId(symbol), 1);
 				literalTemplatedTree.addChildNode(treeNode, 0);
 				return literalTemplatedTree;
 			} else if (node.getNodeType() == ASTNode.STRING_LITERAL) {
-				final ASTNodeSymbol symbol = constructTypeSymbol("%STRING_LITERAL%");
+				final AstNodeSymbol symbol = constructTypeSymbol("%STRING_LITERAL%");
 				final TreeNode<Integer> literalTemplatedTree = TreeNode.create(
 						getOrAddSymbolId(symbol), 1);
 				literalTemplatedTree.addChildNode(treeNode, 0);
 				return literalTemplatedTree;
 			} else if (node.getNodeType() == ASTNode.NUMBER_LITERAL) {
-				final ASTNodeSymbol symbol = constructTypeSymbol("%NUM_LITERAL%");
+				final AstNodeSymbol symbol = constructTypeSymbol("%NUM_LITERAL%");
 				final TreeNode<Integer> literalTemplatedTree = TreeNode.create(
 						getOrAddSymbolId(symbol), 1);
 				literalTemplatedTree.addChildNode(treeNode, 0);
@@ -117,16 +117,16 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 	 * @param id
 	 * @return
 	 */
-	public static ASTNodeSymbol constructTypeSymbol(final String type) {
-		final ASTNodeSymbol symbol = new ASTNodeSymbol(
-				ASTNodeSymbol.TEMPLATE_NODE);
+	public static AstNodeSymbol constructTypeSymbol(final String type) {
+		final AstNodeSymbol symbol = new AstNodeSymbol(
+				AstNodeSymbol.TEMPLATE_NODE);
 		symbol.addChildProperty("CHILD");
 		symbol.addAnnotation(TEMPLETIZED_VAR_TYPE_PROPERTY, type);
 
 		return symbol;
 	}
 
-	public static boolean isVariableSymbol(final ASTNodeSymbol symbol) {
+	public static boolean isVariableSymbol(final AstNodeSymbol symbol) {
 		return symbol.hasAnnotation(TEMPLETIZED_VAR_TYPE_PROPERTY);
 	}
 
@@ -141,7 +141,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 	 * @return
 	 */
 	public TreeNode<Integer> detempletize(final TreeNode<Integer> fromTree) {
-		if (getSymbol(fromTree.getData()).nodeType == ASTNodeSymbol.TEMPLATE_NODE) {
+		if (getSymbol(fromTree.getData()).nodeType == AstNodeSymbol.TEMPLATE_NODE) {
 			return detempletize(fromTree.getChild(0, 0));
 		}
 		final TreeNode<Integer> toTree = TreeNode.create(fromTree.getData(),
@@ -164,11 +164,11 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 						.get(i);
 
 				for (final TreeNode<Integer> fromChild : childrenForProperty) {
-					final ASTNodeSymbol symbol = getSymbol(fromChild.getData());
+					final AstNodeSymbol symbol = getSymbol(fromChild.getData());
 
-					if (symbol.nodeType == ASTNodeSymbol.TEMPLATE_NODE) {
+					if (symbol.nodeType == AstNodeSymbol.TEMPLATE_NODE) {
 						TreeNode<Integer> templateChild = fromChild;
-						while (getSymbol(templateChild.getData()).nodeType == ASTNodeSymbol.TEMPLATE_NODE) {
+						while (getSymbol(templateChild.getData()).nodeType == AstNodeSymbol.TEMPLATE_NODE) {
 							checkArgument(templateChild.nProperties() == 1);
 
 							if (templateChild.isLeaf()) {
@@ -177,7 +177,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 							templateChild = templateChild.getChild(0, 0);
 						}
 						if (templateChild.isLeaf()
-								&& getSymbol(templateChild.getData()).nodeType == ASTNodeSymbol.TEMPLATE_NODE) {
+								&& getSymbol(templateChild.getData()).nodeType == AstNodeSymbol.TEMPLATE_NODE) {
 							continue;
 						}
 						final TreeNode<Integer> untempletizedCopyChild = TreeNode

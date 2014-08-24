@@ -6,7 +6,7 @@ package codemining.lm.grammar.java.ast;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.SimpleName;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
@@ -36,7 +36,7 @@ public class DelegatedVariableTypeJavaTreeExtractor extends
 			final TreeNode<Integer> templetized = super
 					.getTempletizedSubtreeForNode(node, treeNode);
 			if (isVariableSymbol(getSymbol(templetized.getData()))) {
-				final ASTNodeSymbol symbol = constructTypeSymbol(GENERIC_VARIABLE_TYPE);
+				final AstNodeSymbol symbol = constructTypeSymbol(GENERIC_VARIABLE_TYPE);
 				final TreeNode<Integer> variableTemplatedTree = TreeNode
 						.create(getOrAddSymbolId(symbol), 1);
 				variableTemplatedTree.addChildNode(templetized, 0);

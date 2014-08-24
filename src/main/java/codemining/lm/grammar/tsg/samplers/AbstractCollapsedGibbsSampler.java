@@ -13,12 +13,11 @@ import java.util.logging.Logger;
 import org.apache.commons.lang.math.RandomUtils;
 
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.util.StatsUtil;
 import codemining.util.parallel.ParallelThreadPool;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -31,61 +30,21 @@ public abstract class AbstractCollapsedGibbsSampler extends AbstractTSGSampler {
 
 	/**
 	 * Constructor parameters
-	 * 
+	 *
 	 * @param avgTreeSize
 	 * @param DPconcentration
 	 * @param grammar
 	 */
 	public AbstractCollapsedGibbsSampler(
-			final JavaFormattedTSGrammar sampleGrammar,
-			final JavaFormattedTSGrammar allSamplesGrammar) {
+			final TSGrammar<TSGNode> sampleGrammar,
+			final TSGrammar<TSGNode> allSamplesGrammar) {
 		super(sampleGrammar, allSamplesGrammar);
-	}
-
-	public void printCorpusProbs() {
-		for (final TreeNode<TSGNode> tree : treeCorpus) {
-			System.out.println("----------------------------------------");
-			System.out.println(printTreeWithRootProbabilities(tree));
-			System.out.println("________________________________________");
-			System.out.println(sampleGrammar.getJavaTreeExtractor()
-					.getASTFromTree(TSGNode.tsgTreeToInt(tree)));
-		}
-	}
-
-	/**
-	 * Return a string with the join probabilities for each node (the bit) in
-	 * the tree, given the current state of the sampler.
-	 * 
-	 * @param tree
-	 */
-	public String printTreeWithRootProbabilities(final TreeNode<TSGNode> tree) {
-		final Map<TreeNode<TSGNode>, TreeNode<TSGNode>> roots = TSGNode
-				.getNodeToRootMap(tree);
-
-		return tree.toString(new Function<TreeNode<TSGNode>, String>() {
-
-			@Override
-			public String apply(final TreeNode<TSGNode> input) {
-				final TreeNode<TSGNode> root = roots.get(input);
-				String toAppend;
-				if (root == null) {
-					toAppend = "";
-				} else if (input.isLeaf()) {
-					toAppend = "";
-				} else {
-					toAppend = " ( " + probJoinAt(input, root) + ")";
-				}
-				return sampleGrammar.getJavaTreeExtractor().getTreePrinter()
-						.apply(TreeNode.create(input.getData().nodeKey, 0))
-						+ toAppend;
-			}
-		});
 	}
 
 	/**
 	 * Compute the probability of joining the nodes. Note that this is a
 	 * duplicate from sampleAt, without any (eventual) side effects.
-	 * 
+	 *
 	 * These are kept separate for computational efficiency reasons.;
 	 */
 	public PointSampleStats probJoinAt(final TreeNode<TSGNode> node,
@@ -116,8 +75,8 @@ public abstract class AbstractCollapsedGibbsSampler extends AbstractTSGSampler {
 		final double log2ProbSplit = sampleGrammar
 				.computeRulePosteriorLog2Probability(splitTree1,
 						previousRootStatus)
-				+ sampleGrammar.computeRulePosteriorLog2Probability(splitTree2,
-						previousRootStatus);
+						+ sampleGrammar.computeRulePosteriorLog2Probability(splitTree2,
+								previousRootStatus);
 
 		final double joinTheshold;
 		if (!Double.isInfinite(log2ProbJoined)) {
@@ -137,10 +96,10 @@ public abstract class AbstractCollapsedGibbsSampler extends AbstractTSGSampler {
 
 	/**
 	 * Sample all the trees once.
-	 * 
+	 *
 	 * @param totalIterations
 	 * @param stop
-	 * 
+	 *
 	 */
 	@Override
 	public void sampleAllTreesOnce(final int currentIteration,
@@ -179,7 +138,7 @@ public abstract class AbstractCollapsedGibbsSampler extends AbstractTSGSampler {
 
 	/**
 	 * Sample the given node and change status if needed.
-	 * 
+	 *
 	 * @param node
 	 *            the node where to sample (if it is a root or not)
 	 * @param root
@@ -239,7 +198,7 @@ public abstract class AbstractCollapsedGibbsSampler extends AbstractTSGSampler {
 	/**
 	 * Perform TSG sampling on a single (full) tree. Sample each node in the
 	 * tree one-by-one at random order
-	 * 
+	 *
 	 * @param tree
 	 * @return the log-prob of the sampling of the subtree.
 	 */

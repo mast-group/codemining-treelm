@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.NodeFinder;
 
 import codemining.java.codeutils.JavaASTExtractor;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
@@ -36,14 +36,11 @@ import com.google.common.collect.Sets;
 /**
  * Get a file containing the Deckard clones, parse it and find the overlap with
  * the TSG.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class DeckardClonesInTsg {
-
-	public static final Pattern decardClone = Pattern
-			.compile("[0-9]{9}\\tdist:[0-9]\\.[0-9]\\tFILE\\s(\\S+\\.java)\\sLINE:([0-9]+)\\:([0-9]+)");
 
 	/**
 	 * Convert the ASTNodes in the collection to our format.
@@ -79,7 +76,7 @@ public class DeckardClonesInTsg {
 						.getMaximalOverlappingTree(nodeIterator.next());
 				if (maximalOverlappingTree.isPresent()
 						&& maximalOverlappingTree.get().getTreeSize() >= .9 * maximumOverlappingNode
-								.getTreeSize()) {
+						.getTreeSize()) {
 					maximumOverlappingNode = maximalOverlappingTree.get();
 				}
 			}
@@ -93,7 +90,7 @@ public class DeckardClonesInTsg {
 
 	private static Multimap<Integer, ASTNode> getClonesFromDecard(
 			final String clusterFile, final File baseDirectory)
-			throws IOException {
+					throws IOException {
 		final List<String> lines = FileUtils.readLines(new File(clusterFile));
 		int id = 0;
 		final Multimap<Integer, ASTNode> nodesInCluster = ArrayListMultimap
@@ -133,10 +130,10 @@ public class DeckardClonesInTsg {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws IOException,
-			SerializationException {
+	SerializationException {
 		if (args.length != 4) {
 			System.err
-					.println("Usage <decardCloneClustersFile> <baseDir> <tsg> <testDir>");
+			.println("Usage <decardCloneClustersFile> <baseDir> <tsg> <testDir>");
 			System.exit(-1);
 		}
 
@@ -147,7 +144,7 @@ public class DeckardClonesInTsg {
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[2]);
 		final Set<TreeNode<Integer>> decardCloneTrees = getClonePatterns(
-				decardClones, grammar.getJavaTreeExtractor());
+				decardClones, grammar.getTreeExtractor());
 
 		Serializer.getSerializer().serialize(decardCloneTrees,
 				"decardPatterns.ser");
@@ -163,8 +160,7 @@ public class DeckardClonesInTsg {
 		System.out.println("PctCommon:" + pct);
 
 		final PatternStatsCalculator psc = new PatternStatsCalculator(
-				grammar.getJavaTreeExtractor(), decardCloneTrees, new File(
-						args[3]));
+				grammar.getTreeExtractor(), decardCloneTrees, new File(args[3]));
 
 		final int[] zeroArray = { 0 };
 		psc.printStatisticsFor(zeroArray, zeroArray);
@@ -172,10 +168,13 @@ public class DeckardClonesInTsg {
 		System.out.println("Deckard Patterns");
 		System.out.println("--------------------------------");
 		for (final TreeNode<Integer> decardPattern : decardCloneTrees) {
-			PrintPatterns.printIntTree(grammar.getJavaTreeExtractor(),
+			PrintPatterns.printIntTree(grammar.getTreeExtractor(),
 					decardPattern);
 		}
 
 	}
+
+	public static final Pattern decardClone = Pattern
+			.compile("[0-9]{9}\\tdist:[0-9]\\.[0-9]\\tFILE\\s(\\S+\\.java)\\sLINE:([0-9]+)\\:([0-9]+)");
 
 }

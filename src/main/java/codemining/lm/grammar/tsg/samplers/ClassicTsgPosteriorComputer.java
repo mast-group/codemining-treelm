@@ -15,8 +15,8 @@ import codemining.lm.grammar.cfg.AbstractContextFreeGrammar;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.ITsgPosteriorProbabilityComputer;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.lm.grammar.tsg.samplers.CFGPrior.IRuleCreator;
 import codemining.math.distributions.GeometricDistribution;
 import codemining.util.SettingsLoader;
@@ -30,9 +30,9 @@ import com.google.common.util.concurrent.AtomicDouble;
 /**
  * A TSG posterior computer given the sample. This class computes the
  * probabilities given a corpus.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 class ClassicTsgPosteriorComputer implements
 		ITsgPosteriorProbabilityComputer<TSGNode>, IRuleCreator {
@@ -194,7 +194,7 @@ class ClassicTsgPosteriorComputer implements
 
 	protected double geometricProbability;
 
-	final JavaFormattedTSGrammar grammar;
+	final TSGrammar<TSGNode> grammar;
 
 	protected final CFGPrior prior;
 
@@ -204,7 +204,7 @@ class ClassicTsgPosteriorComputer implements
 	private static final boolean DO_GRADIENT_CHECK = SettingsLoader
 			.getBooleanSetting("DoGradientCheck", false);
 
-	ClassicTsgPosteriorComputer(final JavaFormattedTSGrammar grammar,
+	ClassicTsgPosteriorComputer(final TSGrammar<TSGNode> grammar,
 			final double avgTreeSize, final double DPconcentration) {
 		this.grammar = grammar;
 		prior = new CFGPrior(grammar.getTreeExtractor(), this);
@@ -221,9 +221,9 @@ class ClassicTsgPosteriorComputer implements
 		double nRulesInGrammar = grammar.countTreeOccurences(tree);
 
 		if (nRulesInGrammar > nRulesCommonRoot) { // Concurrency has bitten
-													// us... Sorry no
-													// guarantees, but it's
-													// the
+			// us... Sorry no
+			// guarantees, but it's
+			// the
 			// most probable that we just removed it...
 			nRulesInGrammar = nRulesCommonRoot;
 		}
@@ -273,7 +273,7 @@ class ClassicTsgPosteriorComputer implements
 	/**
 	 * Get the prior probability for this tree as given by the PCFG and the
 	 * geometric distribution.
-	 * 
+	 *
 	 * @param subtree
 	 * @return
 	 */
@@ -339,7 +339,7 @@ class ClassicTsgPosteriorComputer implements
 
 	/**
 	 * Return the id of the node. Useful for subclassing.
-	 * 
+	 *
 	 * @return
 	 */
 	protected int postprocessIdForCFG(final TreeNode<TSGNode> node) {

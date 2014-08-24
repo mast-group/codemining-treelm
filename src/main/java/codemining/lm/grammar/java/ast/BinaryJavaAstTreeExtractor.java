@@ -1,19 +1,19 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.java.ast;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
+import codemining.lm.grammar.tree.TreeBinarizer;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
  * A binary tree extractor.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class BinaryJavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
@@ -59,12 +59,12 @@ public class BinaryJavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 	}
 
 	@Override
-	public synchronized int getOrAddSymbolId(final ASTNodeSymbol symbol) {
+	public synchronized int getOrAddSymbolId(final AstNodeSymbol symbol) {
 		return base.getOrAddSymbolId(symbol);
 	}
 
 	@Override
-	public final ASTNodeSymbol getSymbol(final Integer key) {
+	public final AstNodeSymbol getSymbol(final int key) {
 		return base.getSymbol(key);
 	}
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.samplers;
 
@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang.math.RandomUtils;
 
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.util.SettingsLoader;
 import codemining.util.StatsUtil;
 
@@ -24,15 +24,15 @@ import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
 /**
  * A collapsed Gibbs sampler as described in
- * 
+ *
  * \@inproceedings{post2009bayesian, title={Bayesian learning of a tree
  * substitution grammar}, author={Post, Matt and Gildea, Daniel},
  * booktitle={Proceedings of the ACL-IJCNLP 2009 Conference Short Papers},
  * pages={45--48}, year={2009}, organization={Association for Computational
  * Linguistics} }
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@sms.ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
@@ -63,14 +63,14 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param avgTreeSize
 	 * @param DPconcentration
 	 * @param format
 	 */
 	public CollapsedGibbsSampler(final double avgTreeSize,
-			final double DPconcentration, final JavaFormattedTSGrammar grammar,
-			final JavaFormattedTSGrammar allSamplesGrammar) {
+			final double DPconcentration, final TSGrammar<TSGNode> grammar,
+			final TSGrammar<TSGNode> allSamplesGrammar) {
 		super(grammar, allSamplesGrammar);
 		createPosteriorComputer(avgTreeSize, DPconcentration, grammar);
 		grammar.setPosteriorComputer(posteriorComputer);
@@ -79,7 +79,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 
 	/**
 	 * Add a single tree to the corpus, updating counts where necessary.
-	 * 
+	 *
 	 * @param tree
 	 */
 	@Override
@@ -98,7 +98,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 
 	/**
 	 * Update the TSG rule frequencies with this tree.
-	 * 
+	 *
 	 * @param node
 	 */
 	private void addTSGRulesToSampleGrammar(final TreeNode<TSGNode> node) {
@@ -114,7 +114,7 @@ public class CollapsedGibbsSampler extends AbstractCollapsedGibbsSampler
 	 * @param grammar
 	 */
 	protected void createPosteriorComputer(final double avgTreeSize,
-			final double DPconcentration, final JavaFormattedTSGrammar grammar) {
+			final double DPconcentration, final TSGrammar<TSGNode> grammar) {
 		posteriorComputer = new ClassicTsgPosteriorComputer(grammar,
 				avgTreeSize, DPconcentration);
 		allSamplesPosteriorComputer = new ClassicTsgPosteriorComputer(

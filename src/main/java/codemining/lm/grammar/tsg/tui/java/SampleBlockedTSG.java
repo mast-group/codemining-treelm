@@ -1,7 +1,7 @@
 /**
- * 
+ *
  */
-package codemining.lm.grammar.tsg.tui;
+package codemining.lm.grammar.tsg.tui.java;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,17 +15,17 @@ import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.java.codeutils.UsagePointExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.DelegatedVariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
-import codemining.lm.grammar.tsg.samplers.blocked.FilteredBlockCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.JavaFilteredBlockCollapsedGibbsSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.TreeCorpusFilter;
 import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -33,22 +33,11 @@ import codemining.util.serialization.Serializer;
 
 /**
  * Sample a TSG using a blocked sampler.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class SampleBlockedTSG {
-
-	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
-			.getNumericSetting("treeSplitCfgCount", 0);
-
-	/**
-	 * Filter only the usages of a package.
-	 */
-	private static final String FILTER_ONLY_PACKAGE_USAGES = SettingsLoader
-			.getStringSetting("classFilter", null);
-	private static final Logger LOGGER = Logger
-			.getLogger(SampleBlockedTSG.class.getName());
 
 	/**
 	 * @param args
@@ -57,7 +46,7 @@ public class SampleBlockedTSG {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 5) {
 			System.err
-					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
+			.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
@@ -100,7 +89,7 @@ public class SampleBlockedTSG {
 						concentrationParameter, new JavaFormattedTSGrammar(
 								format), new JavaFormattedTSGrammar(format));
 			} else if (args[2].equals("filterblock")) {
-				sampler = new FilteredBlockCollapsedGibbsSampler(100,
+				sampler = new JavaFilteredBlockCollapsedGibbsSampler(100,
 						concentrationParameter, new JavaFormattedTSGrammar(
 								format), new JavaFormattedTSGrammar(format));
 			} else {
@@ -188,10 +177,10 @@ public class SampleBlockedTSG {
 		final JavaFormattedTSGrammar grammarToUse;
 		if (nItererationCompleted >= nIterations) {
 			LOGGER.info("Sampling complete. Outputing burnin grammar...");
-			grammarToUse = sampler.getBurnInGrammar();
+			grammarToUse = (JavaFormattedTSGrammar) sampler.getBurnInGrammar();
 		} else {
 			LOGGER.warning("Sampling not complete. Outputing sample grammar...");
-			grammarToUse = sampler.getSampleGrammar();
+			grammarToUse = (JavaFormattedTSGrammar) sampler.getSampleGrammar();
 		}
 		try {
 			Serializer.getSerializer().serialize(grammarToUse, "tsg.ser");
@@ -210,10 +199,21 @@ public class SampleBlockedTSG {
 
 		// sampler.pruneNonSurprisingRules(1);
 		grammarToUse
-				.prune((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
+		.prune((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(grammarToUse.toString());
 		finished.set(true); // we have finished and thus the shutdown hook can
-							// now stop waiting for us.
+		// now stop waiting for us.
 
 	}
+
+	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
+			.getNumericSetting("treeSplitCfgCount", 0);
+	/**
+	 * Filter only the usages of a package.
+	 */
+	private static final String FILTER_ONLY_PACKAGE_USAGES = SettingsLoader
+			.getStringSetting("classFilter", null);
+
+	private static final Logger LOGGER = Logger
+			.getLogger(SampleBlockedTSG.class.getName());
 }

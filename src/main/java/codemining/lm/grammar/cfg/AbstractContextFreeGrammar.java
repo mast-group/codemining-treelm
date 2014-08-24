@@ -20,8 +20,8 @@ import codemining.java.tokenizers.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
 import codemining.lm.ILanguageModel;
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.math.random.SampleUtils;
 
@@ -46,7 +46,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@Override
@@ -67,7 +67,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see java.lang.Object#hashCode()
 		 */
 		@Override
@@ -79,7 +79,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	/**
 	 * A struct class to hold the node consequents.
-	 * 
+	 *
 	 */
 	public static class NodeConsequent implements Serializable {
 
@@ -130,10 +130,10 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	/**
 	 * The tree extractor.
 	 */
-	protected final ITreeExtractor<Integer> treeExtractor;
+	protected final AbstractTreeExtractor treeExtractor;
 
 	public AbstractContextFreeGrammar(
-			final ITreeExtractor<Integer> treeExtractor,
+			final AbstractTreeExtractor treeExtractor,
 			final Map<Integer, Multiset<NodeConsequent>> grammar) {
 		this.treeExtractor = checkNotNull(treeExtractor);
 		this.grammar = grammar;
@@ -143,7 +143,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	/**
 	 * Add a single CFG rule to this grammar.
-	 * 
+	 *
 	 * @param rootId
 	 * @param ruleConsequent
 	 * @param grammar
@@ -153,7 +153,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	/**
 	 * Add grammar rules from the given code.
-	 * 
+	 *
 	 */
 	public void addGrammarRulesFromCode(final String code,
 			final ParseType parseType) {
@@ -164,14 +164,14 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	/**
 	 * Recursively update tree frequencies. I.e. when a tree is added to the
 	 * corpus, update the counts appropriately.
-	 * 
+	 *
 	 * @param node
 	 */
 	public abstract void addRulesFrom(final TreeNode<Integer> node);
 
 	/**
 	 * Create a single CFG rule for the given node.
-	 * 
+	 *
 	 * @param currentNode
 	 * @param grammar2
 	 */
@@ -197,7 +197,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	/**
 	 * Generate a random tree based on this CFG.
-	 * 
+	 *
 	 * @return
 	 */
 	public TreeNode<Integer> generateRandom() {
@@ -217,7 +217,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 				for (int i = 0; i < selected.nodes.size(); i++) {
 					final List<Integer> nodes = selected.nodes.get(i);
 					for (final int node : nodes) {
-						final ASTNodeSymbol symbol = treeExtractor
+						final AstNodeSymbol symbol = treeExtractor
 								.getSymbol(node);
 						final TreeNode<Integer> treeNode = TreeNode.create(
 								node, symbol.nChildProperties());
@@ -258,7 +258,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	/**
 	 * Return the entropy (unnormalised) of the given rules
-	 * 
+	 *
 	 * @param otherCfg
 	 * @return
 	 */
@@ -310,7 +310,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 
 	/**
 	 * Return the maximum likelihood probability of a rule.
-	 * 
+	 *
 	 * @param from
 	 * @param to
 	 * @return
@@ -324,7 +324,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 		return ((double) consequents.count(to)) / consequents.size();
 	}
 
-	final ITreeExtractor<Integer> getTreeExtractor() {
+	final AbstractTreeExtractor getTreeExtractor() {
 		return treeExtractor;
 	}
 
@@ -334,7 +334,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	}
 
 	private void readObject(final ObjectInputStream in) throws IOException,
-			ClassNotFoundException {
+	ClassNotFoundException {
 		in.defaultReadObject();
 		tokenizer = new JavaTokenizer();
 	}

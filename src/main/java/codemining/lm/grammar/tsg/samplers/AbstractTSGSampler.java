@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.util.SettingsLoader;
 import codemining.util.parallel.ParallelThreadPool;
 
@@ -96,18 +96,18 @@ public abstract class AbstractTSGSampler implements Serializable {
 	 * The grammar being mined. This represents the current sample of the
 	 * grammar.
 	 */
-	protected final JavaFormattedTSGrammar sampleGrammar;
+	protected final TSGrammar<TSGNode> sampleGrammar;
 	/**
 	 * The grammar after summing across the MCMC iteration (after burn-in).
 	 */
-	protected final JavaFormattedTSGrammar burninGrammar;
+	protected final TSGrammar<TSGNode> burninGrammar;
 	/**
 	 * The tree corpus where we mine TSGs from.
 	 */
 	protected List<TreeNode<TSGNode>> treeCorpus = new ArrayList<TreeNode<TSGNode>>();
 
-	public AbstractTSGSampler(final JavaFormattedTSGrammar sampleGrammar,
-			final JavaFormattedTSGrammar allSamplesGrammar) {
+	public AbstractTSGSampler(final TSGrammar<TSGNode> sampleGrammar,
+			final TSGrammar<TSGNode> allSamplesGrammar) {
 		checkArgument(sampleGrammar.getTreeExtractor() == allSamplesGrammar
 				.getTreeExtractor());
 		this.sampleGrammar = sampleGrammar;
@@ -116,7 +116,7 @@ public abstract class AbstractTSGSampler implements Serializable {
 
 	/**
 	 * Add a single tree to be sampled.
-	 * 
+	 *
 	 * @param tree
 	 */
 	public void addTree(final TreeNode<TSGNode> tree) {
@@ -126,7 +126,7 @@ public abstract class AbstractTSGSampler implements Serializable {
 	/**
 	 * Add a single tree to the sampler. The sampler may decide to use the tree
 	 * later, unless forceAdd is set to True.
-	 * 
+	 *
 	 * @param tree
 	 * @param forceAdd
 	 * @return the final node as added (possibly the same as tree)
@@ -136,7 +136,7 @@ public abstract class AbstractTSGSampler implements Serializable {
 
 	/**
 	 * Calculate the log-probability of the whole corpus, given the TSG.
-	 * 
+	 *
 	 * @return
 	 */
 	protected SampleStats calculateCorpusLogProb() {
@@ -149,7 +149,7 @@ public abstract class AbstractTSGSampler implements Serializable {
 				@Override
 				public void run() {
 					logProbSum
-							.addAndGet(computePosteriorLog2ProbabilityForTree(tree));
+					.addAndGet(computePosteriorLog2ProbabilityForTree(tree));
 					nNodes.addAndGet(tree.getTreeSize());
 				}
 
@@ -172,19 +172,19 @@ public abstract class AbstractTSGSampler implements Serializable {
 
 	/**
 	 * Get the grammar from all samples after burn-in.
-	 * 
+	 *
 	 * @return
 	 */
-	public JavaFormattedTSGrammar getBurnInGrammar() {
+	public TSGrammar<TSGNode> getBurnInGrammar() {
 		return burninGrammar;
 	}
 
 	/**
 	 * Returns the grammar at the current sample.
-	 * 
+	 *
 	 * @return the grammar
 	 */
-	public JavaFormattedTSGrammar getSampleGrammar() {
+	public TSGrammar<TSGNode> getSampleGrammar() {
 		return sampleGrammar;
 	}
 
@@ -194,7 +194,7 @@ public abstract class AbstractTSGSampler implements Serializable {
 
 	/**
 	 * Gibbs sampling the TSG n times. This function registers an
-	 * 
+	 *
 	 * @param iterations
 	 * @return the iteration that the sampling has stopped at or iterations+1 if
 	 *         all iterations have been performed.
@@ -244,15 +244,15 @@ public abstract class AbstractTSGSampler implements Serializable {
 		System.out.println("Size Stats: 1-5:"
 				+ sizeDistribution.subMultiset(0, BoundType.CLOSED, 5,
 						BoundType.CLOSED).size()
-				+ " 6-15:"
-				+ sizeDistribution.subMultiset(6, BoundType.CLOSED, 15,
-						BoundType.CLOSED).size()
-				+ " 16-30:"
-				+ sizeDistribution.subMultiset(16, BoundType.CLOSED, 30,
-						BoundType.CLOSED).size()
-				+ " >30:"
-				+ sizeDistribution.subMultiset(31, BoundType.CLOSED,
-						Integer.MAX_VALUE, BoundType.CLOSED).size());
+						+ " 6-15:"
+						+ sizeDistribution.subMultiset(6, BoundType.CLOSED, 15,
+								BoundType.CLOSED).size()
+								+ " 16-30:"
+								+ sizeDistribution.subMultiset(16, BoundType.CLOSED, 30,
+										BoundType.CLOSED).size()
+										+ " >30:"
+										+ sizeDistribution.subMultiset(31, BoundType.CLOSED,
+												Integer.MAX_VALUE, BoundType.CLOSED).size());
 
 		int sumOfSizes = 0;
 		for (final com.google.common.collect.Multiset.Entry<Integer> sizeEntry : sizeDistribution

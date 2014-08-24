@@ -1,28 +1,30 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.samplers;
 
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
-import codemining.lm.grammar.tree.ASTNodeSymbol;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.lm.grammar.tsg.TempletizedTSGrammar;
 
 /**
  * A template-aware Gibbs sampler for the TSGs.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 
 	protected static class TempletizedPosteriorComputer extends
-			ClassicTsgPosteriorComputer {
+	ClassicTsgPosteriorComputer {
 
-		TempletizedPosteriorComputer(final JavaFormattedTSGrammar grammar,
+		private static final long serialVersionUID = -4026044000876548039L;
+
+		TempletizedPosteriorComputer(final TSGrammar<TSGNode> grammar,
 				final double avgTreeSize, final double DPconcentration) {
 			super(grammar, avgTreeSize, DPconcentration);
 		}
@@ -30,10 +32,10 @@ public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 		@Override
 		protected int postprocessIdForCFG(final TreeNode<TSGNode> node) {
 			final int originalId = node.getData().nodeKey;
-			final ASTNodeSymbol symbol = grammar.getTreeExtractor().getSymbol(
+			final AstNodeSymbol symbol = grammar.getTreeExtractor().getSymbol(
 					originalId);
 
-			if (symbol.nodeType != ASTNodeSymbol.TEMPLATE_NODE) {
+			if (symbol.nodeType != AstNodeSymbol.TEMPLATE_NODE) {
 				return originalId;
 			} else if (!symbol
 					.hasAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_PROPERTY)) {
@@ -41,7 +43,7 @@ public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 			} else {
 				final String typeAnnotation = (String) symbol
 						.getAnnotation(TempletizedJavaTreeExtractor.TEMPLETIZED_VAR_TYPE_PROPERTY);
-				final ASTNodeSymbol newSymbol = TempletizedJavaTreeExtractor
+				final AstNodeSymbol newSymbol = TempletizedJavaTreeExtractor
 						.constructTemplateSymbol(0, typeAnnotation);
 
 				return grammar.getTreeExtractor().getOrAddSymbolId(newSymbol);
@@ -59,8 +61,8 @@ public class TempletizedCollapsedGibbsSampler extends CollapsedGibbsSampler {
 
 	@Override
 	protected void createPosteriorComputer(final double avgTreeSize,
-			final double DPconcentration, final JavaFormattedTSGrammar grammar) {
-		posteriorComputer = new ClassicTsgPosteriorComputer(grammar, avgTreeSize,
-				DPconcentration);
+			final double DPconcentration, final TSGrammar<TSGNode> grammar) {
+		posteriorComputer = new ClassicTsgPosteriorComputer(grammar,
+				avgTreeSize, DPconcentration);
 	}
 }

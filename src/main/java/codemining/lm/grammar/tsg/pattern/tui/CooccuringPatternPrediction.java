@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
@@ -15,7 +15,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.tree.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.NodeSetTreeDistance;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
@@ -34,15 +34,15 @@ import com.google.common.collect.Sets;
 
 /**
  * Evaluate the cooccuring elements recall.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class CooccuringPatternPrediction {
 
 	/**
 	 * Struct to contain statistics.
-	 * 
+	 *
 	 */
 	public static final class OccurenceStats {
 		private int appearancesOfAtLeastElement = 0;
@@ -53,7 +53,7 @@ public class CooccuringPatternPrediction {
 
 		/**
 		 * Aggregate multiple statistics to a single statistic.
-		 * 
+		 *
 		 * @param collection
 		 */
 		public OccurenceStats(final Collection<OccurenceStats> collection) {
@@ -81,11 +81,6 @@ public class CooccuringPatternPrediction {
 
 	}
 
-	private static final double DISTANCE_THRESHOLD = 0.8;
-
-	private static final Logger LOGGER = Logger
-			.getLogger(CooccuringPatternPrediction.class.getName());
-
 	/**
 	 * @param args
 	 * @throws SerializationException
@@ -93,13 +88,13 @@ public class CooccuringPatternPrediction {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 6) {
 			System.err
-					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath> <threshold>");
+			.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath> <threshold>");
 			System.exit(-1);
 		}
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final AbstractJavaTreeExtractor format = grammar.getJavaTreeExtractor();
+		final AbstractJavaTreeExtractor format = grammar.getTreeExtractor();
 
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
@@ -122,6 +117,11 @@ public class CooccuringPatternPrediction {
 		cpp.test(testDirectory, likelyCoappearingElements, format);
 	}
 
+	private static final double DISTANCE_THRESHOLD = 0.8;
+
+	private static final Logger LOGGER = Logger
+			.getLogger(CooccuringPatternPrediction.class.getName());
+
 	final PatternCooccurence<Integer> cooccurenceData = new PatternCooccurence<Integer>();
 
 	private final BiMap<Integer, TreeNode<Integer>> patternDictionary = HashBiMap
@@ -138,7 +138,7 @@ public class CooccuringPatternPrediction {
 	/**
 	 * Filter the set of co-appearing patterns to remove trees that imply each
 	 * other.
-	 * 
+	 *
 	 * @param coappearingPatterns
 	 */
 	public void filterCoappearingPatterns(
@@ -215,7 +215,7 @@ public class CooccuringPatternPrediction {
 		for (final LikelihoodRatio<Integer> lr : likelyCoappearingElements) {
 			try {
 				System.out
-						.println("----------------------------------------------");
+				.println("----------------------------------------------");
 				PrintPatterns.printIntTree(format,
 						patternDictionary.get(lr.pair.first));
 				System.out.println("and");
@@ -227,7 +227,7 @@ public class CooccuringPatternPrediction {
 				System.out.println("Failed to print pattern.");
 			} finally {
 				System.out
-						.println("----------------------------------------------");
+				.println("----------------------------------------------");
 			}
 
 		}
@@ -236,7 +236,7 @@ public class CooccuringPatternPrediction {
 
 	/**
 	 * Retain only the patterns that appear in the test set.
-	 * 
+	 *
 	 * @param format
 	 * @param testDirectory
 	 */

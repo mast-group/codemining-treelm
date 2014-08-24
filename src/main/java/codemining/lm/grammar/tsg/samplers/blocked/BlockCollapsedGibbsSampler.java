@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.samplers.blocked;
 
@@ -22,8 +22,8 @@ import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.CFGRule;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.ITsgPosteriorProbabilityComputer;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.CFGPrior;
 import codemining.lm.grammar.tsg.samplers.CFGPrior.IRuleCreator;
@@ -42,9 +42,9 @@ import com.google.common.math.DoubleMath;
 
 /**
  * A block collapsed gibbs sampler based on Type-based MCMC.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
@@ -92,14 +92,14 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 
 		private static final long serialVersionUID = -3517001399701308015L;
 		final CFGPrior prior;
-		final JavaFormattedTSGrammar grammar;
+		final TSGrammar<TSGNode> grammar;
 
 		final double geometricProbability;
 
 		final double concentrationParameter;
 
 		BlockedPosteriorComputer(final CFGPrior prior,
-				final JavaFormattedTSGrammar grammar, final double avgTreeSize,
+				final TSGrammar<TSGNode> grammar, final double avgTreeSize,
 				final double DpConcentration) {
 			this.prior = prior;
 			this.grammar = grammar;
@@ -118,9 +118,9 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 			double nRulesInGrammar = grammar.countTreeOccurences(tree);
 
 			if (nRulesInGrammar > nRulesCommonRoot) { // Concurrency has bitten
-														// us... Sorry no
-														// guarantees, but it's
-														// the
+				// us... Sorry no
+				// guarantees, but it's
+				// the
 				// most probable that we just removed it...
 				nRulesInGrammar = nRulesCommonRoot;
 			}
@@ -152,7 +152,7 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 		/**
 		 * Get the prior probability for this tree as given by the PCFG and the
 		 * geometric distribution.
-		 * 
+		 *
 		 * @param subtree
 		 * @return
 		 */
@@ -200,8 +200,8 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 
 	public BlockCollapsedGibbsSampler(final double avgTreeSize,
 			final double DPconcentration,
-			final JavaFormattedTSGrammar sampleGrammar,
-			final JavaFormattedTSGrammar allSamplesGrammar) {
+			final TSGrammar<TSGNode> sampleGrammar,
+			final TSGrammar<TSGNode> allSamplesGrammar) {
 		super(sampleGrammar, allSamplesGrammar);
 		prior = new CFGPrior(sampleGrammar.getTreeExtractor(), this);
 		nodeType = new NodeTypeInformation();
@@ -220,7 +220,7 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 
 	/**
 	 * Add all the rules in the current tree to the grammar.
-	 * 
+	 *
 	 * @param immutableTree
 	 */
 	private void addRulesToGrammar(final TreeNode<TSGNode> immutableTree) {
@@ -245,7 +245,7 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 
 	/**
 	 * Create a single CFG rule for the given node.
-	 * 
+	 *
 	 * @param currentNode
 	 * @param grammar2
 	 */
@@ -392,7 +392,7 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 	 * probabilities for each value of m (i.e. the number of nodes that will be
 	 * split). If needed this can be normalized by subtracting
 	 * sum(log2(upperCount+a+i),i,0,numOfSameTypeSites)
-	 * 
+	 *
 	 * @param upper
 	 *            the upper tree
 	 * @param lower
@@ -518,7 +518,7 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 	/**
 	 * Perform TSG sampling on a single (full) tree. Sample each node in the
 	 * tree one-by-one at random order
-	 * 
+	 *
 	 * @param tree
 	 * @return the log-prob of the sampling of the subtree.
 	 */

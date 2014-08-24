@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.samplers;
 
@@ -15,7 +15,7 @@ import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.CFGRule;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
 import codemining.lm.grammar.cfg.ImmutableContextFreeGrammar;
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.TSGNode;
 
@@ -24,15 +24,15 @@ import com.google.common.math.DoubleMath;
 /**
  * A PCFG prior distribution. This allows nodes from trees to be converted
  * before quering the CFG.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class CFGPrior implements Serializable {
 
 	/**
 	 * An interface for classes that can create rules from nodes.
-	 * 
+	 *
 	 */
 	public static interface IRuleCreator {
 		CFGRule createRuleForNode(final TreeNode<TSGNode> node);
@@ -47,7 +47,7 @@ public class CFGPrior implements Serializable {
 
 	private final IRuleCreator nodeCreator;
 
-	public CFGPrior(final ITreeExtractor<Integer> treeExtractor,
+	public CFGPrior(final AbstractTreeExtractor treeExtractor,
 			final IRuleCreator nodeCreator) {
 		cfg = new ContextFreeGrammar(treeExtractor);
 		this.nodeCreator = nodeCreator;
@@ -55,7 +55,7 @@ public class CFGPrior implements Serializable {
 
 	/**
 	 * Add a single rule to the prior CFG.
-	 * 
+	 *
 	 * @param rule
 	 */
 	public void addCFGRule(final CFGRule rule) {
@@ -69,7 +69,7 @@ public class CFGPrior implements Serializable {
 	/**
 	 * Recursively update tree frequencies. I.e. when a tree is added to the
 	 * corpus, update the counts appropriately.
-	 * 
+	 *
 	 * @param node
 	 */
 	public void addCFGRulesFrom(final TreeNode<TSGNode> node) {
@@ -101,7 +101,7 @@ public class CFGPrior implements Serializable {
 
 	/**
 	 * Return the log probability of the given PCFG rule.
-	 * 
+	 *
 	 * @param from
 	 * @param to
 	 * @return
@@ -122,7 +122,7 @@ public class CFGPrior implements Serializable {
 
 	/**
 	 * Get the probability of the given subtree as seen from the PCFG.
-	 * 
+	 *
 	 * @param subtree
 	 * @return
 	 */

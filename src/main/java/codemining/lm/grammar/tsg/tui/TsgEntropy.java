@@ -11,25 +11,22 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.tree.ITreeExtractor;
+import codemining.languagetools.ITokenizer;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.lm.grammar.tsg.TreeProbabilityComputer;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
 /**
  * Compute the TSG entropy and cross-entropy of a set of file.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
-public class TSGEntropy {
-
-	private static final Logger LOGGER = Logger.getLogger(TSGEntropy.class
-			.getName());
+public class TsgEntropy {
 
 	/**
 	 * @param args
@@ -47,10 +44,10 @@ public class TSGEntropy {
 				new RegexFileFilter(".*\\.java$"),
 				DirectoryFileFilter.DIRECTORY);
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final TSGrammar<TSGNode> grammar = (TSGrammar<TSGNode>) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 
-		final ITreeExtractor<Integer> treeFormat = grammar.getTreeExtractor();
+		final AbstractTreeExtractor treeFormat = grammar.getTreeExtractor();
 
 		System.out.println("filename,entropy,cross-entropy");
 		for (final File f : allFiles) {
@@ -59,7 +56,7 @@ public class TSGEntropy {
 				final TreeNode<TSGNode> tsgTree = TSGNode.convertTree(intTree,
 						0);
 
-				final JavaTokenizer tokenizer = new JavaTokenizer();
+				final ITokenizer tokenizer = treeFormat.getTokenizer();
 				final List<String> fileTokens = tokenizer
 						.tokenListFromCode(FileUtils.readFileToString(f)
 								.toCharArray());
@@ -79,7 +76,10 @@ public class TSGEntropy {
 
 	}
 
-	private TSGEntropy() {
+	private static final Logger LOGGER = Logger.getLogger(TsgEntropy.class
+			.getName());
+
+	private TsgEntropy() {
 	}
 
 }
