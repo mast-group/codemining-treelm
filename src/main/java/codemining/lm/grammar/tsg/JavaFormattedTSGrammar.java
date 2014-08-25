@@ -7,8 +7,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map.Entry;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
@@ -59,7 +57,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 		treeFormat = format;
 	}
 
-	public final ASTNode generateRandom() {
+	public final String generateRandomCode() {
 		// Find compilation unit node.
 		final TreeNode<Integer> rootNode = treeFormat
 				.getKeyForCompilationUnit();
@@ -75,7 +73,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 		final TreeNode<Integer> treeCopy = TreeNode.create(
 				randomTree.getData().nodeKey, randomTree.nProperties());
 		TSGNode.copyChildren(treeCopy, randomTree);
-		return treeFormat.getASTFromTree(treeCopy);
+		return treeFormat.getCodeFromTree(treeCopy);
 	}
 
 	@Override
@@ -111,7 +109,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 							if (treeFormat.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 								treeFormat.printMultinode(buf, intTree);
 							} else {
-								buf.append(treeFormat.getASTFromTree(intTree));
+								buf.append(treeFormat.getCodeFromTree(intTree));
 							}
 						} catch (final Throwable e) {
 							buf.append("Cannot get AST representation of rule");

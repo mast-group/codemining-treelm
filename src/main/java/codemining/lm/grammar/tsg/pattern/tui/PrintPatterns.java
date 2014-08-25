@@ -1,9 +1,9 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.pattern.tui;
 
-import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
@@ -12,9 +12,9 @@ import codemining.util.serialization.Serializer;
 
 /**
  * Print TSG patterns given a TSG.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class PrintPatterns {
 
@@ -34,7 +34,7 @@ public class PrintPatterns {
 		for (final TreeNode<Integer> pattern : patterns.getPatterns()) {
 			try {
 				System.out
-						.println("------------------------------------------------------");
+				.println("------------------------------------------------------");
 				printPattern(patterns.getFormat(), pattern);
 			} catch (final Throwable e) {
 				System.out.println("Error printing.");
@@ -49,17 +49,17 @@ public class PrintPatterns {
 	 * @param format
 	 * @param intTree
 	 */
-	public static void printIntTree(final AbstractJavaTreeExtractor format,
+	public static void printIntTree(final AbstractTreeExtractor format,
 			final TreeNode<Integer> intTree) {
 		System.out.println(intTree.toString(format.getTreePrinter()));
 		System.out
-				.println("______________________________________________________");
+		.println("______________________________________________________");
 		if (format.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 			final StringBuffer sb = new StringBuffer();
 			format.printMultinode(sb, intTree);
 			System.out.println(sb.toString());
 		} else {
-			System.out.println(format.getASTFromTree(intTree));
+			System.out.println(format.getCodeFromTree(intTree));
 		}
 	}
 
@@ -68,11 +68,11 @@ public class PrintPatterns {
 	 * @param format
 	 * @param pattern
 	 */
-	public static void printPattern(final AbstractJavaTreeExtractor format,
+	public static void printPattern(final AbstractTreeExtractor format,
 			final TreeNode<Integer> intTree) {
 		printIntTree(format, intTree);
 		System.out
-				.println("______________________________________________________");
+		.println("______________________________________________________");
 	}
 
 }

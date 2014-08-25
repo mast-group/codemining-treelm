@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 
 /**
@@ -26,13 +27,13 @@ public class TreePrinterUtility {
 	 * @throws IOException
 	 */
 	public static void main(final String[] args) throws InstantiationException,
-			IllegalAccessException, ClassNotFoundException, IOException {
+	IllegalAccessException, ClassNotFoundException, IOException {
 		if (args.length != 2) {
 			System.err.println("Usage <file> <treeFormat>");
 			return;
 		}
 
-		final AbstractJavaTreeExtractor format = (AbstractJavaTreeExtractor) (Class
+		final AbstractTreeExtractor format = (AbstractTreeExtractor) (Class
 				.forName(args[1]).newInstance());
 		final TreeNode<Integer> node = format.getTree(new File(args[0]));
 		final StringBuffer buf = new StringBuffer();
@@ -43,7 +44,7 @@ public class TreePrinterUtility {
 
 	public static void treePrinterHelper(final StringBuffer sb,
 			final TreeNode<Integer> currentNode, final String prefix,
-			final AbstractJavaTreeExtractor format) {
+			final AbstractTreeExtractor format) {
 		sb.append(prefix);
 		sb.append(currentNode.getData() + ":");
 		sb.append(format.getSymbol(currentNode.getData()).toString(

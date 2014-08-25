@@ -7,6 +7,7 @@ import java.io.Serializable;
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
 
+import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
@@ -36,6 +37,15 @@ public abstract class AbstractTreeExtractor implements Serializable {
 	protected AbstractTreeExtractor(final BiMap<Integer, AstNodeSymbol> alphabet) {
 		nodeAlphabet = alphabet;
 	}
+
+	/**
+	 * Get the code representation of the tree node. This involves getting the
+	 * language sepecific AST and converting it to string.
+	 *
+	 * @param tree
+	 * @return
+	 */
+	public abstract String getCodeFromTree(final TreeNode<Integer> tree);
 
 	/**
 	 * Return the node representing the compilation unit.
@@ -103,5 +113,38 @@ public abstract class AbstractTreeExtractor implements Serializable {
 	 * @return
 	 */
 	public abstract TreeNode<Integer> getTree(String code, ParseType parseType);
+
+	/**
+	 * Convert a node (symbol) into its string representation. This may (and
+	 * will) depend on the language.
+	 *
+	 * @return
+	 */
+	public abstract Function<TreeNode<Integer>, String> getTreePrinter();
+
+	/**
+	 * @param buf
+	 * @param intTree
+	 */
+	public void printMultinode(final StringBuffer buf,
+			final TreeNode<Integer> intTree) {
+		if (intTree.isLeaf()) {
+			return;
+		}
+		for (int i = 0; i < intTree.getChildrenByProperty().get(0).size(); i++) {
+			buf.append(getCodeFromTree(intTree.getChild(i, 0)));
+			buf.append(" ");
+		}
+
+		if (intTree.getChildrenByProperty().get(1).isEmpty()) {
+			return;
+		}
+		final TreeNode<Integer> next = intTree.getChild(0, 1);
+		if (getSymbol(next.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
+			printMultinode(buf, next);
+		} else {
+			buf.append(getCodeFromTree(next));
+		}
+	}
 
 }

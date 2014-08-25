@@ -15,7 +15,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import codemining.java.tokenizers.JavaTokenizer;
-import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.NodeSetTreeDistance;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
@@ -88,13 +88,13 @@ public class CooccuringPatternPrediction {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 6) {
 			System.err
-			.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath> <threshold>");
+					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <testPath> <threshold>");
 			System.exit(-1);
 		}
 
 		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final AbstractJavaTreeExtractor format = grammar.getTreeExtractor();
+		final AbstractTreeExtractor format = grammar.getTreeExtractor();
 
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
@@ -168,7 +168,7 @@ public class CooccuringPatternPrediction {
 	 * @return
 	 */
 	private SortedSet<LikelihoodRatio<Integer>> loadData(
-			final AbstractJavaTreeExtractor format, final File trainDirectory,
+			final AbstractTreeExtractor format, final File trainDirectory,
 			final double likelihoodThreshold) {
 		final Collection<File> trainFiles = FileUtils
 				.listFiles(trainDirectory, JavaTokenizer.javaCodeFileFilter,
@@ -211,11 +211,11 @@ public class CooccuringPatternPrediction {
 
 	public void printPatterns(
 			final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
-			final AbstractJavaTreeExtractor format) {
+			final AbstractTreeExtractor format) {
 		for (final LikelihoodRatio<Integer> lr : likelyCoappearingElements) {
 			try {
 				System.out
-				.println("----------------------------------------------");
+						.println("----------------------------------------------");
 				PrintPatterns.printIntTree(format,
 						patternDictionary.get(lr.pair.first));
 				System.out.println("and");
@@ -227,7 +227,7 @@ public class CooccuringPatternPrediction {
 				System.out.println("Failed to print pattern.");
 			} finally {
 				System.out
-				.println("----------------------------------------------");
+						.println("----------------------------------------------");
 			}
 
 		}
@@ -240,8 +240,8 @@ public class CooccuringPatternPrediction {
 	 * @param format
 	 * @param testDirectory
 	 */
-	private void removePatternsNotInTest(
-			final AbstractJavaTreeExtractor format, final File testDirectory) {
+	private void removePatternsNotInTest(final AbstractTreeExtractor format,
+			final File testDirectory) {
 		final Collection<File> testFiles = FileUtils
 				.listFiles(testDirectory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
@@ -266,7 +266,7 @@ public class CooccuringPatternPrediction {
 	private void test(
 			final File testDirectory,
 			final SortedSet<LikelihoodRatio<Integer>> likelyCoappearingElements,
-			final AbstractJavaTreeExtractor format) {
+			final AbstractTreeExtractor format) {
 		final Map<UnorderedPair<Integer>, OccurenceStats> pairStats = Maps
 				.newHashMap();
 		final Multimap<Integer, Integer> reverseFrequentPatternMap = HashMultimap

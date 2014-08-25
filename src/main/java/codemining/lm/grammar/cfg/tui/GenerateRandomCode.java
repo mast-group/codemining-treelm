@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.cfg.tui;
 
@@ -9,7 +9,6 @@ import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.lm.grammar.cfg.ContextFreeGrammar;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
@@ -18,9 +17,9 @@ import codemining.lm.grammar.tree.TreeNode;
 
 /**
  * Generate random code for a PCFG
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class GenerateRandomCode {
 
@@ -45,9 +44,9 @@ public class GenerateRandomCode {
 
 		for (int i = 0; i < Integer.parseInt(args[1]); i++) {
 			final TreeNode<Integer> randomTree = cfg.generateRandom();
-			final ASTNode ast = treeExtractor.getASTFromTree(randomTree);
+			final String code = treeExtractor.getCodeFromTree(randomTree);
 
-			System.out.println(ast.toString());
+			System.out.println(code);
 			System.out.println("-----------------------------");
 		}
 

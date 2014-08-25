@@ -173,7 +173,7 @@ public class PatternCorpus implements Serializable {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 3) {
 			System.err
-			.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
+					.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
 			System.exit(-1);
 		}
 
@@ -220,7 +220,7 @@ public class PatternCorpus implements Serializable {
 
 			} catch (final IOException e) {
 				PatternInSet.LOGGER
-				.warning(ExceptionUtils.getFullStackTrace(e));
+						.warning(ExceptionUtils.getFullStackTrace(e));
 			}
 		}
 		return patternSeenInCorpus;

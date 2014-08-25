@@ -34,15 +34,14 @@ implements Serializable {
 	/**
 	 * A node printer using the symbols.
 	 */
-	private final class NodePrinter implements
-	Function<TreeNode<Integer>, String> {
+	private final Function<TreeNode<Integer>, String> javaNodeToString = new Function<TreeNode<Integer>, String>() {
 
 		@Override
 		public String apply(final TreeNode<Integer> node) {
 			return getSymbol(node.getData()).toString(JAVA_NODETYPE_CONVERTER);
 		}
 
-	}
+	};
 
 	private static final long serialVersionUID = -4515326266227881706L;
 
@@ -72,6 +71,11 @@ implements Serializable {
 	public abstract ASTNode getASTFromTree(final TreeNode<Integer> tree);
 
 	@Override
+	public String getCodeFromTree(final TreeNode<Integer> tree) {
+		return getASTFromTree(tree).toString();
+	}
+
+	@Override
 	public TreeNode<Integer> getKeyForCompilationUnit() {
 		for (final Entry<Integer, AstNodeSymbol> entry : nodeAlphabet
 				.entrySet()) {
@@ -99,7 +103,7 @@ implements Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.io.File)
 	 */
 	@Override
@@ -111,7 +115,7 @@ implements Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.lang.String)
 	 */
 	@Override
@@ -127,33 +131,9 @@ implements Serializable {
 	 *
 	 * @return
 	 */
+	@Override
 	public Function<TreeNode<Integer>, String> getTreePrinter() {
-		return new NodePrinter();
-	}
-
-	/**
-	 * @param buf
-	 * @param intTree
-	 */
-	public void printMultinode(final StringBuffer buf,
-			final TreeNode<Integer> intTree) {
-		if (intTree.isLeaf()) {
-			return;
-		}
-		for (int i = 0; i < intTree.getChildrenByProperty().get(0).size(); i++) {
-			buf.append(getASTFromTree(intTree.getChild(i, 0)));
-			buf.append(" ");
-		}
-
-		if (intTree.getChildrenByProperty().get(1).isEmpty()) {
-			return;
-		}
-		final TreeNode<Integer> next = intTree.getChild(0, 1);
-		if (getSymbol(next.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
-			printMultinode(buf, next);
-		} else {
-			buf.append(getASTFromTree(next));
-		}
+		return javaNodeToString;
 	}
 
 }

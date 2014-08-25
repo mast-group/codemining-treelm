@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tsg.tui.java;
 
@@ -9,9 +9,9 @@ import codemining.util.serialization.Serializer;
 
 /**
  * Generate random code given a serialized TSG.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class GenerateRandom {
 
@@ -28,7 +28,7 @@ public class GenerateRandom {
 				.getSerializer().deserializeFrom(args[0]);
 
 		for (int i = 0; i < Integer.parseInt(args[1]); i++) {
-			System.out.println(grammar.generateRandom().toString());
+			System.out.println(grammar.generateRandomCode());
 			System.out.println("-----------------------------------");
 		}
 	}
