@@ -21,16 +21,16 @@ import com.google.common.collect.SortedMultiset;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  * 
  */
-public class SequentialTSGrammar extends JavaFormattedTSGrammar {
+public class SequentialTSGrammar extends FormattedTSGrammar {
 
 	private static final long serialVersionUID = 454485199220281131L;
 
-	final JavaFormattedTSGrammar baseGrammar;
+	final FormattedTSGrammar baseGrammar;
 
 	/**
 	 * @param format
 	 */
-	public SequentialTSGrammar(final JavaFormattedTSGrammar base) {
+	public SequentialTSGrammar(final FormattedTSGrammar base) {
 		super(null);
 		baseGrammar = base;
 	}

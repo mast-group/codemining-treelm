@@ -21,7 +21,7 @@ import codemining.lm.grammar.java.ast.DelegatedVariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
@@ -86,12 +86,12 @@ public class SampleBlockedTSG {
 
 			if (args[2].equals("block")) {
 				sampler = new BlockCollapsedGibbsSampler(100,
-						concentrationParameter, new JavaFormattedTSGrammar(
-								format), new JavaFormattedTSGrammar(format));
+						concentrationParameter, new FormattedTSGrammar(
+								format), new FormattedTSGrammar(format));
 			} else if (args[2].equals("filterblock")) {
 				sampler = new JavaFilteredBlockCollapsedGibbsSampler(100,
-						concentrationParameter, new JavaFormattedTSGrammar(
-								format), new JavaFormattedTSGrammar(format));
+						concentrationParameter, new FormattedTSGrammar(
+								format), new FormattedTSGrammar(format));
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[2]);
@@ -174,13 +174,13 @@ public class SampleBlockedTSG {
 
 		final int nItererationCompleted = sampler.performSampling(nIterations);
 
-		final JavaFormattedTSGrammar grammarToUse;
+		final FormattedTSGrammar grammarToUse;
 		if (nItererationCompleted >= nIterations) {
 			LOGGER.info("Sampling complete. Outputing burnin grammar...");
-			grammarToUse = (JavaFormattedTSGrammar) sampler.getBurnInGrammar();
+			grammarToUse = (FormattedTSGrammar) sampler.getBurnInGrammar();
 		} else {
 			LOGGER.warning("Sampling not complete. Outputing sample grammar...");
-			grammarToUse = (JavaFormattedTSGrammar) sampler.getSampleGrammar();
+			grammarToUse = (FormattedTSGrammar) sampler.getSampleGrammar();
 		}
 		try {
 			Serializer.getSerializer().serialize(grammarToUse, "tsg.ser");

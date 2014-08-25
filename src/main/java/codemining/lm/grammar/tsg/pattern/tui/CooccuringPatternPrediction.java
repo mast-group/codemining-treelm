@@ -18,7 +18,7 @@ import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.NodeSetTreeDistance;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.lm.grammar.tsg.pattern.tui.PatternCooccurence.LikelihoodRatio;
 import codemining.util.data.UnorderedPair;
@@ -92,7 +92,7 @@ public class CooccuringPatternPrediction {
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 		final AbstractTreeExtractor format = grammar.getTreeExtractor();
 

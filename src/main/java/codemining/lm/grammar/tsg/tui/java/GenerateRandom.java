@@ -3,7 +3,7 @@
  */
 package codemining.lm.grammar.tsg.tui.java;
 
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -24,7 +24,7 @@ public class GenerateRandom {
 			System.err.println("Usage <tsg> <nSamples>");
 			return;
 		}
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 
 		for (int i = 0; i < Integer.parseInt(args[1]); i++) {

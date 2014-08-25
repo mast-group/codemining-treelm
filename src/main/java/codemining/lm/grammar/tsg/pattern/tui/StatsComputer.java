@@ -6,7 +6,8 @@ package codemining.lm.grammar.tsg.pattern.tui;
 import java.io.File;
 import java.util.logging.Logger;
 
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -26,7 +27,7 @@ public class StatsComputer {
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 		final int[] minPatternCount = parseIntList(args[2].split(","));
 		final int[] minPatternSize = parseIntList(args[3].split(","));
@@ -35,7 +36,8 @@ public class StatsComputer {
 
 		LOGGER.info("Finished loading, creating core structures");
 		final PatternStatsCalculator pcc = new PatternStatsCalculator(
-				grammar.getTreeExtractor(), grammar, directory);
+				(AbstractJavaTreeExtractor) grammar.getTreeExtractor(),
+				grammar, directory);
 
 		LOGGER.info("Initiating stats computation...");
 		pcc.printStatisticsFor(minPatternSize, minPatternCount);

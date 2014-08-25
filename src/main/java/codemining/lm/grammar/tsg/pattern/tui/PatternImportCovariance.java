@@ -22,7 +22,7 @@ import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -64,13 +64,14 @@ public class PatternImportCovariance implements Serializable {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 5) {
 			System.err
-			.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <filterPath>");
+					.println("Usage <tsg> <minPatternCount> <minPatternSize> <trainPath> <filterPath>");
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
-		final AbstractJavaTreeExtractor format = grammar.getTreeExtractor();
+		final AbstractJavaTreeExtractor format = (AbstractJavaTreeExtractor) grammar
+				.getTreeExtractor();
 
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);

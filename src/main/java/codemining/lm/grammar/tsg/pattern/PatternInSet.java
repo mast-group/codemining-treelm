@@ -16,7 +16,7 @@ import codemining.java.codeutils.JavaASTExtractor;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
@@ -42,7 +42,7 @@ public class PatternInSet {
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 		final BinaryJavaAstTreeExtractor format = (BinaryJavaAstTreeExtractor) grammar
 				.getTreeExtractor();

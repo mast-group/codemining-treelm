@@ -7,7 +7,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map.Entry;
 
-import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
+import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
@@ -25,7 +25,7 @@ import com.google.common.collect.Multisets;
  *
  */
 @DefaultSerializer(JavaSerializer.class)
-public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
+public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 
 	/**
 	 * A functional for converting a TSGNode to its string representation, given
@@ -41,18 +41,18 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 				return "UNK";
 			}
 			return treeFormat.getSymbol(checkNotNull(node).getData().nodeKey)
-					.toString(treeFormat.JAVA_NODETYPE_CONVERTER);
+					.toString();
 		}
 	}
 
 	private static final long serialVersionUID = 155850201795039891L;
 
-	protected final AbstractJavaTreeExtractor treeFormat;
+	protected final AbstractTreeExtractor treeFormat;
 
 	/**
 	 * @param format
 	 */
-	public JavaFormattedTSGrammar(final AbstractJavaTreeExtractor format) {
+	public FormattedTSGrammar(final AbstractTreeExtractor format) {
 		super();
 		treeFormat = format;
 	}
@@ -77,7 +77,7 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 	}
 
 	@Override
-	public final AbstractJavaTreeExtractor getTreeExtractor() {
+	public final AbstractTreeExtractor getTreeExtractor() {
 		return treeFormat;
 	}
 
@@ -129,6 +129,14 @@ public class JavaFormattedTSGrammar extends TSGrammar<TSGNode> {
 	}
 
 	public String treeToString(final TreeNode<TSGNode> tree) {
-		return tree.toString(new IntKeyToSymbol());
+		return tree.toString(new Function<TreeNode<TSGNode>, String>() {
+
+			@Override
+			public String apply(TreeNode<TSGNode> input) {
+				final TreeNode<Integer> node = TreeNode.create(
+						input.getData().nodeKey, input.nProperties());
+				return treeFormat.getTreePrinter().apply(node);
+			}
+		});
 	}
 }

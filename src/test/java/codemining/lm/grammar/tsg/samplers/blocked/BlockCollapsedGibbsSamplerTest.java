@@ -11,7 +11,7 @@ import codemining.lm.grammar.cfg.AbstractContextFreeGrammar;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 
 import com.google.common.math.DoubleMath;
@@ -50,7 +50,7 @@ public class BlockCollapsedGibbsSamplerTest {
 
 	@Test
 	public void getPosteriorForTree() {
-		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
+		final FormattedTSGrammar mockGrammar = new FormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
 				10, 10, mockGrammar, mockGrammar);
@@ -82,7 +82,7 @@ public class BlockCollapsedGibbsSamplerTest {
 
 	@Test
 	public void testGetPosteriorProbabilityForTree() {
-		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
+		final FormattedTSGrammar mockGrammar = new FormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
 				5, 10, mockGrammar, mockGrammar);
@@ -129,7 +129,7 @@ public class BlockCollapsedGibbsSamplerTest {
 
 	@Test
 	public void testPriorForTree() {
-		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
+		final FormattedTSGrammar mockGrammar = new FormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final BlockCollapsedGibbsSampler sampler = new BlockCollapsedGibbsSampler(
 				10, 10, mockGrammar, mockGrammar);
@@ -150,7 +150,7 @@ public class BlockCollapsedGibbsSamplerTest {
 
 	@Test
 	public void testSample() {
-		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
+		final FormattedTSGrammar mockGrammar = new FormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final TreeNode<TSGNode> root = generateSampleTree();
 
@@ -209,7 +209,7 @@ public class BlockCollapsedGibbsSamplerTest {
 
 	@Test
 	public void testSampleWithLock() {
-		final JavaFormattedTSGrammar mockGrammar = new JavaFormattedTSGrammar(
+		final FormattedTSGrammar mockGrammar = new FormattedTSGrammar(
 				mock(AbstractJavaTreeExtractor.class));
 		final TreeNode<TSGNode> root = generateSampleTree();
 

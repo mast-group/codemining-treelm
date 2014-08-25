@@ -26,7 +26,7 @@ import com.google.common.collect.Maps;
  * 
  */
 @DefaultSerializer(JavaSerializer.class)
-public class TempletizedTSGrammar extends JavaFormattedTSGrammar {
+public class TempletizedTSGrammar extends FormattedTSGrammar {
 
 	private static final long serialVersionUID = -6073281438936511225L;
 

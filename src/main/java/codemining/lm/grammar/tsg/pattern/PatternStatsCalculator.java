@@ -21,7 +21,7 @@ import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tree.TreeNode.NodeDataPair;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.util.parallel.ParallelThreadPool;
 
@@ -41,7 +41,7 @@ import com.google.common.collect.TreeMultiset;
 
 /**
  * Class that calculate the pattern statistics for a tsg and a corpus.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  */
 public class PatternStatsCalculator {
@@ -59,24 +59,9 @@ public class PatternStatsCalculator {
 		public int nPatternMatchedSizeSum = 0;
 	}
 
-	private static final Logger LOGGER = Logger
-			.getLogger(PatternStatsCalculator.class.getName());
-
-	/**
-	 * A predicate for comparing integer tree nodes.
-	 */
-	public static final Predicate<NodeDataPair<Integer>> BASE_EQUALITY_COMPARATOR = new Predicate<NodeDataPair<Integer>>() {
-
-		@Override
-		public boolean apply(final NodeDataPair<Integer> nodePair) {
-			return nodePair.fromNode.equals(nodePair.toNode);
-		}
-
-	};
-
 	/**
 	 * Return a multiset of rules that have at least minCount
-	 * 
+	 *
 	 * @param patterns
 	 * @param minCount
 	 * @return
@@ -92,6 +77,21 @@ public class PatternStatsCalculator {
 
 		return prunedPatterns;
 	}
+
+	private static final Logger LOGGER = Logger
+			.getLogger(PatternStatsCalculator.class.getName());
+
+	/**
+	 * A predicate for comparing integer tree nodes.
+	 */
+	public static final Predicate<NodeDataPair<Integer>> BASE_EQUALITY_COMPARATOR = new Predicate<NodeDataPair<Integer>>() {
+
+		@Override
+		public boolean apply(final NodeDataPair<Integer> nodePair) {
+			return nodePair.fromNode.equals(nodePair.toNode);
+		}
+
+	};
 
 	/**
 	 * The tree format used to extract trees.
@@ -127,7 +127,7 @@ public class PatternStatsCalculator {
 			.create();
 
 	public PatternStatsCalculator(final AbstractJavaTreeExtractor treeFormat,
-			final JavaFormattedTSGrammar grammar, final File directory) {
+			final FormattedTSGrammar grammar, final File directory) {
 		this.treeFormat = treeFormat;
 		patterns = HashMultiset.create();
 		int currentIdx = 0;
@@ -140,23 +140,19 @@ public class PatternStatsCalculator {
 				patterns.add(intTree, rule.getCount());
 				patternDictionary.put(intTree, currentIdx);
 				patternSizes.put(currentIdx, intTree.getTreeSize());
-
 				currentIdx++;
 			}
 		}
-
 		allFiles = FileUtils
 				.listFiles(directory, JavaTokenizer.javaCodeFileFilter,
 						DirectoryFileFilter.DIRECTORY);
-
 		fileSizes = new MapMaker()
-				.concurrencyLevel(ParallelThreadPool.NUM_THREADS)
-				.initialCapacity(allFiles.size()).makeMap();
+		.concurrencyLevel(ParallelThreadPool.NUM_THREADS)
+		.initialCapacity(allFiles.size()).makeMap();
 		filePatterns = HashBasedTable.create(allFiles.size(),
 				patterns.size() / 10);
 		filePatternsCount = HashBasedTable.create(allFiles.size(),
 				patterns.size() / 1);
-
 	}
 
 	public PatternStatsCalculator(final AbstractJavaTreeExtractor treeFormat,
@@ -238,7 +234,7 @@ public class PatternStatsCalculator {
 
 	/**
 	 * Return a multiset without the rules that are of larger than minSize
-	 * 
+	 *
 	 * @param prunedByCountBySize
 	 * @param i
 	 * @return
@@ -278,7 +274,7 @@ public class PatternStatsCalculator {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param prunedByCountBySize
 	 *            the pattern ids.
 	 * @param minCount

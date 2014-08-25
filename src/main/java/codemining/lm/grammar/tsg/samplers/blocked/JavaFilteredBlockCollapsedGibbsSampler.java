@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
@@ -27,7 +27,7 @@ import com.google.common.collect.Sets;
  */
 @DefaultSerializer(JavaSerializer.class)
 public class JavaFilteredBlockCollapsedGibbsSampler extends
-BlockCollapsedGibbsSampler {
+		BlockCollapsedGibbsSampler {
 
 	private static final long serialVersionUID = -4108971545978001532L;
 
@@ -38,10 +38,11 @@ BlockCollapsedGibbsSampler {
 
 	public JavaFilteredBlockCollapsedGibbsSampler(final double avgTreeSize,
 			final double DPconcentration,
-			final JavaFormattedTSGrammar sampleGrammar,
-			final JavaFormattedTSGrammar allSamplesGrammar) {
+			final FormattedTSGrammar sampleGrammar,
+			final FormattedTSGrammar allSamplesGrammar) {
 		super(avgTreeSize, DPconcentration, sampleGrammar, allSamplesGrammar);
-		treeExtractor = sampleGrammar.getTreeExtractor();
+		treeExtractor = (AbstractJavaTreeExtractor) sampleGrammar
+				.getTreeExtractor();
 	}
 
 	@Override

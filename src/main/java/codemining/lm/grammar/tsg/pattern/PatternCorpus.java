@@ -21,7 +21,7 @@ import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.util.CollectionUtil;
 import codemining.util.SettingsLoader;
@@ -133,7 +133,7 @@ public class PatternCorpus implements Serializable {
 	 * @return
 	 */
 	public static Set<TreeNode<Integer>> getPatternsFrom(
-			final JavaFormattedTSGrammar grammar) {
+			final FormattedTSGrammar grammar) {
 		return getPatternsFrom(grammar, MIN_PATTERN_COUNT, MIN_PATTERN_SIZE);
 	}
 
@@ -144,7 +144,7 @@ public class PatternCorpus implements Serializable {
 	 * @return
 	 */
 	public static Set<TreeNode<Integer>> getPatternsFrom(
-			final JavaFormattedTSGrammar grammar, final int minPatternCount,
+			final FormattedTSGrammar grammar, final int minPatternCount,
 			final int minPatternSize) {
 		final Set<TreeNode<Integer>> patterns = Sets.newHashSet();
 		for (final Multiset<TreeNode<TSGNode>> rules : grammar
@@ -173,18 +173,18 @@ public class PatternCorpus implements Serializable {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 3) {
 			System.err
-					.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
+			.println("Usage <tsg.ser> <minPatternCount> <minPatternSize> [<minTimesInFilterDir> <filterDir>...]");
 			System.exit(-1);
 		}
 
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 
 		final int minCount = Integer.parseInt(args[1]);
 		final int minSize = Integer.parseInt(args[2]);
 
 		final PatternCorpus corpus = new PatternCorpus(
-				grammar.getTreeExtractor());
+				(AbstractJavaTreeExtractor) grammar.getTreeExtractor());
 		corpus.addFromGrammar(grammar, minCount, minSize);
 
 		if (args.length >= 5) {
@@ -220,7 +220,7 @@ public class PatternCorpus implements Serializable {
 
 			} catch (final IOException e) {
 				PatternInSet.LOGGER
-						.warning(ExceptionUtils.getFullStackTrace(e));
+				.warning(ExceptionUtils.getFullStackTrace(e));
 			}
 		}
 		return patternSeenInCorpus;
@@ -259,7 +259,7 @@ public class PatternCorpus implements Serializable {
 	 *
 	 * @param grammar
 	 */
-	public void addFromGrammar(final JavaFormattedTSGrammar grammar,
+	public void addFromGrammar(final FormattedTSGrammar grammar,
 			final int minPatternCount, final int minPatternSize) {
 		patterns.addAll(getPatternsFrom(grammar, minPatternCount,
 				minPatternSize));

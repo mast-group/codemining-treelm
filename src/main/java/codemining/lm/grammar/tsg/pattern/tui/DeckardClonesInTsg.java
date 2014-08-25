@@ -22,7 +22,7 @@ import org.eclipse.jdt.core.dom.NodeFinder;
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -76,7 +76,7 @@ public class DeckardClonesInTsg {
 						.getMaximalOverlappingTree(nodeIterator.next());
 				if (maximalOverlappingTree.isPresent()
 						&& maximalOverlappingTree.get().getTreeSize() >= .9 * maximumOverlappingNode
-						.getTreeSize()) {
+								.getTreeSize()) {
 					maximumOverlappingNode = maximalOverlappingTree.get();
 				}
 			}
@@ -90,7 +90,7 @@ public class DeckardClonesInTsg {
 
 	private static Multimap<Integer, ASTNode> getClonesFromDecard(
 			final String clusterFile, final File baseDirectory)
-					throws IOException {
+			throws IOException {
 		final List<String> lines = FileUtils.readLines(new File(clusterFile));
 		int id = 0;
 		final Multimap<Integer, ASTNode> nodesInCluster = ArrayListMultimap
@@ -130,10 +130,10 @@ public class DeckardClonesInTsg {
 	 * @throws SerializationException
 	 */
 	public static void main(final String[] args) throws IOException,
-	SerializationException {
+			SerializationException {
 		if (args.length != 4) {
 			System.err
-			.println("Usage <decardCloneClustersFile> <baseDir> <tsg> <testDir>");
+					.println("Usage <decardCloneClustersFile> <baseDir> <tsg> <testDir>");
 			System.exit(-1);
 		}
 
@@ -141,10 +141,11 @@ public class DeckardClonesInTsg {
 				args[0], new File(args[1]));
 
 		// Read tsg
-		final JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		final FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[2]);
 		final Set<TreeNode<Integer>> decardCloneTrees = getClonePatterns(
-				decardClones, grammar.getTreeExtractor());
+				decardClones,
+				(AbstractJavaTreeExtractor) grammar.getTreeExtractor());
 
 		Serializer.getSerializer().serialize(decardCloneTrees,
 				"decardPatterns.ser");
@@ -160,7 +161,8 @@ public class DeckardClonesInTsg {
 		System.out.println("PctCommon:" + pct);
 
 		final PatternStatsCalculator psc = new PatternStatsCalculator(
-				grammar.getTreeExtractor(), decardCloneTrees, new File(args[3]));
+				(AbstractJavaTreeExtractor) grammar.getTreeExtractor(),
+				decardCloneTrees, new File(args[3]));
 
 		final int[] zeroArray = { 0 };
 		psc.printStatisticsFor(zeroArray, zeroArray);

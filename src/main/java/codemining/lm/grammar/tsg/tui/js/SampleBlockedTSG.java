@@ -1,104 +1,106 @@
-/**
- *
- */
-package codemining.lm.grammar.tsg.tui.java;
+package codemining.lm.grammar.tsg.tui.js;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
-import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
-import codemining.lm.grammar.java.ast.JavaAstTreeExtractor;
-import codemining.lm.grammar.java.ast.TempletizedJavaTreeExtractor;
-import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
+import codemining.js.codeutils.JavascriptTokenizer;
+import codemining.lm.grammar.js.ast.BinaryJavascriptTreeExtractor;
+import codemining.lm.grammar.js.ast.JavascriptTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
-import codemining.lm.grammar.tsg.samplers.CollapsedGibbsSampler;
-import codemining.lm.grammar.tsg.samplers.TempletizedCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.TreeCorpusFilter;
+import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
 /**
+ * Sample a TSG using a blocked sampler.
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  *
  */
-public class SampleTSG {
+public class SampleBlockedTSG {
 
 	/**
 	 * @param args
-	 * @throws IOException
 	 * @throws SerializationException
 	 */
-	public static void main(final String[] args) throws IOException,
-	SerializationException {
-		if (args.length != 3) {
+	public static void main(final String[] args) throws SerializationException {
+		if (args.length < 4) {
 			System.err
-			.println("Usage <TrainingDir> normal|binary|binary-metavariables|metavariables|variables <#iterations>");
-			return;
+					.println("Usage <TsgTrainingDir> normal|binary <alpha> <#iterations> [<CfgExtraTraining>]");
+			System.exit(-1);
 		}
-		final int nIterations = Integer.parseInt(args[2]);
 
+		final int nIterations = Integer.parseInt(args[3]);
+		final double concentrationParameter = Double.parseDouble(args[2]);
 		final File samplerCheckpoint = new File("tsgSampler.ser");
-		final CollapsedGibbsSampler sampler;
+		final BlockCollapsedGibbsSampler sampler;
 
 		if (samplerCheckpoint.exists()) {
-			sampler = (CollapsedGibbsSampler) Serializer.getSerializer()
+			sampler = (BlockCollapsedGibbsSampler) Serializer.getSerializer()
 					.deserializeFrom("tsgSampler.ser");
 			LOGGER.info("Resuming sampling");
 
 		} else {
 
-			final AbstractJavaTreeExtractor format;
+			final JavascriptTreeExtractor format;
 			if (args[1].equals("normal")) {
-				format = new JavaAstTreeExtractor();
-
-				sampler = new CollapsedGibbsSampler(20, 10,
-						new FormattedTSGrammar(format),
-						new FormattedTSGrammar(format));
+				format = new JavascriptTreeExtractor();
 			} else if (args[1].equals("binary")) {
-				format = new BinaryJavaAstTreeExtractor(
-						new JavaAstTreeExtractor());
-
-				sampler = new CollapsedGibbsSampler(20, 10,
-						new FormattedTSGrammar(format),
-						new FormattedTSGrammar(format));
-			} else if (args[1].equals("binary-metavariables")) {
-				format = new BinaryJavaAstTreeExtractor(
-						new TempletizedJavaTreeExtractor());
-				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
-			} else if (args[1].equals("metavariables")) {
-				format = new TempletizedJavaTreeExtractor();
-				sampler = new TempletizedCollapsedGibbsSampler(20, 10, format);
-			} else if (args[1].equals("variables")) {
-				format = new VariableTypeJavaTreeExtractor();
-				sampler = new CollapsedGibbsSampler(20, 10,
-						new FormattedTSGrammar(format),
-						new FormattedTSGrammar(format));
+				format = new BinaryJavascriptTreeExtractor(
+						new JavascriptTreeExtractor());
 			} else {
-				throw new IllegalArgumentException("Unrecognizable parameter "
-						+ args[1]);
+				throw new IllegalArgumentException(
+						"Unrecognizable training type parameter " + args[1]);
 			}
-			final double percentRootsInit = .9;
+
+			sampler = new BlockCollapsedGibbsSampler(100,
+					concentrationParameter, new FormattedTSGrammar(format),
+					new FormattedTSGrammar(format));
+
+			if (args.length > 4) {
+				LOGGER.info("Loading additional CFG prior information from "
+						+ args[4]);
+				for (final File fi : FileUtils.listFiles(new File(args[4]),
+						JavascriptTokenizer.JAVASCRIPT_CODE_FILTER,
+						DirectoryFileFilter.DIRECTORY)) {
+					try {
+						final TreeNode<TSGNode> ast = TSGNode.convertTree(
+								format.getTree(fi), 0);
+						sampler.addDataToPrior(ast);
+					} catch (final Exception e) {
+						LOGGER.warning("Failed to get AST for Cfg Prior "
+								+ fi.getAbsolutePath() + " "
+								+ ExceptionUtils.getFullStackTrace(e));
+					}
+				}
+			}
+
+			final double percentRootsInit = .7;
 			int nFiles = 0;
 			int nNodes = 0;
+			LOGGER.info("Loading sample trees from  " + args[0]);
+			final TreeCorpusFilter filter = new TreeCorpusFilter(format,
+					TREE_SPLIT_CFG_COUNT);
 			for (final File fi : FileUtils.listFiles(new File(args[0]),
-					new RegexFileFilter(".*\\.java$"),
+					JavascriptTokenizer.JAVASCRIPT_CODE_FILTER,
 					DirectoryFileFilter.DIRECTORY)) {
 				try {
 					final TreeNode<TSGNode> ast = TSGNode.convertTree(
 							format.getTree(fi), percentRootsInit);
 					nNodes += ast.getTreeSize();
+					filter.addTree(ast);
+
 					nFiles++;
-					sampler.addTree(ast);
 				} catch (final Exception e) {
 					LOGGER.warning("Failed to get AST for "
 							+ fi.getAbsolutePath() + " "
@@ -107,6 +109,10 @@ public class SampleTSG {
 			}
 			LOGGER.info("Loaded " + nFiles + " files containing " + nNodes
 					+ " nodes");
+			for (final TreeNode<TSGNode> filteredTree : filter
+					.getFilteredTrees()) {
+				sampler.addTree(filteredTree);
+			}
 			sampler.lockSamplerData();
 		}
 
@@ -152,13 +158,17 @@ public class SampleTSG {
 					+ ExceptionUtils.getFullStackTrace(e));
 		}
 
-		// sampler.pruneNonSurprisingRules(1);
-		sampler.pruneRareTrees((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
+		grammarToUse
+				.prune((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(grammarToUse.toString());
 		finished.set(true); // we have finished and thus the shutdown hook can
 		// now stop waiting for us.
+
 	}
 
-	private static final Logger LOGGER = Logger.getLogger(SampleTSG.class
-			.getName());
+	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
+			.getNumericSetting("treeSplitCfgCount", 0);
+
+	private static final Logger LOGGER = Logger
+			.getLogger(SampleBlockedTSG.class.getName());
 }

@@ -15,7 +15,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.JavaFormattedTSGrammar;
+import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.pattern.PatternCorpus;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
@@ -38,15 +38,16 @@ public class PatternsInCorpus {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length != 4) {
 			System.err
-			.println("Usage <tsg> <minPatternCount> <minPatternSize> <corpusDir>");
+					.println("Usage <tsg> <minPatternCount> <minPatternSize> <corpusDir>");
 			System.exit(-1);
 		}
 
-		JavaFormattedTSGrammar grammar = (JavaFormattedTSGrammar) Serializer
+		FormattedTSGrammar grammar = (FormattedTSGrammar) Serializer
 				.getSerializer().deserializeFrom(args[0]);
 		final int minPatternCount = Integer.parseInt(args[1]);
 		final int minPatternSize = Integer.parseInt(args[2]);
-		final AbstractJavaTreeExtractor format = grammar.getTreeExtractor();
+		final AbstractJavaTreeExtractor format = (AbstractJavaTreeExtractor) grammar
+				.getTreeExtractor();
 		final Set<TreeNode<Integer>> patterns = PatternCorpus.getPatternsFrom(
 				grammar, minPatternCount, minPatternSize);
 
@@ -85,7 +86,7 @@ public class PatternsInCorpus {
 		// now print
 		for (final TreeNode<Integer> pattern : patternsPerFile.keySet()) {
 			System.out
-			.println("----------------------------------------------");
+					.println("----------------------------------------------");
 			try {
 				PrintPatterns.printIntTree(format, pattern);
 			} catch (final Throwable e) {
