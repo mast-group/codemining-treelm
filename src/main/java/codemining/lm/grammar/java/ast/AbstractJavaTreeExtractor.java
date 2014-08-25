@@ -2,7 +2,6 @@ package codemining.lm.grammar.java.ast;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -28,8 +27,7 @@ import com.google.common.collect.BiMap;
  *
  */
 @DefaultSerializer(JavaSerializer.class)
-public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor
-implements Serializable {
+public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 
 	/**
 	 * A node printer using the symbols.
@@ -103,7 +101,7 @@ implements Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.io.File)
 	 */
 	@Override
@@ -115,7 +113,7 @@ implements Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.lang.String)
 	 */
 	@Override
