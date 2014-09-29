@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.java.ast;
 
@@ -13,22 +13,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
-import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
-import org.eclipse.jdt.core.dom.Comment;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
-import org.eclipse.jdt.core.dom.PostfixExpression;
-import org.eclipse.jdt.core.dom.PrefixExpression;
-import org.eclipse.jdt.core.dom.PrimitiveType;
-import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
-import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
@@ -39,17 +25,17 @@ import com.google.common.collect.Maps;
 /**
  * Convert Eclipse AST trees to TreeNodes and back. Super complex and stupid
  * workarounds.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	/**
 	 * Extract a TreeNode from a parsed AST
-	 * 
+	 *
 	 * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
-	 * 
+	 *
 	 */
 	public class TreeNodeExtractor extends ASTVisitor {
 
@@ -151,17 +137,12 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 				computedNodes.put(node,
 						postProcessNodeBeforeAdding(treeNode, node));
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.warning("Failed to get Tree for node and children"
 						+ node + ExceptionUtils.getFullStackTrace(e));
 			}
 		}
 	}
-
-	private static final Logger LOGGER = Logger
-			.getLogger(JavaAstTreeExtractor.class.getName());
-
-	private static final long serialVersionUID = 8839242786256127809L;
 
 	protected static void addSimplePropertyToASTNode(final ASTNode node,
 			final SimplePropertyDescriptor sp, final Object spValue)
@@ -221,7 +202,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	/**
 	 * Add a simple property to a single symbol.
-	 * 
+	 *
 	 * @param symbol
 	 * @param sp
 	 * @param spValue
@@ -251,10 +232,15 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		}
 	}
 
+	private static final Logger LOGGER = Logger
+			.getLogger(JavaAstTreeExtractor.class.getName());
+
+	private static final long serialVersionUID = 8839242786256127809L;
+
 	/**
 	 * Add further annotations to the given symbol. Useful for classes that will
 	 * subclass this one.
-	 * 
+	 *
 	 * @param symbol
 	 * @param node
 	 */
@@ -316,6 +302,8 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newConstructorInvocation();
 		case ASTNode.CONTINUE_STATEMENT:
 			return ast.newContinueStatement();
+		case ASTNode.DIMENSION:
+			return ast.newDimension();
 		case ASTNode.DO_STATEMENT:
 			return ast.newDoStatement();
 		case ASTNode.EMPTY_STATEMENT:
@@ -326,6 +314,8 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newEnumConstantDeclaration();
 		case ASTNode.ENUM_DECLARATION:
 			return ast.newEnumDeclaration();
+		case ASTNode.EXPRESSION_METHOD_REFERENCE:
+			return ast.newExpressionMethodReference();
 		case ASTNode.EXPRESSION_STATEMENT:
 			return ast.newExpressionStatement(ast.newCharacterLiteral());
 		case ASTNode.FIELD_ACCESS:
@@ -345,10 +335,14 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newInitializer();
 		case ASTNode.INSTANCEOF_EXPRESSION:
 			return ast.newInstanceofExpression();
+		case ASTNode.INTERSECTION_TYPE:
+			return ast.newIntersectionType();
 		case ASTNode.JAVADOC:
 			return ast.newJavadoc();
 		case ASTNode.LABELED_STATEMENT:
 			return ast.newLabeledStatement();
+		case ASTNode.LAMBDA_EXPRESSION:
+			return ast.newLambdaExpression();
 		case ASTNode.LINE_COMMENT:
 			return ast.newLineComment();
 		case ASTNode.MARKER_ANNOTATION:
@@ -455,7 +449,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	/**
 	 * Create an AST from a given TreeNode
-	 * 
+	 *
 	 */
 	@Override
 	public ASTNode getASTFromTree(final TreeNode<Integer> tree) {
@@ -492,7 +486,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 					}
 				}
 				getASTNodeForTreeNode(toBeConverted, ast, extractedNodes);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.warning("Failed to get ASTNode for subtree "
 						+ e.getMessage() + " "
 						+ ExceptionUtils.getFullStackTrace(e));
@@ -505,7 +499,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 	/**
 	 * Create a new ASTNode for the given symbol, setting only the simple
 	 * properties.
-	 * 
+	 *
 	 * @param symbol
 	 * @param ast
 	 * @return
@@ -540,7 +534,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 				for (final TreeNode<Integer> childNode : treeNode
 						.getChildrenByProperty().get(i)) {
 					final ASTNode childAst = checkNotNull(createdASTNodes
-									.get(childNode));
+							.get(childNode));
 					nodesChildren.add(childAst);
 				}
 			}
