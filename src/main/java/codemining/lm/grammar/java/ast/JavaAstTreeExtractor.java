@@ -146,7 +146,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	protected static void addSimplePropertyToASTNode(final ASTNode node,
 			final SimplePropertyDescriptor sp, final Object spValue)
-			throws Exception {
+					throws Exception {
 		checkNotNull(sp, "sp should not be null");
 		checkNotNull(spValue);
 		if (node instanceof Modifier) {
@@ -302,6 +302,8 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newConstructorInvocation();
 		case ASTNode.CONTINUE_STATEMENT:
 			return ast.newContinueStatement();
+		case ASTNode.CREATION_REFERENCE:
+			return ast.newCreationReference();
 		case ASTNode.DIMENSION:
 			return ast.newDimension();
 		case ASTNode.DO_STATEMENT:
@@ -361,6 +363,9 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newMethodRefParameter();
 		case ASTNode.MODIFIER:
 			return ast.newModifier(ModifierKeyword.PRIVATE_KEYWORD);
+		case ASTNode.NAME_QUALIFIED_TYPE:
+			return ast.newNameQualifiedType(ast.newName("DUMMY_QNAME"),
+					ast.newSimpleName("DUMMY"));
 		case ASTNode.NORMAL_ANNOTATION:
 			return ast.newNormalAnnotation();
 		case ASTNode.NULL_LITERAL:
@@ -405,6 +410,8 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newSuperFieldAccess();
 		case ASTNode.SUPER_METHOD_INVOCATION:
 			return ast.newSuperMethodInvocation();
+		case ASTNode.SUPER_METHOD_REFERENCE:
+			return ast.newSuperMethodReference();
 		case ASTNode.SWITCH_CASE:
 			return ast.newSwitchCase();
 		case ASTNode.SWITCH_STATEMENT:
@@ -425,6 +432,8 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 			return ast.newTypeDeclaration();
 		case ASTNode.TYPE_DECLARATION_STATEMENT:
 			return ast.newTypeDeclarationStatement(ast.newTypeDeclaration());
+		case ASTNode.TYPE_METHOD_REFERENCE:
+			return ast.newTypeMethodReference();
 		case ASTNode.TYPE_LITERAL:
 			return ast.newTypeLiteral();
 		case ASTNode.TYPE_PARAMETER:
@@ -508,7 +517,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 	private final ASTNode getASTNodeForTreeNode(
 			final TreeNode<Integer> treeNode, final AST ast,
 			final Map<TreeNode<Integer>, ASTNode> createdASTNodes)
-			throws Exception {
+					throws Exception {
 		final AstNodeSymbol symbol = getSymbol(treeNode.getData());
 		final ASTNode node = createASTNodeObject(treeNode, ast, symbol);
 
@@ -557,7 +566,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tree.AbstractEclipseTreeExtractor#getTree(org.eclipse
 	 * .jdt.core.dom.ASTNode)
