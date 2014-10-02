@@ -3,11 +3,13 @@ package codemining.lm.grammar.tree;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.function.Function;
 
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
 
-import com.google.common.base.Function;
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
@@ -18,10 +20,10 @@ import com.google.common.collect.Maps;
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  *
  */
+@DefaultSerializer(JavaSerializer.class)
 public abstract class AbstractTreeExtractor implements Serializable {
 
 	private static final long serialVersionUID = -1685391461506804381L;
-
 	private int nextSymbolId = 0;
 
 	/**
@@ -54,7 +56,7 @@ public abstract class AbstractTreeExtractor implements Serializable {
 	 */
 	public abstract TreeNode<Integer> getKeyForCompilationUnit();
 
-	public final BiMap<Integer, AstNodeSymbol> getNodeAlphabet() {
+	public BiMap<Integer, AstNodeSymbol> getNodeAlphabet() {
 		return nodeAlphabet;
 	}
 

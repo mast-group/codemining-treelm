@@ -42,7 +42,8 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		/**
 		 * Store all the TreeNodes that have been extracted.
 		 */
-		final Map<ASTNode, TreeNode<Integer>> computedNodes = Maps.newHashMap();
+		final Map<ASTNode, TreeNode<Integer>> computedNodes = Maps
+				.newIdentityHashMap();
 
 		final boolean useComments;
 
@@ -484,7 +485,7 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		}
 
 		// OK. Now back to business...
-		final AST ast = AST.newAST(AST.JLS4);
+		final AST ast = AST.newAST(AST.JLS8);
 		for (int i = conversionPlan.size() - 1; i >= 0; i--) {
 			try {
 				final TreeNode<Integer> toBeConverted = conversionPlan.get(i);
@@ -581,6 +582,13 @@ public class JavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		final TreeNodeExtractor ex = new TreeNodeExtractor(useComments);
 		ex.extractFromNode(node);
 		return ex.computedNodes.get(node);
+	}
+
+	@Override
+	public Map<ASTNode, TreeNode<Integer>> getTreeMap(final ASTNode node) {
+		final TreeNodeExtractor ex = new TreeNodeExtractor(false);
+		ex.extractFromNode(node);
+		return ex.computedNodes;
 	}
 
 }

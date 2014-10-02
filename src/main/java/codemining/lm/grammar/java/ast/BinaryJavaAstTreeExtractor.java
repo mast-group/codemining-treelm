@@ -3,11 +3,18 @@
  */
 package codemining.lm.grammar.java.ast;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Map;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeBinarizer;
 import codemining.lm.grammar.tree.TreeNode;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.Maps;
 
 /**
  * A binary tree extractor.
@@ -58,6 +65,16 @@ public class BinaryJavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		return base.getKeyForCompilationUnit();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see codemining.lm.grammar.tree.AbstractTreeExtractor#getNodeAlphabet()
+	 */
+	@Override
+	public BiMap<Integer, AstNodeSymbol> getNodeAlphabet() {
+		return base.getNodeAlphabet();
+	}
+
 	@Override
 	public synchronized int getOrAddSymbolId(final AstNodeSymbol symbol) {
 		return base.getOrAddSymbolId(symbol);
@@ -74,4 +91,18 @@ public class BinaryJavaAstTreeExtractor extends AbstractJavaTreeExtractor {
 		return binarizer.binarizeTree(tree);
 	}
 
+	@Override
+	public Map<ASTNode, TreeNode<Integer>> getTreeMap(final ASTNode node) {
+		final Map<ASTNode, TreeNode<Integer>> baseTreeMap = base
+				.getTreeMap(node);
+		final Map<TreeNode<Integer>, TreeNode<Integer>> binarizationMappings = Maps
+				.newIdentityHashMap();
+		binarizer.binarizeTree(baseTreeMap.get(node), binarizationMappings);
+
+		baseTreeMap.entrySet().forEach(
+				entry -> entry.setValue(checkNotNull(binarizationMappings
+						.get(entry.getValue()))));
+
+		return baseTreeMap;
+	}
 }

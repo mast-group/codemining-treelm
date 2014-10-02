@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -20,8 +19,8 @@ import codemining.java.tokenizers.JavaTokenizer;
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
 import codemining.lm.ILanguageModel;
-import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.AbstractTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.math.random.SampleUtils;
 
@@ -35,7 +34,9 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	/**
 	 * A CFG rule struct.
 	 */
-	public static class CFGRule {
+	public static class CFGRule implements Serializable {
+
+		private static final long serialVersionUID = -7306875690461628508L;
 		public final int root;
 		public final NodeConsequent ruleConsequent;
 
@@ -125,7 +126,7 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	 */
 	protected Map<Integer, Multiset<NodeConsequent>> grammar;
 
-	private transient ITokenizer tokenizer = new JavaTokenizer();
+	private final ITokenizer tokenizer = new JavaTokenizer();
 
 	/**
 	 * The tree extractor.
@@ -331,12 +332,6 @@ public abstract class AbstractContextFreeGrammar implements ILanguageModel {
 	@Override
 	public AbstractFileFilter modelledFilesFilter() {
 		return tokenizer.getFileFilter();
-	}
-
-	private void readObject(final ObjectInputStream in) throws IOException,
-	ClassNotFoundException {
-		in.defaultReadObject();
-		tokenizer = new JavaTokenizer();
 	}
 
 	@Override

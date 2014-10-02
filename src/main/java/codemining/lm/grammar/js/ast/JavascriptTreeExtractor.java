@@ -13,24 +13,12 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.eclipse.wst.jsdt.core.dom.AST;
-import org.eclipse.wst.jsdt.core.dom.ASTNode;
-import org.eclipse.wst.jsdt.core.dom.ASTVisitor;
-import org.eclipse.wst.jsdt.core.dom.Assignment;
-import org.eclipse.wst.jsdt.core.dom.ChildListPropertyDescriptor;
-import org.eclipse.wst.jsdt.core.dom.ChildPropertyDescriptor;
-import org.eclipse.wst.jsdt.core.dom.InfixExpression;
-import org.eclipse.wst.jsdt.core.dom.JavaScriptUnit;
-import org.eclipse.wst.jsdt.core.dom.Modifier;
+import org.eclipse.wst.jsdt.core.dom.*;
 import org.eclipse.wst.jsdt.core.dom.Modifier.ModifierKeyword;
-import org.eclipse.wst.jsdt.core.dom.PostfixExpression;
-import org.eclipse.wst.jsdt.core.dom.PrefixExpression;
-import org.eclipse.wst.jsdt.core.dom.PrimitiveType;
-import org.eclipse.wst.jsdt.core.dom.SimplePropertyDescriptor;
-import org.eclipse.wst.jsdt.core.dom.StructuralPropertyDescriptor;
 
 import codemining.js.codeutils.JavascriptASTExtractor;
 import codemining.js.codeutils.JavascriptTokenizer;
@@ -40,7 +28,6 @@ import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 
-import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -146,7 +133,7 @@ public class JavascriptTreeExtractor extends AbstractTreeExtractor {
 
 				computedNodes.put(node,
 						postProcessNodeBeforeAdding(treeNode, node));
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.warning("Failed to get Tree for node and children"
 						+ node + ExceptionUtils.getFullStackTrace(e));
 			}
@@ -260,10 +247,10 @@ public class JavascriptTreeExtractor extends AbstractTreeExtractor {
 	public static final Function<Integer, String> JAVASCRIPT_NODETYPE_CONVERTER = new Function<Integer, String>() {
 
 		@Override
-		public String apply(Integer nodeType) {
+		public String apply(final Integer nodeType) {
 			try {
 				return ASTNode.nodeClassForType(nodeType).getSimpleName();
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				return "Unknown Node Type " + nodeType;
 			}
 		}
@@ -286,7 +273,7 @@ public class JavascriptTreeExtractor extends AbstractTreeExtractor {
 		super();
 	}
 
-	public JavascriptTreeExtractor(BiMap<Integer, AstNodeSymbol> alphabet) {
+	public JavascriptTreeExtractor(final BiMap<Integer, AstNodeSymbol> alphabet) {
 		super(alphabet);
 	}
 
@@ -514,7 +501,7 @@ public class JavascriptTreeExtractor extends AbstractTreeExtractor {
 					}
 				}
 				getASTNodeForTreeNode(toBeConverted, ast, extractedNodes);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.warning("Failed to get ASTNode for subtree "
 						+ e.getMessage() + " "
 						+ ExceptionUtils.getFullStackTrace(e));
@@ -640,7 +627,7 @@ public class JavascriptTreeExtractor extends AbstractTreeExtractor {
 	 * codemining.lm.grammar.tree.AbstractTreeExtractor#getTree(java.io.File)
 	 */
 	@Override
-	public TreeNode<Integer> getTree(File f) throws IOException {
+	public TreeNode<Integer> getTree(final File f) throws IOException {
 		final JavascriptASTExtractor ex = new JavascriptASTExtractor(false);
 		final JavaScriptUnit root = ex.getAST(f);
 		return getTree(root);
@@ -657,7 +644,7 @@ public class JavascriptTreeExtractor extends AbstractTreeExtractor {
 	public TreeNode<Integer> getTree(final String code,
 			final ParseType parseType) {
 		final JavascriptASTExtractor ex = new JavascriptASTExtractor(false);
-		ASTNode root = ex.getAST(code, parseType);
+		final ASTNode root = ex.getAST(code, parseType);
 		return getTree(root);
 	}
 

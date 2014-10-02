@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.java.ast;
 
@@ -23,9 +23,9 @@ import com.google.common.collect.Multimap;
 
 /**
  * A templetized tree extractor. Variables are templetized.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 
@@ -52,7 +52,7 @@ public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 
 		/**
 		 * Return the templetized form of the node, if any.
-		 * 
+		 *
 		 * @param node
 		 * @return
 		 */
@@ -128,15 +128,9 @@ public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 		}
 	}
 
-	private static final long serialVersionUID = 5799735440844562628L;
-
-	public static final String TEMPLETIZED_VAR_PROPERTY = "VAR_ID";
-
-	public static final String TEMPLETIZED_VAR_TYPE_PROPERTY = "TYPE";
-
 	/**
 	 * Return an ASTNodeSymbol. If id=-1 then no id will be presumed.
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 */
@@ -158,13 +152,19 @@ public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 		return symbol.hasAnnotation(TEMPLETIZED_VAR_PROPERTY);
 	}
 
+	private static final long serialVersionUID = 5799735440844562628L;
+
+	public static final String TEMPLETIZED_VAR_PROPERTY = "VAR_ID";
+
+	public static final String TEMPLETIZED_VAR_TYPE_PROPERTY = "TYPE";
+
 	public TempletizedJavaTreeExtractor() {
 		super();
 	}
 
 	/**
 	 * remove any template symbols in the tree.
-	 * 
+	 *
 	 * @param tree
 	 * @return
 	 */
@@ -192,7 +192,7 @@ public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 						.get(i);
 
 				for (final TreeNode<Integer> fromChild : childrenForProperty) {
-					AstNodeSymbol symbol = getSymbol(fromChild.getData());
+					final AstNodeSymbol symbol = getSymbol(fromChild.getData());
 
 					if (symbol.nodeType == AstNodeSymbol.TEMPLATE_NODE) {
 
@@ -224,7 +224,7 @@ public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tree.AbstractEclipseTreeExtractor#getASTFromTree
 	 * (codemining.lm.grammar.tree.TreeNode)
@@ -242,6 +242,14 @@ public class TempletizedJavaTreeExtractor extends JavaAstTreeExtractor {
 				useComments);
 		ex.extractFromNode(node);
 		return ex.computedNodes.get(node);
+	}
+
+	@Override
+	public Map<ASTNode, TreeNode<Integer>> getTreeMap(final ASTNode node) {
+		final TempletizedTreeExtractor ex = new TempletizedTreeExtractor(node,
+				false);
+		ex.extractFromNode(node);
+		return ex.computedNodes;
 	}
 
 }

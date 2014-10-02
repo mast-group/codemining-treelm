@@ -6,8 +6,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.function.Function;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -73,7 +73,7 @@ public class AstNodeSymbol implements Serializable {
 	public static final Function<Integer, String> DEFAULT_NODETYPE_TO_STRING = new Function<Integer, String>() {
 
 		@Override
-		public String apply(Integer nodeType) {
+		public String apply(final Integer nodeType) {
 			return nodeType.toString();
 		}
 	};

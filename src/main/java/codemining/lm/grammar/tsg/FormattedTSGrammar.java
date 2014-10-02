@@ -6,6 +6,7 @@ package codemining.lm.grammar.tsg;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.AstNodeSymbol;
@@ -13,7 +14,6 @@ import codemining.lm.grammar.tree.TreeNode;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
-import com.google.common.base.Function;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
@@ -33,7 +33,7 @@ public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 	 *
 	 */
 	public final class IntKeyToSymbol implements
-			Function<TreeNode<TSGNode>, String> {
+	Function<TreeNode<TSGNode>, String> {
 
 		@Override
 		public String apply(final TreeNode<TSGNode> node) {
@@ -104,7 +104,7 @@ public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 						try {
 							final TreeNode<Integer> intTree = TreeNode.create(
 									tree.getElement().getData().nodeKey, tree
-											.getElement().nProperties());
+									.getElement().nProperties());
 							TSGNode.copyChildren(intTree, tree.getElement());
 							if (treeFormat.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 								treeFormat.printMultinode(buf, intTree);
@@ -132,7 +132,7 @@ public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 		return tree.toString(new Function<TreeNode<TSGNode>, String>() {
 
 			@Override
-			public String apply(TreeNode<TSGNode> input) {
+			public String apply(final TreeNode<TSGNode> input) {
 				final TreeNode<Integer> node = TreeNode.create(
 						input.getData().nodeKey, input.nProperties());
 				return treeFormat.getTreePrinter().apply(node);

@@ -2,7 +2,10 @@ package codemining.lm.grammar.java.ast;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
@@ -16,7 +19,6 @@ import codemining.lm.grammar.tree.TreeNode;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
-import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
 
 /**
@@ -32,24 +34,13 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 	/**
 	 * A node printer using the symbols.
 	 */
-	private final Function<TreeNode<Integer>, String> javaNodeToString = new Function<TreeNode<Integer>, String>() {
-
-		@Override
-		public String apply(final TreeNode<Integer> node) {
-			return getSymbol(node.getData()).toString(JAVA_NODETYPE_CONVERTER);
-		}
-
-	};
+	private final Function<TreeNode<Integer>, String> javaNodeToString = (Function<TreeNode<Integer>, String> & Serializable) node -> (getSymbol(node
+			.getData()).toString(JAVA_NODETYPE_CONVERTER));
 
 	private static final long serialVersionUID = -4515326266227881706L;
 
-	public static final Function<Integer, String> JAVA_NODETYPE_CONVERTER = new Function<Integer, String>() {
-
-		@Override
-		public String apply(Integer nodeType) {
-			return ASTNode.nodeClassForType(nodeType).getSimpleName();
-		}
-	};
+	public static final Function<Integer, String> JAVA_NODETYPE_CONVERTER = (Function<Integer, String> & Serializable) nodeType -> ASTNode
+			.nodeClassForType(nodeType).getSimpleName();
 
 	public AbstractJavaTreeExtractor() {
 		super();
@@ -101,7 +92,7 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.io.File)
 	 */
 	@Override
@@ -113,7 +104,7 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.lang.String)
 	 */
 	@Override
@@ -123,6 +114,16 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 		final ASTNode u = astExtractor.getAST(code, parseType);
 		return getTree(u);
 	}
+
+	/**
+	 * Return a map between the Eclipse ASTNodes and the TreeNodes. This may be
+	 * useful for looking up patterns in a reverse order.
+	 *
+	 * @param node
+	 * @return
+	 */
+	public abstract Map<ASTNode, TreeNode<Integer>> getTreeMap(
+			final ASTNode node);
 
 	/**
 	 * Return the tree printer functor for this extractor.

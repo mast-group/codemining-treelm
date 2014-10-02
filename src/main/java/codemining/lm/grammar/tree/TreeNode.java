@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.tree;
 
@@ -10,12 +10,12 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import codemining.util.data.Pair;
 
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -25,15 +25,15 @@ import com.google.common.collect.Sets;
 
 /**
  * A generic tree node
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 @DefaultSerializer(JavaSerializer.class)
 public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Struct class for node data pairs
-	 * 
+	 *
 	 * @param <T>
 	 */
 	public static final class NodeDataPair<T extends Serializable> {
@@ -49,7 +49,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * A struct class containing from and to pair of nodes to copy.
-	 * 
+	 *
 	 */
 	public static final class NodePair<T extends Serializable> {
 		public final TreeNode<T> fromNode;
@@ -67,7 +67,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * in a tree. The lists contain the nodes and the "directions" to reach the
 	 * target node. The first node in the list is the parent of the target of
 	 * the node, while the last is the root.
-	 * 
+	 *
 	 * The implementation includes a slow, recursive solution. But it is the
 	 * easiest for understanding.
 	 */
@@ -115,7 +115,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * A struct for passing a tree along with references to some nodes.
-	 * 
+	 *
 	 * @param <T>
 	 */
 	public static final class NodeWithRef<T extends Serializable> {
@@ -135,19 +135,9 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	}
 
 	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3543181013512815033L;
-
-	/**
-	 * A static constant used for String conversion
-	 */
-	public static final String SUB_NODE_STRING_PREFIX = "-";
-
-	/**
 	 * Copy the children (and all (grand+)children) to the given toNode. This
 	 * will copy only the structure. The data will be the same.
-	 * 
+	 *
 	 * @param fromNode
 	 * @param toNode
 	 */
@@ -180,7 +170,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Copy the children (and all (grand+)children) to the given toNode. This
 	 * will copy only the structure. The data will be the same.
-	 * 
+	 *
 	 * @param fromNode
 	 * @param toNode
 	 * @param stopOnRoots
@@ -233,7 +223,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Static utility to create TreeNode.
-	 * 
+	 *
 	 * @param data
 	 * @param size
 	 * @return
@@ -245,13 +235,23 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Static utility to create TreeNode from another TreeNode.
-	 * 
+	 *
 	 * @return
 	 */
 	public static <T extends Serializable> TreeNode<T> create(
 			final TreeNode<T> tree) {
 		return new TreeNode<T>(tree.getData(), tree.nProperties());
 	}
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -3543181013512815033L;
+
+	/**
+	 * A static constant used for String conversion
+	 */
+	public static final String SUB_NODE_STRING_PREFIX = "-";
 
 	/**
 	 * The children of this node. This is a list of lists. One list for each
@@ -266,7 +266,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Construct a Node give its data.
-	 * 
+	 *
 	 * @param name
 	 *            the name/data of the node
 	 */
@@ -281,7 +281,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Create an immutable node with this data.
-	 * 
+	 *
 	 * @param name
 	 * @param children
 	 */
@@ -292,7 +292,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Add a child to this node.
-	 * 
+	 *
 	 * @param child
 	 */
 	public synchronized void addChildNode(final TreeNode<T> child,
@@ -305,7 +305,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Create a deep copy of the TreeNode structure. Data of each node, still
 	 * refers to the same element.
-	 * 
+	 *
 	 * @return
 	 */
 	public TreeNode<T> deepCopy() {
@@ -317,7 +317,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Return a deep copy of this tree node and a reference to a child in the
 	 * copied tree that matches the node in this tree.
-	 * 
+	 *
 	 * @param references
 	 * @return a pair of nodes. The first one is the copied tree, the second is
 	 *         the reference.
@@ -397,7 +397,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Get the i-th child
-	 * 
+	 *
 	 * @param i
 	 * @return
 	 */
@@ -407,7 +407,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Return all the children of this node.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<List<TreeNode<T>>> getChildrenByProperty() {
@@ -416,7 +416,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Return the node data.
-	 * 
+	 *
 	 * @return
 	 */
 	public T getData() {
@@ -428,7 +428,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * some nodes contain more that one children, then the maximal tree will
 	 * only contain the first (in order) children that actually match, ignoring
 	 * any children after the first non-matching point.
-	 * 
+	 *
 	 * @param other
 	 * @return
 	 */
@@ -497,7 +497,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Return the parents of this node from a root node.
-	 * 
+	 *
 	 * @param fromRoot
 	 * @return
 	 */
@@ -507,7 +507,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Compute the identity set of the nodes that overlap with the other tree.
-	 * 
+	 *
 	 * @param other
 	 *            the other tree
 	 * @return an identity set of the overlapping nodes
@@ -553,7 +553,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Return the tree size of this tree.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getTreeSize() {
@@ -586,7 +586,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Return true if this node is a leaf.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isLeaf() {
@@ -610,7 +610,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Returns true if this node is a subtree of the other node. This means that
 	 * this tree can be fully found in the other tree.
-	 * 
+	 *
 	 * @param other
 	 * @param equalityComparator
 	 * @return
@@ -665,7 +665,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * Returns true if this node is a partial supertree of the other node. This
 	 * means that this tree can be partially found in the other tree, but this
 	 * tree may have more children.
-	 * 
+	 *
 	 * @param other
 	 * @param equalityComparator
 	 * @return
@@ -725,7 +725,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	/**
 	 * Returns true if this is a partial match. Avoid using this function
 	 * frequently since it instantiates the predicate on the fly.
-	 * 
+	 *
 	 * @param other
 	 * @return
 	 */
@@ -744,7 +744,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	 * defined when this node's children are a subset of the other's children
 	 * and have matching data. Node data equality is defined by the given
 	 * predicate.
-	 * 
+	 *
 	 * @param other
 	 * @param equalityComparator
 	 * @param requireAllChildren
@@ -812,7 +812,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Return an immutable copy of this the subtree rooted at this node.
-	 * 
+	 *
 	 * @return
 	 */
 	public TreeNode<T> toImmutable() {
@@ -832,19 +832,13 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer();
-		treePrinterHelper(sb, this, "", new Function<TreeNode<T>, String>() {
-
-			@Override
-			public String apply(final TreeNode<T> node) {
-				return node.getData().toString();
-			}
-		});
+		treePrinterHelper(sb, this, "", node -> node.getData().toString());
 		return sb.toString();
 	}
 
 	/**
 	 * Use a functional to convert the data to a string.
-	 * 
+	 *
 	 * @param toStringConverter
 	 * @return
 	 */
@@ -856,7 +850,7 @@ public final class TreeNode<T extends Serializable> implements Serializable {
 
 	/**
 	 * Helper recursive function for printing the tree.
-	 * 
+	 *
 	 * @param buffer
 	 * @param currentNode
 	 * @param prefix

@@ -8,6 +8,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A utility class for binarizing-debinarizing trees. Trees are also markovized.
@@ -41,6 +42,11 @@ public class TreeBinarizer implements Serializable {
 	 * @return
 	 */
 	public TreeNode<Integer> binarizeTree(final TreeNode<Integer> fromTree) {
+		return binarizeTree(fromTree, null);
+	}
+
+	public TreeNode<Integer> binarizeTree(final TreeNode<Integer> fromTree,
+			final Map<TreeNode<Integer>, TreeNode<Integer>> mapping) {
 		final TreeNode<Integer> toTree = TreeNode.create(fromTree.getData(),
 				fromTree.nProperties());
 		final ArrayDeque<TreeNode<Integer>> toStack = new ArrayDeque<TreeNode<Integer>>();
@@ -52,6 +58,9 @@ public class TreeBinarizer implements Serializable {
 		while (!toStack.isEmpty()) {
 			final TreeNode<Integer> currentTo = toStack.pop();
 			final TreeNode<Integer> currentFrom = fromStack.pop();
+			if (mapping != null) {
+				mapping.put(currentFrom, currentTo);
+			}
 
 			final List<List<TreeNode<Integer>>> children = currentFrom
 					.getChildrenByProperty();
@@ -95,11 +104,11 @@ public class TreeBinarizer implements Serializable {
 
 		final TreeNode<Integer> child1From = childrenForProperty
 				.get(childrenForProperty.size() - 1);
-		TreeNode<Integer> child1To = TreeNode.create(child1From);
+		final TreeNode<Integer> child1To = TreeNode.create(child1From);
 
 		final TreeNode<Integer> child2From = childrenForProperty
 				.get(childrenForProperty.size() - 2);
-		TreeNode<Integer> child2To = TreeNode.create(child2From);
+		final TreeNode<Integer> child2To = TreeNode.create(child2From);
 
 		// Create the last node.
 		TreeNode<Integer> currentTreeNode = TreeNode.create(extractor

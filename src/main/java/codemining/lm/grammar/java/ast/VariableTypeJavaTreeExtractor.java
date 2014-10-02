@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.java.ast;
 
@@ -8,6 +8,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.SimpleName;
@@ -22,9 +23,9 @@ import com.google.common.collect.Multimap;
 /**
  * A tree format that adds an extra node with the type of the variables, not
  * just names.
- * 
+ *
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 
@@ -45,7 +46,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 
 		/**
 		 * Return the templetized form of the node, if any.
-		 * 
+		 *
 		 * @param node
 		 * @return
 		 */
@@ -107,13 +108,9 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 		}
 	}
 
-	private static final long serialVersionUID = -5114231756353587653L;
-
-	public static final String TEMPLETIZED_VAR_TYPE_PROPERTY = "TYPE";
-
 	/**
 	 * Return an ASTNodeSymbol.
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 */
@@ -130,13 +127,17 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 		return symbol.hasAnnotation(TEMPLETIZED_VAR_TYPE_PROPERTY);
 	}
 
+	private static final long serialVersionUID = -5114231756353587653L;
+
+	public static final String TEMPLETIZED_VAR_TYPE_PROPERTY = "TYPE";
+
 	public VariableTypeJavaTreeExtractor() {
 		super();
 	}
 
 	/**
 	 * Remove any template symbols in the tree.
-	 * 
+	 *
 	 * @param tree
 	 * @return
 	 */
@@ -219,6 +220,14 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 				node, useComments);
 		ex.extractFromNode(node);
 		return ex.computedNodes.get(node);
+	}
+
+	@Override
+	public Map<ASTNode, TreeNode<Integer>> getTreeMap(final ASTNode node) {
+		final VariableTypeTreeExtractor ex = new VariableTypeTreeExtractor(
+				node, false);
+		ex.extractFromNode(node);
+		return ex.computedNodes;
 	}
 
 }
