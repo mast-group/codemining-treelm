@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package codemining.lm.grammar.java.ast;
+
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.SimpleName;
@@ -13,20 +15,20 @@ import codemining.lm.grammar.tree.TreeNode;
  * A delegated variable type tree extractor. It adds an extra Object node
  * between the template node and the actual type, allowing for some flexibility
  * in mining.
- * 
+ *
  * @author Miltos Allamans <m.allamanis@ed.ac.uk>
- * 
+ *
  */
 public class DelegatedVariableTypeJavaTreeExtractor extends
-		VariableTypeJavaTreeExtractor {
+VariableTypeJavaTreeExtractor {
 
 	public class DelegatedTypeJavaTreeExtractor extends
-			VariableTypeTreeExtractor {
+	VariableTypeTreeExtractor {
 
 		private static final String GENERIC_VARIABLE_TYPE = "%GenericVariable%";
 
-		public DelegatedTypeJavaTreeExtractor(ASTNode extracted,
-				boolean useComments) {
+		public DelegatedTypeJavaTreeExtractor(final ASTNode extracted,
+				final boolean useComments) {
 			super(extracted, useComments);
 		}
 
@@ -56,6 +58,14 @@ public class DelegatedVariableTypeJavaTreeExtractor extends
 				node, useComments);
 		ex.extractFromNode(node);
 		return ex.computedNodes.get(node);
+	}
+
+	@Override
+	public Map<ASTNode, TreeNode<Integer>> getTreeMap(final ASTNode node) {
+		final DelegatedTypeJavaTreeExtractor ex = new DelegatedTypeJavaTreeExtractor(
+				node, false);
+		ex.extractFromNode(node);
+		return ex.computedNodes;
 	}
 
 }
