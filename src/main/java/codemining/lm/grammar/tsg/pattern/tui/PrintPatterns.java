@@ -34,7 +34,7 @@ public class PrintPatterns {
 		for (final TreeNode<Integer> pattern : patterns.getPatterns()) {
 			try {
 				System.out
-				.println("------------------------------------------------------");
+						.println("------------------------------------------------------");
 				printPattern(patterns.getFormat(), pattern);
 			} catch (final Throwable e) {
 				System.out.println("Error printing.");
@@ -51,9 +51,10 @@ public class PrintPatterns {
 	 */
 	public static void printIntTree(final AbstractTreeExtractor format,
 			final TreeNode<Integer> intTree) {
-		System.out.println(intTree.toString(format.getTreePrinter()));
+		System.out.println(intTree.toString(t -> format.getTreePrinter()
+				.convertTreeToString(t)));
 		System.out
-		.println("______________________________________________________");
+				.println("______________________________________________________");
 		if (format.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 			final StringBuffer sb = new StringBuffer();
 			format.printMultinode(sb, intTree);
@@ -72,7 +73,7 @@ public class PrintPatterns {
 			final TreeNode<Integer> intTree) {
 		printIntTree(format, intTree);
 		System.out
-		.println("______________________________________________________");
+				.println("______________________________________________________");
 	}
 
 }

@@ -3,7 +3,6 @@ package codemining.lm.grammar.tree;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.function.Function;
 
 import codemining.languagetools.ITokenizer;
 import codemining.languagetools.ParseType;
@@ -23,7 +22,13 @@ import com.google.common.collect.Maps;
 @DefaultSerializer(JavaSerializer.class)
 public abstract class AbstractTreeExtractor implements Serializable {
 
+	@FunctionalInterface
+	public interface TreeToString extends Serializable {
+		public abstract String convertTreeToString(final TreeNode<Integer> tree);
+	}
+
 	private static final long serialVersionUID = -1685391461506804381L;
+
 	private int nextSymbolId = 0;
 
 	/**
@@ -122,7 +127,7 @@ public abstract class AbstractTreeExtractor implements Serializable {
 	 *
 	 * @return
 	 */
-	public abstract Function<TreeNode<Integer>, String> getTreePrinter();
+	public abstract TreeToString getTreePrinter();
 
 	/**
 	 * @param buf

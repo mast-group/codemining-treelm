@@ -33,7 +33,7 @@ public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 	 *
 	 */
 	public final class IntKeyToSymbol implements
-	Function<TreeNode<TSGNode>, String> {
+			Function<TreeNode<TSGNode>, String> {
 
 		@Override
 		public String apply(final TreeNode<TSGNode> node) {
@@ -104,7 +104,7 @@ public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 						try {
 							final TreeNode<Integer> intTree = TreeNode.create(
 									tree.getElement().getData().nodeKey, tree
-									.getElement().nProperties());
+											.getElement().nProperties());
 							TSGNode.copyChildren(intTree, tree.getElement());
 							if (treeFormat.getSymbol(intTree.getData()).nodeType == AstNodeSymbol.MULTI_NODE) {
 								treeFormat.printMultinode(buf, intTree);
@@ -135,7 +135,7 @@ public class FormattedTSGrammar extends TSGrammar<TSGNode> {
 			public String apply(final TreeNode<TSGNode> input) {
 				final TreeNode<Integer> node = TreeNode.create(
 						input.getData().nodeKey, input.nProperties());
-				return treeFormat.getTreePrinter().apply(node);
+				return treeFormat.getTreePrinter().convertTreeToString(node);
 			}
 		});
 	}

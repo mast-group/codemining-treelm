@@ -34,7 +34,7 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 	/**
 	 * A node printer using the symbols.
 	 */
-	private final Function<TreeNode<Integer>, String> javaNodeToString = (Function<TreeNode<Integer>, String> & Serializable) node -> (getSymbol(node
+	private final TreeToString javaNodeToString = node -> (getSymbol(node
 			.getData()).toString(JAVA_NODETYPE_CONVERTER));
 
 	private static final long serialVersionUID = -4515326266227881706L;
@@ -92,7 +92,7 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.io.File)
 	 */
 	@Override
@@ -104,7 +104,7 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see codemining.lm.grammar.tree.ITreeExtractor#getTree(java.lang.String)
 	 */
 	@Override
@@ -131,7 +131,7 @@ public abstract class AbstractJavaTreeExtractor extends AbstractTreeExtractor {
 	 * @return
 	 */
 	@Override
-	public Function<TreeNode<Integer>, String> getTreePrinter() {
+	public TreeToString getTreePrinter() {
 		return javaNodeToString;
 	}
 
