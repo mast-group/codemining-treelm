@@ -46,7 +46,7 @@ public class SampleBlockedTSG {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 5) {
 			System.err
-			.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
+					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
@@ -86,12 +86,12 @@ public class SampleBlockedTSG {
 
 			if (args[2].equals("block")) {
 				sampler = new BlockCollapsedGibbsSampler(100,
-						concentrationParameter, new FormattedTSGrammar(
-								format), new FormattedTSGrammar(format));
+						concentrationParameter, new FormattedTSGrammar(format),
+						new FormattedTSGrammar(format));
 			} else if (args[2].equals("filterblock")) {
 				sampler = new JavaFilteredBlockCollapsedGibbsSampler(100,
-						concentrationParameter, new FormattedTSGrammar(
-								format), new FormattedTSGrammar(format));
+						concentrationParameter, new FormattedTSGrammar(format),
+						new FormattedTSGrammar(format));
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[2]);
@@ -199,7 +199,7 @@ public class SampleBlockedTSG {
 
 		// sampler.pruneNonSurprisingRules(1);
 		grammarToUse
-		.prune((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
+				.prune((int) (AbstractTSGSampler.BURN_IN_PCT * nIterations) - 10);
 		System.out.println(grammarToUse.toString());
 		finished.set(true); // we have finished and thus the shutdown hook can
 		// now stop waiting for us.

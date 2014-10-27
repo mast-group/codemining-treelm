@@ -10,10 +10,11 @@ import java.util.Set;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.CFGRule;
 import codemining.lm.grammar.cfg.AbstractContextFreeGrammar.NodeConsequent;
 import codemining.lm.grammar.tree.AbstractTreeExtractor;
+import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.TSGNode;
+import codemining.util.SettingsLoader;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
@@ -35,6 +36,9 @@ public final class TreeCorpusFilter {
 	private final int countLimit;
 
 	private final AbstractTreeExtractor treeExtractor;
+
+	public static final boolean REMOVE_VARIABLE_NAMES = SettingsLoader
+			.getBooleanSetting("removeVariableNames", false);
 
 	public TreeCorpusFilter(final AbstractTreeExtractor treeExtractor,
 			final int countLimit) {
@@ -69,6 +73,7 @@ public final class TreeCorpusFilter {
 		final TreeNode<TSGNode> currentTree;
 		if (treeExtractor.getSymbol(tree.getData().nodeKey).nodeType == treeExtractor
 				.getKeyForCompilationUnit().getData()) {
+			// Ignore imports and package declaration
 			if (tree.getChildrenByProperty().get(2).isEmpty()) {
 				return;
 			}
@@ -111,15 +116,18 @@ public final class TreeCorpusFilter {
 		while (!nodes.isEmpty()) {
 			final TreeNode<TSGNode> currentNode = nodes.pop();
 
+			if (currentNode.isLeaf()) {
+				continue;
+			} else if (REMOVE_VARIABLE_NAMES && isTemplateNode(currentNode)) {
+				currentNode.getChildrenByProperty().clear();
+				continue; // ignore all variables names
+			}
+
 			for (final List<TreeNode<TSGNode>> childProperty : currentNode
 					.getChildrenByProperty()) {
 				for (final TreeNode<TSGNode> child : childProperty) {
 					nodes.push(child);
 				}
-			}
-
-			if (currentNode.isLeaf()) {
-				continue;
 			}
 
 			final CFGRule rule = createRuleForNode(currentNode);
@@ -134,18 +142,10 @@ public final class TreeCorpusFilter {
 		}
 
 		// Set everything as root
-		for (final TreeNode<TSGNode> node : filteredRoots) {
-			node.getData().isRoot = true;
-		}
+		filteredRoots.forEach(node -> node.getData().isRoot = true);
 
 		// Remove all roots with no children nodes
-		return Sets.filter(filteredRoots, new Predicate<TreeNode<TSGNode>>() {
-
-			@Override
-			public boolean apply(final TreeNode<TSGNode> input) {
-				return !input.isLeaf();
-			}
-		});
+		return Sets.filter(filteredRoots, input -> !input.isLeaf());
 	}
 
 	public List<TreeNode<TSGNode>> getFilteredTrees() {
@@ -155,6 +155,14 @@ public final class TreeCorpusFilter {
 		}
 
 		return filteredTrees;
+	}
+
+	/**
+	 * @param currentNode
+	 * @return
+	 */
+	private boolean isTemplateNode(final TreeNode<TSGNode> currentNode) {
+		return treeExtractor.getSymbol(currentNode.getData().nodeKey).nodeType == AstNodeSymbol.TEMPLATE_NODE;
 	}
 
 }
