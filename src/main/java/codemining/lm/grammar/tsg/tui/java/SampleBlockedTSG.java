@@ -25,6 +25,7 @@ import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.ScheduledBlockTsg;
 import codemining.lm.grammar.tsg.samplers.blocked.JavaFilteredBlockCollapsedGibbsSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.TreeCorpusFilter;
 import codemining.util.SettingsLoader;
@@ -46,7 +47,7 @@ public class SampleBlockedTSG {
 	public static void main(final String[] args) throws SerializationException {
 		if (args.length < 5) {
 			System.err
-					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock <alpha> <#iterations> [<CfgExtraTraining>]");
+					.println("Usage <TsgTrainingDir> normal|binary|binaryvariables|variables|binaryvariablesNoAnnotate|delegatedVariableNoAnnotate block|filterblock|icm <alpha> <#iterations> [<CfgExtraTraining>]");
 			System.exit(-1);
 		}
 
@@ -92,6 +93,10 @@ public class SampleBlockedTSG {
 				sampler = new JavaFilteredBlockCollapsedGibbsSampler(100,
 						concentrationParameter, new FormattedTSGrammar(format),
 						new FormattedTSGrammar(format));
+			} else if (args[2].equals("icm")) {
+				sampler = new ScheduledBlockTsg(100, concentrationParameter,
+						new FormattedTSGrammar(format), new FormattedTSGrammar(
+								format));
 			} else {
 				throw new IllegalArgumentException(
 						"Unrecognizable training type parameter " + args[2]);
@@ -169,7 +174,6 @@ public class SampleBlockedTSG {
 					}
 				}
 			}
-
 		});
 
 		final int nItererationCompleted = sampler.performSampling(nIterations);

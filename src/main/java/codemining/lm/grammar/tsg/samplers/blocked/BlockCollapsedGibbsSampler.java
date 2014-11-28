@@ -384,7 +384,6 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 			checkArgument(sampleGrammar.removeTree(upperTree, diff) >= 0);
 			checkArgument(sampleGrammar.removeTree(lowerTree, diff) >= 0);
 		}
-
 	}
 
 	/**
@@ -520,7 +519,6 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 	 * tree one-by-one at random order
 	 *
 	 * @param tree
-	 * @return the log-prob of the sampling of the subtree.
 	 */
 	private void sampleSubTree(final TreeNode<TSGNode> tree) {
 		// A list of all the nodes.
