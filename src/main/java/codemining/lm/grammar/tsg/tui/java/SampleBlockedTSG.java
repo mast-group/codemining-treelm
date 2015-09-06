@@ -25,8 +25,8 @@ import codemining.lm.grammar.tsg.FormattedTSGrammar;
 import codemining.lm.grammar.tsg.TSGNode;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.blocked.BlockCollapsedGibbsSampler;
-import codemining.lm.grammar.tsg.samplers.blocked.ScheduledBlockTsg;
 import codemining.lm.grammar.tsg.samplers.blocked.JavaFilteredBlockCollapsedGibbsSampler;
+import codemining.lm.grammar.tsg.samplers.blocked.ScheduledBlockTsg;
 import codemining.lm.grammar.tsg.samplers.blocked.TreeCorpusFilter;
 import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
@@ -39,6 +39,17 @@ import codemining.util.serialization.Serializer;
  *
  */
 public class SampleBlockedTSG {
+
+	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
+			.getNumericSetting("treeSplitCfgCount", 0);
+
+	/**
+	 * Filter only the usages of a package.
+	 */
+	private static final String FILTER_ONLY_PACKAGE_USAGES = SettingsLoader
+			.getStringSetting("classFilter", null);
+	private static final Logger LOGGER = Logger
+			.getLogger(SampleBlockedTSG.class.getName());
 
 	/**
 	 * @param args
@@ -120,7 +131,7 @@ public class SampleBlockedTSG {
 				}
 			}
 
-			final double percentRootsInit = .7;
+			final double percentRootsInit = .9;
 			int nFiles = 0;
 			int nNodes = 0;
 			LOGGER.info("Loading sample trees from  " + args[0]);
@@ -209,15 +220,4 @@ public class SampleBlockedTSG {
 		// now stop waiting for us.
 
 	}
-
-	private static final int TREE_SPLIT_CFG_COUNT = (int) SettingsLoader
-			.getNumericSetting("treeSplitCfgCount", 0);
-	/**
-	 * Filter only the usages of a package.
-	 */
-	private static final String FILTER_ONLY_PACKAGE_USAGES = SettingsLoader
-			.getStringSetting("classFilter", null);
-
-	private static final Logger LOGGER = Logger
-			.getLogger(SampleBlockedTSG.class.getName());
 }

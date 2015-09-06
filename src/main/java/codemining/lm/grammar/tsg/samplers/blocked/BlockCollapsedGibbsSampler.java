@@ -27,7 +27,6 @@ import codemining.lm.grammar.tsg.TSGrammar;
 import codemining.lm.grammar.tsg.samplers.AbstractTSGSampler;
 import codemining.lm.grammar.tsg.samplers.CFGPrior;
 import codemining.lm.grammar.tsg.samplers.CFGPrior.IRuleCreator;
-import codemining.math.distributions.GeometricDistribution;
 import codemining.math.random.SampleUtils;
 import codemining.util.StatsUtil;
 
@@ -135,17 +134,20 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 				nRulesCommonRoot--;
 			}
 
-			final double log2Probability = StatsUtil.log2SumOfExponentials(
+			double log2Probability = StatsUtil.log2SumOfExponentials(
 					DoubleMath.log2(nRulesInGrammar),
 					DoubleMath.log2(concentrationParameter) + log2prior)
 					- DoubleMath
 							.log2(nRulesCommonRoot + concentrationParameter);
 
+			if (log2Probability > 0 && log2Probability < 1e15) {
+				log2Probability = 0; // Ignore small numerical errors
+			}
 			checkArgument(
 					!Double.isNaN(log2Probability)
 							&& !Double.isInfinite(log2Probability),
 					"Posterior probability is %s", log2Probability);
-			checkArgument(log2Probability <= 0);
+			checkArgument(log2Probability <= 0, "Value is %s", log2Probability);
 			return log2Probability;
 		}
 
@@ -158,12 +160,13 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 		 */
 		public double getLog2PriorForTree(final TreeNode<TSGNode> subtree) {
 			checkNotNull(subtree);
-			final int treeSize = subtree.getTreeSize();
+			// final int treeSize = subtree.getTreeSize();
 			final double logRuleMLE = prior.getTreeCFLog2Probability(subtree);
 
-			final double geometricLogProb = GeometricDistribution.getLog2Prob(
-					treeSize, geometricProbability);
-			return geometricLogProb + logRuleMLE;
+			// final double geometricLogProb =
+			// GeometricDistribution.getLog2Prob(
+			// treeSize, geometricProbability);
+			return logRuleMLE;
 		}
 
 		public CFGPrior getPrior() {
@@ -185,7 +188,10 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 
 	private static final long serialVersionUID = 8363745874521428863L;
 
+	static final Logger LOGGER = Logger
+			.getLogger(BlockCollapsedGibbsSampler.class.getName());
 	final BlockedPosteriorComputer samplePosteriorComputer;
+
 	final BlockedPosteriorComputer burninPosteriorComputer;
 
 	/**
@@ -194,9 +200,6 @@ public class BlockCollapsedGibbsSampler extends AbstractTSGSampler implements
 	protected final CFGPrior prior;
 
 	protected final NodeTypeInformation nodeType;
-
-	static final Logger LOGGER = Logger
-			.getLogger(BlockCollapsedGibbsSampler.class.getName());
 
 	public BlockCollapsedGibbsSampler(final double avgTreeSize,
 			final double DPconcentration,

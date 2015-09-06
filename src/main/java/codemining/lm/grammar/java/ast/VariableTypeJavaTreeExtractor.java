@@ -73,8 +73,8 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 			// it is a variable.
 			final AstNodeSymbol symbol = constructTypeSymbol(nodeVariable.type);
 			final int symbolId = getOrAddSymbolId(symbol);
-			final TreeNode<Integer> templetized = TreeNode.create(symbolId, 1);
-			templetized.addChildNode(treeNode, 0);
+			final TreeNode<Integer> templetized = TreeNode.create(symbolId, 0);
+			// templetized.addChildNode(treeNode, 0);
 			return templetized;
 		}
 
@@ -108,6 +108,10 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 		}
 	}
 
+	private static final long serialVersionUID = -5114231756353587653L;
+
+	public static final String TEMPLETIZED_VAR_TYPE_PROPERTY = "TYPE";
+
 	/**
 	 * Return an ASTNodeSymbol.
 	 *
@@ -126,10 +130,6 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 	public static boolean isVariableSymbol(final AstNodeSymbol symbol) {
 		return symbol.hasAnnotation(TEMPLETIZED_VAR_TYPE_PROPERTY);
 	}
-
-	private static final long serialVersionUID = -5114231756353587653L;
-
-	public static final String TEMPLETIZED_VAR_TYPE_PROPERTY = "TYPE";
 
 	public VariableTypeJavaTreeExtractor() {
 		super();
@@ -202,7 +202,7 @@ public class VariableTypeJavaTreeExtractor extends JavaAstTreeExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * codemining.lm.grammar.tree.AbstractEclipseTreeExtractor#getASTFromTree
 	 * (codemining.lm.grammar.tree.TreeNode)

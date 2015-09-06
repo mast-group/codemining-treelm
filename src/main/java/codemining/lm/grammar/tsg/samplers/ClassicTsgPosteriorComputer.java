@@ -190,6 +190,12 @@ class ClassicTsgPosteriorComputer implements
 
 	private static final long serialVersionUID = -874360828121014055L;
 
+	static final Logger LOGGER = Logger
+			.getLogger(ClassicTsgPosteriorComputer.class.getName());
+
+	private static final boolean DO_GRADIENT_CHECK = SettingsLoader
+			.getBooleanSetting("DoGradientCheck", false);
+
 	protected double concentrationParameter;
 
 	protected double geometricProbability;
@@ -197,12 +203,6 @@ class ClassicTsgPosteriorComputer implements
 	final TSGrammar<TSGNode> grammar;
 
 	protected final CFGPrior prior;
-
-	static final Logger LOGGER = Logger
-			.getLogger(ClassicTsgPosteriorComputer.class.getName());
-
-	private static final boolean DO_GRADIENT_CHECK = SettingsLoader
-			.getBooleanSetting("DoGradientCheck", false);
 
 	ClassicTsgPosteriorComputer(final TSGrammar<TSGNode> grammar,
 			final double avgTreeSize, final double DPconcentration) {
