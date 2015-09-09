@@ -76,9 +76,9 @@ public class SampleBlockedTSG {
                 format = new BinaryJavaAstTreeExtractor(new JavaAstTreeExtractor());
             } else if (args[1].equals("variables")) {
                 format = new VariableTypeJavaTreeExtractor();
-            } else if (args[1].equals("binaryvariables")) {
+            } else if (args[1].equals("binaryVariables")) {
                 format = new BinaryJavaAstTreeExtractor(new VariableTypeJavaTreeExtractor());
-            } else if (args[1].equals("binaryvariablesNoAnnotate")) {
+            } else if (args[1].equals("binaryVariablesNoAnnotate")) {
                 format = new BinaryJavaAstTreeExtractor(new VariableTypeJavaTreeExtractor(), false);
             } else if (args[1].equals("delegatedVariableNoAnnotate")) {
                 format = new BinaryJavaAstTreeExtractor(new DelegatedVariableTypeJavaTreeExtractor(), false);
