@@ -60,6 +60,8 @@ public class MethodNamingDatasetCreator {
 
 	public static final String SELF_TOKEN = "%SELF%";
 
+	public static final String SELF_NAME = "%SELF%";
+
 	public static List<MethodNameWithAst> getDataset(File inputFolder) {
 		Collection<File> codeFiles = FileUtils.listFiles(inputFolder, JavaTokenizer.javaCodeFileFilter,
 				DirectoryFileFilter.DIRECTORY);
@@ -69,7 +71,7 @@ public class MethodNamingDatasetCreator {
 	private static Tree getMethodAst(final MethodDeclaration method) {
 		JavaAstTreeExtractor ex = new JavaAstTreeExtractor();
 		TreeNode<Integer> treeNode = ex.getTree(method.getBody());
-		return treeNodeToTree(treeNode, ex);
+		return treeNodeToTree(treeNode, ex, method.getName().toString());
 	}
 
 	private static Stream<MethodNameWithAst> getMethods(File file, File inputFolder) {
@@ -108,7 +110,7 @@ public class MethodNamingDatasetCreator {
 		}
 	}
 
-	private static Tree treeNodeToTree(final TreeNode<Integer> treeNode, JavaAstTreeExtractor ex) {
+	private static Tree treeNodeToTree(final TreeNode<Integer> treeNode, JavaAstTreeExtractor ex, String methodName) {
 		Tree root = new Tree(ASTNode.nodeClassForType(ex.getSymbol(treeNode.getData()).nodeType).getSimpleName());
 		final Deque<Pair<TreeNode<Integer>, Tree>> toVisit = new ArrayDeque<>();
 
@@ -124,8 +126,9 @@ public class MethodNamingDatasetCreator {
 				Tree property = new Tree(simpleProperty);
 				currentTree.children.add(property);
 
-				Tree propertyValue = new Tree(astSymbol.getSimpleProperty(simpleProperty).toString());
-				property.children.add(propertyValue);
+				String propertyValue = astSymbol.getSimpleProperty(simpleProperty).toString();
+				Tree propertyValueTree = new Tree(propertyValue.equals(methodName) ? SELF_NAME : propertyValue);
+				property.children.add(propertyValueTree);
 			}
 
 			for (int i = 0; i < astSymbol.nChildProperties(); i++) {
