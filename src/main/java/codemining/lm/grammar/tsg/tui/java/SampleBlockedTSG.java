@@ -11,9 +11,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-import codemining.java.codeutils.UsagePointExtractor;
+import codemining.java.codeutils.MethodExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
@@ -44,7 +44,7 @@ public class SampleBlockedTSG {
     /**
      * Filter only the usages of a package.
      */
-    private static final String FILTER_ONLY_PACKAGE_USAGES = SettingsLoader.getStringSetting("classFilter", null);
+    private static final boolean USE_METHOD_BODY_ONLY = SettingsLoader.getBooleanSetting("useMethodBodyOnly", true);
     private static final Logger LOGGER = Logger.getLogger(SampleBlockedTSG.class.getName());
 
     /**
@@ -118,13 +118,17 @@ public class SampleBlockedTSG {
             for (final File fi : FileUtils.listFiles(new File(args[0]), JavaTokenizer.javaCodeFileFilter,
                     DirectoryFileFilter.DIRECTORY)) {
                 try {
-                    if (FILTER_ONLY_PACKAGE_USAGES == null) {
+                    if (!USE_METHOD_BODY_ONLY) {
                         final TreeNode<TSGNode> ast = TSGNode.convertTree(format.getTree(fi), percentRootsInit);
                         nNodes += ast.getTreeSize();
                         filter.addTree(ast);
                     } else {
-                        for (final ASTNode tree : UsagePointExtractor.usagePoints(FILTER_ONLY_PACKAGE_USAGES, fi)) {
-                            final TreeNode<TSGNode> ast = TSGNode.convertTree(format.getTree(tree), percentRootsInit);
+                        for (final MethodDeclaration method : MethodExtractor.getMethods(fi)) {
+                            if (method.getBody() == null) {
+                                continue;
+                            }
+                            final TreeNode<TSGNode> ast = TSGNode.convertTree(format.getTree(method.getBody()),
+                                    percentRootsInit);
                             nNodes += ast.getTreeSize();
                             filter.addTree(ast);
                         }
