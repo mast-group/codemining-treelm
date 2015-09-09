@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 
@@ -49,6 +50,14 @@ public class AstNodeSymbol implements Serializable {
 
 	public static final int UNK_SYMBOL = Integer.MIN_VALUE;
 
+	public static final Function<Integer, String> DEFAULT_NODETYPE_TO_STRING = new Function<Integer, String>() {
+
+		@Override
+		public String apply(final Integer nodeType) {
+			return nodeType.toString();
+		}
+	};
+
 	/**
 	 * A map of annotations to their respective values. Annotations are not
 	 * structural properties of the node
@@ -70,20 +79,11 @@ public class AstNodeSymbol implements Serializable {
 	 */
 	private SortedMap<String, Object> simplePropValues = Maps.newTreeMap();
 
-	public static final Function<Integer, String> DEFAULT_NODETYPE_TO_STRING = new Function<Integer, String>() {
-
-		@Override
-		public String apply(final Integer nodeType) {
-			return nodeType.toString();
-		}
-	};
-
 	public AstNodeSymbol(final int type) {
 		nodeType = type;
 	}
 
-	public synchronized void addAnnotation(final String annotation,
-			final Object value) {
+	public synchronized void addAnnotation(final String annotation, final Object value) {
 		annotations.put(checkNotNull(annotation), checkNotNull(value));
 	}
 
@@ -98,8 +98,7 @@ public class AstNodeSymbol implements Serializable {
 	 * @param propertyName
 	 * @param value
 	 */
-	public synchronized void addSimpleProperty(final String propertyName,
-			final Object value) {
+	public synchronized void addSimpleProperty(final String propertyName, final Object value) {
 		checkNotNull(propertyName);
 		checkNotNull(value);
 		simplePropValues.put(propertyName, value);
@@ -134,6 +133,14 @@ public class AstNodeSymbol implements Serializable {
 		return annotations.get(annotation);
 	}
 
+	public String getChildProperty(int i) {
+		return childProperties.get(i);
+	}
+
+	public Set<String> getSimpleProperties() {
+		return simplePropValues.keySet();
+	}
+
 	public final Object getSimpleProperty(final String property) {
 		return simplePropValues.get(property);
 	}
@@ -144,8 +151,7 @@ public class AstNodeSymbol implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(nodeType, simplePropValues, childProperties,
-				annotations);
+		return Objects.hashCode(nodeType, simplePropValues, childProperties, annotations);
 	}
 
 	public final boolean hasSimpleProperty(final String property) {
@@ -181,8 +187,7 @@ public class AstNodeSymbol implements Serializable {
 
 		if (simplePropValues.size() > 0) {
 			buf.append(" Simple Props: [");
-			for (final Entry<String, Object> propEntry : simplePropValues
-					.entrySet()) {
+			for (final Entry<String, Object> propEntry : simplePropValues.entrySet()) {
 				final String prop = propEntry.getKey();
 				buf.append(prop + ":" + propEntry.getValue() + ", ");
 			}
@@ -199,10 +204,8 @@ public class AstNodeSymbol implements Serializable {
 
 		if (annotations.size() > 0) {
 			buf.append(" Annotations: [");
-			for (final Entry<String, Object> annotation : annotations
-					.entrySet()) {
-				buf.append(annotation.getKey() + ":" + annotation.getValue()
-						+ ", ");
+			for (final Entry<String, Object> annotation : annotations.entrySet()) {
+				buf.append(annotation.getKey() + ":" + annotation.getValue() + ", ");
 			}
 			buf.append(']');
 		}
