@@ -1,7 +1,7 @@
 /**
  *
  */
-package codemining.lm.grammar.tsg.pattern;
+package codemining.lm.grammar.tsg.idioms;
 
 import java.io.File;
 import java.util.List;

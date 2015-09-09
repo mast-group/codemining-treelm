@@ -1,7 +1,7 @@
 /**
  * 
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -24,7 +24,7 @@ import codemining.java.codedata.PackageInfoExtractor;
 import codemining.java.codeutils.JavaASTExtractor;
 import codemining.java.tokenizers.JavaTokenizer;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.pattern.tui.ElementCooccurence.ElementMutualInformation;
+import codemining.lm.grammar.tsg.idioms.tui.ElementCooccurence.ElementMutualInformation;
 import codemining.util.SettingsLoader;
 import codemining.util.data.Pair;
 import codemining.util.parallel.ParallelThreadPool;

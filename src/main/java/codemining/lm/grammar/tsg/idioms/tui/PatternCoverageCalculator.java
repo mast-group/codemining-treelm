@@ -1,7 +1,7 @@
 /**
  * 
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -22,7 +22,7 @@ import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.java.ast.BinaryJavaAstTreeExtractor;
 import codemining.lm.grammar.java.ast.VariableTypeJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.pattern.PatternCorpus;
+import codemining.lm.grammar.tsg.idioms.PatternCorpus;
 import codemining.util.parallel.ParallelThreadPool;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;

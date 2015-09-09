@@ -4,4 +4,4 @@
  * @author Miltos Allamanis <m.allamanis@ed.ac.uk>
  *
  */
-package codemining.lm.grammar.tsg.pattern;
+package codemining.lm.grammar.tsg.idioms;

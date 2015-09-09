@@ -1,4 +1,4 @@
-package codemining.lm.grammar.tsg.pattern;
+package codemining.lm.grammar.tsg.idioms;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

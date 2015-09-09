@@ -1,7 +1,7 @@
 /**
  * 
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

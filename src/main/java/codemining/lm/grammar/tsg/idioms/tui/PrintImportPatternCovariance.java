@@ -1,14 +1,14 @@
 /**
  * 
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
-import codemining.lm.grammar.tsg.pattern.tui.ElementCooccurence.Lift;
+import codemining.lm.grammar.tsg.idioms.tui.ElementCooccurence.Lift;
 import codemining.util.SettingsLoader;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;

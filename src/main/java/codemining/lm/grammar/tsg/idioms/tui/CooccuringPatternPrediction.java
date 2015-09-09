@@ -1,7 +1,7 @@
 /**
  *
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import java.io.File;
 import java.util.Collection;
@@ -19,8 +19,8 @@ import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.NodeSetTreeDistance;
 import codemining.lm.grammar.tree.TreeNode;
 import codemining.lm.grammar.tsg.FormattedTSGrammar;
-import codemining.lm.grammar.tsg.pattern.PatternCorpus;
-import codemining.lm.grammar.tsg.pattern.tui.PatternCooccurence.LikelihoodRatio;
+import codemining.lm.grammar.tsg.idioms.PatternCorpus;
+import codemining.lm.grammar.tsg.idioms.tui.PatternCooccurence.LikelihoodRatio;
 import codemining.util.data.UnorderedPair;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;

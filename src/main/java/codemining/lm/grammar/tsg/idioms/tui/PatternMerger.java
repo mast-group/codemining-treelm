@@ -1,11 +1,11 @@
 /**
  * 
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.pattern.PatternCorpus;
+import codemining.lm.grammar.tsg.idioms.PatternCorpus;
 import codemining.lm.grammar.tsg.tui.TsgMerger;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;

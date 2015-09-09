@@ -1,14 +1,14 @@
 /**
  *
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import java.io.File;
 import java.util.logging.Logger;
 
 import codemining.lm.grammar.java.ast.AbstractJavaTreeExtractor;
 import codemining.lm.grammar.tsg.FormattedTSGrammar;
-import codemining.lm.grammar.tsg.pattern.PatternStatsCalculator;
+import codemining.lm.grammar.tsg.idioms.PatternStatsCalculator;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 

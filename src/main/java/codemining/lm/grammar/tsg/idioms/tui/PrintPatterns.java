@@ -1,12 +1,12 @@
 /**
  *
  */
-package codemining.lm.grammar.tsg.pattern.tui;
+package codemining.lm.grammar.tsg.idioms.tui;
 
 import codemining.lm.grammar.tree.AbstractTreeExtractor;
 import codemining.lm.grammar.tree.AstNodeSymbol;
 import codemining.lm.grammar.tree.TreeNode;
-import codemining.lm.grammar.tsg.pattern.PatternCorpus;
+import codemining.lm.grammar.tsg.idioms.PatternCorpus;
 import codemining.util.serialization.ISerializationStrategy.SerializationException;
 import codemining.util.serialization.Serializer;
 
